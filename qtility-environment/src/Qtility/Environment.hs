@@ -1,8 +1,8 @@
 module Qtility.Environment
   ( FromEnvironmentValue (..),
-    loadEnvironmentVariable,
-    loadEnvFile,
-    parseDotEnv,
+    readEnvironmentVariable,
+    loadDotEnvFile,
+    parseDotEnvFile,
   )
 where
 
@@ -14,13 +14,13 @@ import qualified RIO.Directory as Directory
 import qualified RIO.Text as Text
 import System.Environment (lookupEnv, setEnv)
 
--- | Loads a value from an environment value or returns a string explaining why the value cannot be
+-- | Reads a value from an environment value or returns a string explaining why the value cannot be
 -- decoded from the environment key's associated value string.
-loadEnvironmentVariable ::
+readEnvironmentVariable ::
   (MonadIO m, FromEnvironmentValue a, MonadUnliftIO m) =>
   EnvironmentKey ->
   m (Either LoadEnvironmentVariableError a)
-loadEnvironmentVariable key = do
+readEnvironmentVariable key = do
   maybeEnvironmentValue <- mapLeft LoadEnvironmentMissingValue <$> getEnvironmentValue key
   case maybeEnvironmentValue of
     Left err ->
@@ -31,20 +31,20 @@ loadEnvironmentVariable key = do
     handleDecodingError k v = LoadEnvironmentInvalidValue k (EnvironmentValue v) >>> Left
 
 -- | Loads a `.env` file if it's available, changing the current environment.
-loadEnvFile :: EnvironmentFile -> IO (Either EnvironmentFileNotFound ())
-loadEnvFile ef@(EnvironmentFile path) = do
+loadDotEnvFile :: EnvironmentFile -> IO (Either EnvironmentFileNotFound ())
+loadDotEnvFile ef@(EnvironmentFile path) = do
   dotEnvExists <- Directory.doesFileExist path
   if dotEnvExists
     then do
-      dotEnvValues <- parseDotEnv path
+      dotEnvValues <- parseDotEnvFile path
       forM_ dotEnvValues $ \(key, value) -> do
         setEnv key value
       pure $ Right ()
     else pure $ Left $ EnvironmentFileNotFound ef
 
 -- | Parses a `.env` file into a list of key value pairs.
-parseDotEnv :: FilePath -> IO [(String, String)]
-parseDotEnv filePath = do
+parseDotEnvFile :: FilePath -> IO [(String, String)]
+parseDotEnvFile filePath = do
   ( Text.lines
       >>> fmap Text.strip
       >>> filter (\l -> l /= "" && not (Text.isPrefixOf "#" l))
