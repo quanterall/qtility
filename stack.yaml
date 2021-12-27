@@ -1,0 +1,7 @@
+resolver: lts-18.14
+
+packages:
+- ./qtility-environment
+- ./qtility-data
+
+allow-different-user: true

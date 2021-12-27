@@ -1,0 +1,10 @@
+cradle:
+  stack:
+    - path: "./qtility-data/src"
+      component: "qtility-data:lib"
+
+    - path: "./qtility-data/test"
+      component: "qtility-data:test:qtility-data-test"
+
+    - path: "./qtility-environment/src"
+      component: "qtility-environment:lib"
