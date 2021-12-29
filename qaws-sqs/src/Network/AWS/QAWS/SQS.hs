@@ -27,7 +27,6 @@ import qualified Network.AWS.SQS as AWSSQS
 import Qtility.Data (note, tReadMaybe)
 import RIO
 import qualified RIO.HashMap as HashMap
-import qualified RIO.Text as Text
 
 -- | Receives messages from a queue with the given 'QueueUrl', waiting for up to 'WaitTime' seconds,
 -- for a response and returns a maximum number of 'MessageLimit' messages. This looks for the needed
