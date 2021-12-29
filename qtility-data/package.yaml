@@ -5,6 +5,7 @@ dependencies:
 
 - base >=4.9.1.0 && <5
 - rio
+- lens
 
 default-extensions:
 - ApplicativeDo

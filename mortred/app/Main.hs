@@ -10,6 +10,7 @@ import Mortred.Session
     webdriverConfig,
   )
 import Mortred.Types
+import Qtility.Data.Types (Seconds (..))
 import RIO hiding (link)
 import System.IO (putStrLn)
 import Test.WebDriver (Selector (..), WD, closeSession, maximize, openPage, screenshot)
@@ -32,7 +33,7 @@ fingerprintJS :: WD ()
 fingerprintJS = do
   openPage "https://fingerprintjs.com/"
   maximize
-  waitForVisibleElement 5.0 $ ByCSS "span[class^='FpjsWidget-module--value--']"
+  waitForVisibleElement (Seconds 5.0) $ ByCSS "span[class^='FpjsWidget-module--value--']"
   screenshotData <- screenshot
   liftIO $ writeFileBinary "screenshot.png" $ toStrictBytes screenshotData
   closeSession
