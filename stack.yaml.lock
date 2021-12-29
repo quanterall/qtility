@@ -18,6 +18,17 @@ packages:
       sha256: 9d970bf5f98e68e8fc129b04d6c9d8eb1e641c7556ffd0f0a168a259335b6fd7
   original:
     hackage: unliftio-core-0.1.2.0@sha256:b0a7652ffce2284a6cebe05c99eb60573a8fb6631163f34b0b30a80b4a78cb23,1081
+- completed:
+    size: 62505
+    url: https://github.com/codedownio/hs-webdriver/archive/96400ea0ba6ef118033d6a727ef4f57c31a187ca.tar.gz
+    name: webdriver
+    version: 0.9.0.1
+    sha256: 94996b934b1b20926e9277438cf144c725db518cb2f8ec21de83df9621c04a06
+    pantry-tree:
+      size: 2934
+      sha256: ed9af2f807e88ba033a28f02de751ada83bf7a24309b6259d8cbba084edfc526
+  original:
+    url: https://github.com/codedownio/hs-webdriver/archive/96400ea0ba6ef118033d6a727ef4f57c31a187ca.tar.gz
 snapshots:
 - completed:
     size: 586069

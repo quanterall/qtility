@@ -1,0 +1,16 @@
+*.hi
+*.o
+.hsenv*
+cabal-dev/
+.stack-work/
+.cabal-sandbox
+cabal.sandbox.config
+.DS_Store
+*.swp
+*~
+\#*
+mortred.cabal
+.devcontainer/build
+chromedriver
+selenium-*
+tmp.*

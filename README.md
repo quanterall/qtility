@@ -10,6 +10,7 @@ A monorepo containing utility libraries for application development.
 - `qaws-sqs`: Utilities for common usage of AWS Simple Queue Service (SQS).
 - `qaws-s3`: Utilities for common usage of AWS Simple Storage Service (S3).
 - `quanterall-brick`: Utilities for writing `brick` applications.
+- `mortred`: Utilities for web scraping/frontend testing via `hs-webdriver` & Selenium.
 
 ## Depending on this repo
 

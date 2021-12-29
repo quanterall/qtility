@@ -1,5 +1,17 @@
 cradle:
   stack:
+    - path: "./mortred/src"
+      component: "mortred:lib"
+
+    - path: "./mortred/app/Main.hs"
+      component: "mortred:exe:mortred"
+
+    - path: "./mortred/app/Paths_mortred.hs"
+      component: "mortred:exe:mortred"
+
+    - path: "./mortred/test"
+      component: "mortred:test:mortred-test"
+
     - path: "./qaws/src"
       component: "qaws:lib"
 

@@ -1,0 +1,20 @@
+{
+  "name": "mortred",
+  "service": "mortred",
+  "workspaceFolder": "/workspace",
+  "dockerComposeFile": "./docker-compose.yaml",
+  "extensions": [
+    "sjurmillidahl.ormolu-vscode",
+    "dramforever.vscode-ghc-simple",
+    "lunaryorn.hlint",
+    "gonzooo.at-notes"
+  ],
+  "settings": {
+    "[haskell]": {
+      "editor.tabSize": 2,
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "sjurmillidahl.ormolu-vscode",
+      "editor.renderIndentGuides": true
+    }
+  }
+}
