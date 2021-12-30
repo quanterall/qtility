@@ -12,6 +12,7 @@ dependencies:
 - rio
 - aeson
 - qtility-environment
+- exceptions
 
 default-extensions:
 - ApplicativeDo

@@ -66,6 +66,7 @@ library
     , amazonka
     , amazonka-core
     , base >=4.9.1.0 && <5
+    , exceptions
     , lens
     , mtl
     , qtility-environment
@@ -130,6 +131,7 @@ test-suite qaws-test
     , amazonka
     , amazonka-core
     , base >=4.9.1.0 && <5
+    , exceptions
     , hspec >=2.0.0
     , lens
     , mtl

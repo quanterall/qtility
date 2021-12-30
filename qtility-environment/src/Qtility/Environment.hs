@@ -15,35 +15,29 @@ import qualified RIO.Text as Text
 import System.Environment (lookupEnv, setEnv)
 
 -- | Reads a value from an environment value or returns a string explaining why the value cannot be
--- decoded from the environment key's associated value string.
-readEnvironmentVariable ::
-  (MonadIO m, FromEnvironmentValue a, MonadUnliftIO m) =>
-  EnvironmentKey ->
-  m (Either LoadEnvironmentVariableError a)
+-- decoded from the environment key's associated value string. Throws 'ReadEnvironmentVariableError'
+-- on error.
+readEnvironmentVariable :: (FromEnvironmentValue a, MonadUnliftIO m) => EnvironmentKey -> m a
 readEnvironmentVariable key = do
-  maybeEnvironmentValue <- mapLeft LoadEnvironmentMissingValue <$> getEnvironmentValue key
-  case maybeEnvironmentValue of
-    Left err ->
-      pure $ Left err
-    Right value ->
-      pure $ either (handleDecodingError key value) Right $ fromEnvironmentValue value
+  value <- fromEitherM $ mapLeft ReadEnvironmentMissingValue <$> getEnvironmentValue key
+  fromEither $ mapLeft (handleDecodingError key value) $ fromEnvironmentValue value
   where
-    handleDecodingError k v = LoadEnvironmentInvalidValue k (EnvironmentValue v) >>> Left
+    handleDecodingError k v = ReadEnvironmentInvalidValue k (EnvironmentValue v)
 
--- | Loads a `.env` file if it's available, changing the current environment.
-loadDotEnvFile :: EnvironmentFile -> IO (Either EnvironmentFileNotFound ())
+-- | Loads a `.env` file if it's available, changing the current environment. Throws
+-- 'EnvironmentFileNotFound' if the environment file cannot be found.
+loadDotEnvFile :: (MonadThrow m, MonadIO m) => EnvironmentFile -> m ()
 loadDotEnvFile ef@(EnvironmentFile path) = do
   dotEnvExists <- Directory.doesFileExist path
   if dotEnvExists
     then do
       dotEnvValues <- parseDotEnvFile path
       forM_ dotEnvValues $ \(key, value) -> do
-        setEnv key value
-      pure $ Right ()
-    else pure $ Left $ EnvironmentFileNotFound ef
+        liftIO $ setEnv key value
+    else throwM $ EnvironmentFileNotFound ef
 
 -- | Parses a `.env` file into a list of key value pairs.
-parseDotEnvFile :: FilePath -> IO [(String, String)]
+parseDotEnvFile :: (MonadIO m) => FilePath -> m [(String, String)]
 parseDotEnvFile filePath = do
   ( Text.lines
       >>> fmap Text.strip
@@ -51,7 +45,7 @@ parseDotEnvFile filePath = do
       >>> fmap (Text.break (== '='))
       >>> fmap (bimap sanitizeKey sanitizeValue)
     )
-    <$> readFileUtf8 filePath
+    <$> liftIO (readFileUtf8 filePath)
   where
     sanitizeKey :: Text -> String
     sanitizeKey = Text.dropWhile (`elem` [' ', '#']) >>> Text.unpack

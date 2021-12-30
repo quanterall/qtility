@@ -16,12 +16,12 @@ newtype EnvironmentValue = EnvironmentValue {_unEnvironmentValue :: String}
 
 makeLenses ''EnvironmentValue
 
-data LoadEnvironmentVariableError
-  = LoadEnvironmentInvalidValue EnvironmentKey EnvironmentValue String
-  | LoadEnvironmentMissingValue EnvironmentKey
+data ReadEnvironmentVariableError
+  = ReadEnvironmentInvalidValue !EnvironmentKey !EnvironmentValue !String
+  | ReadEnvironmentMissingValue !EnvironmentKey
   deriving (Eq, Show)
 
-instance Exception LoadEnvironmentVariableError
+instance Exception ReadEnvironmentVariableError
 
 newtype EnvironmentFile = EnvironmentFile {_unEnvironmentFile :: FilePath}
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
@@ -31,5 +31,7 @@ makeLenses ''EnvironmentFile
 newtype EnvironmentFileNotFound = EnvironmentFileNotFound
   {_unEnvironmentFileNotFound :: EnvironmentFile}
   deriving (Eq, Show)
+
+instance Exception EnvironmentFileNotFound
 
 makeLenses ''EnvironmentFileNotFound

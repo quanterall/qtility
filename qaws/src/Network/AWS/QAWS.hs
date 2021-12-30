@@ -1,5 +1,6 @@
 module Network.AWS.QAWS where
 
+import Control.Monad.Catch (MonadCatch)
 import qualified Network.AWS as AWS
 import qualified Network.AWS.Auth as AWS
 import Qtility.Environment (loadDotEnvFile)
@@ -13,16 +14,18 @@ data LoadEnvironmentError
 
 instance Exception LoadEnvironmentError
 
-loadAWSEnvironment :: EnvironmentFile -> IO (Either LoadEnvironmentError AWS.Env)
+-- | Loads the available AWS environment in part with the help of the given 'EnvironmentFile'. The
+-- environment file is read and injected into the process environment, and the values that make up
+-- the needed AWS credentials are in part expected from there. The keys in question are
+-- @AWS_ACCESS_KEY_ID@, @AWS_SECRET_ACCESS_KEY@ and @AWS_REGION@. If the reading of the file or the
+-- loading of the AWS environment otherwise fails, a 'LoadEnvironmentError' is thrown.
+loadAWSEnvironment ::
+  (MonadIO m, MonadUnliftIO m, MonadCatch m) =>
+  EnvironmentFile ->
+  m AWS.Env
 loadAWSEnvironment environmentFile = do
-  loadEnvResult <- mapLeft LoadEnvironmentNotFoundError <$> loadDotEnvFile environmentFile
-  case loadEnvResult of
-    Left e -> pure $ Left e
-    Right () -> do
-      envResult <- mapLeft LoadEnvironmentAWSAuthError <$> try (AWS.newEnv AWS.Discover)
-      case envResult of
-        err@(Left _) -> pure err
-        Right e -> pure $ Right e
+  mapExceptionM LoadEnvironmentNotFoundError $ loadDotEnvFile environmentFile
+  mapExceptionM LoadEnvironmentAWSAuthError $ AWS.newEnv AWS.Discover
 
 tryRunAWS ::
   (MonadReader env m, AWS.AWSRequest a, AWS.HasEnv env, MonadUnliftIO m) =>
