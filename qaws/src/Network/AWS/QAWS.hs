@@ -19,10 +19,7 @@ instance Exception LoadEnvironmentError
 -- the needed AWS credentials are in part expected from there. The keys in question are
 -- @AWS_ACCESS_KEY_ID@, @AWS_SECRET_ACCESS_KEY@ and @AWS_REGION@. If the reading of the file or the
 -- loading of the AWS environment otherwise fails, a 'LoadEnvironmentError' is thrown.
-loadAWSEnvironment ::
-  (MonadIO m, MonadUnliftIO m, MonadCatch m) =>
-  EnvironmentFile ->
-  m AWS.Env
+loadAWSEnvironment :: (MonadIO m, MonadUnliftIO m, MonadCatch m) => EnvironmentFile -> m AWS.Env
 loadAWSEnvironment environmentFile = do
   mapExceptionM LoadEnvironmentNotFoundError $ loadDotEnvFile environmentFile
   mapExceptionM LoadEnvironmentAWSAuthError $ AWS.newEnv AWS.Discover
