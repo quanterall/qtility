@@ -39,6 +39,9 @@ cradle:
     - path: "./qtility-environment/src"
       component: "qtility-environment:lib"
 
+    - path: "./qtility-environment/test"
+      component: "qtility-environment:test:qtility-environment-test"
+
     - path: "./quanterall-brick/src"
       component: "quanterall-brick:lib"
 
