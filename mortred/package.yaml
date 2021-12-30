@@ -7,6 +7,8 @@ license: BSD2
 license-file: LICENSE.txt
 category: web-scraping, selenium
 github: quanterall/mortred
+extra-source-files:
+- licenses/*
 
 dependencies:
 

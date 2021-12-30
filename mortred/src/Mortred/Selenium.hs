@@ -229,6 +229,7 @@ searchPathForBinary binary = do
   pure $ (fst >>> (</> binary)) <$> maybeFoundInPath
 
 -- Lifted from https://github.com/dylex/zip-stream/blob/master/cmd/unzip.hs
+-- See `licenses/zip-stream.txt` for license information.
 extract ::
   (MonadIO m, MonadFail m) =>
   FilePath ->
