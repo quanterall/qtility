@@ -33,7 +33,12 @@ loadDotEnvFile ef@(EnvironmentFile path) = do
     then do
       dotEnvValues <- parseDotEnvFile path
       forM_ dotEnvValues $ \(key, value) -> do
-        liftIO $ setEnv key value
+        liftIO $
+          setEnv key value
+            `catch`
+            -- If there is an environment variable that has the wrong formatting, we'll get an
+            -- `IOException` here. We'll just ignore it and move on.
+            (\(_e :: IOException) -> pure ())
     else throwM $ EnvironmentFileNotFound ef
 
 -- | Parses a `.env` file into a list of key value pairs.
