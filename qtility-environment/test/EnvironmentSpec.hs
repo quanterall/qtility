@@ -39,7 +39,7 @@ spec = do
 
     it "Can read `Double` values correctly" $ do
       let key = EnvironmentKey "DOUBLE"
-      setEnv (_unEnvironmentKey key) "42.0"
+      setEnv (_unEnvironmentKey key) "42"
       result <- readEnvironmentVariable @Double key
       result `shouldBe` 42.0
 
