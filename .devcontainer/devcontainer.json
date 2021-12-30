@@ -13,11 +13,11 @@
     "jcanero.hoogle-vscode"
   ],
   "settings": {
+    "editor.renderIndentGuides": true,
     "[haskell]": {
       "editor.tabSize": 2,
       "editor.formatOnSave": true,
       "editor.defaultFormatter": "sjurmillidahl.ormolu-vscode",
-      "editor.renderIndentGuides": true
     }
   }
 }

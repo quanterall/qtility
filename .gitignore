@@ -10,3 +10,7 @@ cabal.sandbox.config
 *~
 \#*
 .devcontainer/build
+
+chromedriver
+selenium-server-standalone-2.53.1.jar
+screenshot.png

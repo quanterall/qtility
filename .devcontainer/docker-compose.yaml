@@ -2,7 +2,7 @@ version: '3'
 
 services:
   qtility:
-    image: gonz/quanterall-development:lts-18.14
+    build: .
     volumes:
       - ..:/workspace:cached
       - ./build/stack-work:/workspace/.stack-work:cached

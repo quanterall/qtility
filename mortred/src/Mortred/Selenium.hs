@@ -207,6 +207,8 @@ textToMajorVersion :: Text -> Maybe MajorVersion
 textToMajorVersion "93" = Just $ MajorVersion 93
 textToMajorVersion "94" = Just $ MajorVersion 94
 textToMajorVersion "95" = Just $ MajorVersion 95
+textToMajorVersion "96" = Just $ MajorVersion 96
+textToMajorVersion "97" = Just $ MajorVersion 97
 textToMajorVersion _ = Nothing
 
 doesChromeDriverExist :: (MonadUnliftIO m) => SeleniumPath -> m Bool
@@ -257,7 +259,13 @@ extract path = awaitForever start
 
 chromeDriverLinks :: [(ChromeVersion, Url)]
 chromeDriverLinks =
-  [ ( ChromeVersion $ MajorVersion 95,
+  [ ( ChromeVersion $ MajorVersion 97,
+      Url "https://chromedriver.storage.googleapis.com/97.0.4692.36/chromedriver_linux64.zip"
+    ),
+    ( ChromeVersion $ MajorVersion 96,
+      Url "https://chromedriver.storage.googleapis.com/96.0.4664.45/chromedriver_linux64.zip"
+    ),
+    ( ChromeVersion $ MajorVersion 95,
       Url "https://chromedriver.storage.googleapis.com/95.0.4638.17/chromedriver_linux64.zip"
     ),
     ( ChromeVersion $ MajorVersion 94,

@@ -1,33 +1,21 @@
 module Main where
 
 import Mortred.Browser.Commands (waitForVisibleElement)
-import Mortred.Session
-  ( SessionMode (..),
-    SessionStartResult (..),
-    stopSession,
-    tryStartSession,
-    waitRunSession,
-    webdriverConfig,
-  )
+import Mortred.Session (createSessionPool, waitForScrapingRequest, withSession)
 import Mortred.Types
 import Qtility.Data.Types (Seconds (..))
 import RIO hiding (link)
-import System.IO (putStrLn)
+import System.IO (print)
 import Test.WebDriver (Selector (..), WD, closeSession, maximize, openPage, screenshot)
 
 main :: IO ()
 main = do
-  maybeSeleniumProcess <-
-    tryStartSession SessionOnDemand $ SeleniumPath "./selenium-server-standalone-2.53.1.jar"
-
-  case maybeSeleniumProcess of
-    Right (StartedOnDemand seleniumProcess@SeleniumProcess {port}) -> do
-      waitRunSession (Milliseconds 10000) (webdriverConfig port) fingerprintJS
-        `finally` stopSession seleniumProcess
-    Right (PremadeSession port) -> do
-      waitRunSession (Milliseconds 10000) (webdriverConfig port) fingerprintJS
-    Left e ->
-      putStrLn $ "Unable to start session: " <> show e
+  sessionQueue <-
+    liftIO $
+      createSessionPool (PortNumber 5555) 3 $
+        SeleniumPath "./selenium-server-standalone-2.53.1.jar"
+  result <- withSession sessionQueue $ \s -> waitForScrapingRequest s fingerprintJS
+  print result
 
 fingerprintJS :: WD ()
 fingerprintJS = do

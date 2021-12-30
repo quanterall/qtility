@@ -163,7 +163,7 @@ startSessions (PortNumber startPortNumber) count seleniumPath = do
     forM_ alreadyStartedSessions stopSession
   where
     startSessions' sessions =
-      forM [startPortNumber .. count - 1] $ \x -> do
+      forM [startPortNumber .. startPortNumber + count - 1] $ \x -> do
         xvfbProcess@XvfbProcess {process = xvfbProcess'} <-
           mapExceptionM XvfbSessionError $ startXvfbWithDisplay $ DisplayNumber x
         session <-
