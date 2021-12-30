@@ -78,3 +78,5 @@ tests:
     dependencies:
     - qtility-environment
     - hspec >=2.0.0
+    - hspec-hedgehog
+    - hedgehog

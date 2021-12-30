@@ -2,11 +2,15 @@
 
 module EnvironmentSpec where
 
+import qualified Hedgehog.Gen as Gen
+import qualified Hedgehog.Range as Range
 import Qtility.Environment
 import Qtility.Environment.Types
 import RIO
+import qualified RIO.Text as Text
 import System.Environment (setEnv)
 import Test.Hspec
+import Test.Hspec.Hedgehog
 
 spec :: Spec
 spec = do
@@ -74,3 +78,28 @@ spec = do
       setEnv (_unEnvironmentKey key) "off"
       result <- readEnvironmentVariable key
       result `shouldBe` False
+
+    it "Can read any `Int` value from the environment" $ do
+      let key = EnvironmentKey "ANY_INT"
+      hedgehog $ do
+        value <- forAll Gen.enumBounded
+        liftIO $ setEnv (_unEnvironmentKey key) (show @Int value)
+        result <- liftIO $ readEnvironmentVariable key
+        result === value
+
+    it "Can read any `Double` value from the environment" $ do
+      let key = EnvironmentKey "ANY_DOUBLE"
+      hedgehog $ do
+        value <- forAll $ Gen.double $ Range.exponentialFloat 1 512
+        liftIO $ setEnv (_unEnvironmentKey key) (show @Double value)
+        result <- liftIO $ readEnvironmentVariable key
+        result === value
+
+    it "Can read any `Text` value from the environment" $ do
+      let key = EnvironmentKey "ANY_TEXT"
+      hedgehog $ do
+        -- Filter this so that we don't try to get a value that is actually just an empty string
+        value <- forAll $ Gen.filter (/= "") (Gen.text (Range.linear 0 512) Gen.unicode)
+        liftIO $ setEnv (_unEnvironmentKey key) (Text.unpack value)
+        result <- liftIO $ readEnvironmentVariable key
+        result === value

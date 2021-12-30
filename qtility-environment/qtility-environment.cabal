@@ -125,7 +125,9 @@ test-suite qtility-environment-test
   build-depends:
       aeson
     , base >=4.9.1.0 && <5
+    , hedgehog
     , hspec >=2.0.0
+    , hspec-hedgehog
     , lens
     , qtility-data
     , qtility-environment
