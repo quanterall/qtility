@@ -28,18 +28,13 @@ readEnvironmentVariable key = do
 -- 'EnvironmentFileNotFound' if the environment file cannot be found.
 loadDotEnvFile :: (MonadThrow m, MonadIO m) => EnvironmentFile -> m ()
 loadDotEnvFile ef@(EnvironmentFile path) = do
-  dotEnvExists <- Directory.doesFileExist path
-  if dotEnvExists
-    then do
-      dotEnvValues <- parseDotEnvFile path
-      forM_ dotEnvValues $ \(key, value) -> do
-        liftIO $
-          setEnv key value
-            `catch`
-            -- If there is an environment variable that has the wrong formatting, we'll get an
-            -- `IOException` here. We'll just ignore it and move on.
-            (\(_e :: IOException) -> pure ())
-    else throwM $ EnvironmentFileNotFound ef
+  unlessM (Directory.doesFileExist path) $ throwM $ EnvironmentFileNotFound ef
+  dotEnvValues <- parseDotEnvFile path
+  liftIO $
+    forM_ dotEnvValues $ \(key, value) -> do
+      -- If there is an environment variable that has the wrong formatting, we'll get an
+      -- `IOException` here. We'll just ignore it and move on.
+      setEnv key value `catchIO` const (pure ())
 
 -- | Parses a `.env` file into a list of key value pairs.
 parseDotEnvFile :: (MonadIO m) => FilePath -> m [(String, String)]
