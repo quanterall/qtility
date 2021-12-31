@@ -34,10 +34,10 @@ loadDotEnvFile ef@(EnvironmentFile path) = do
     forM_ dotEnvValues $ \(key, value) -> do
       -- If there is an environment variable that has the wrong formatting, we'll get an
       -- `IOException` here. We'll just ignore it and move on.
-      setEnv key value `catchIO` const (pure ())
+      setEnv (_unEnvironmentKey key) value `catchIO` const (pure ())
 
 -- | Parses a `.env` file into a list of key value pairs.
-parseDotEnvFile :: (MonadIO m) => FilePath -> m [(String, String)]
+parseDotEnvFile :: (MonadIO m) => FilePath -> m [(EnvironmentKey, String)]
 parseDotEnvFile filePath = do
   ( Text.lines
       >>> fmap Text.strip
@@ -47,10 +47,7 @@ parseDotEnvFile filePath = do
     )
     <$> liftIO (readFileUtf8 filePath)
   where
-    sanitizeKey :: Text -> String
-    sanitizeKey = Text.dropWhile (`elem` [' ', '#']) >>> Text.unpack
-
-    sanitizeValue :: Text -> String
+    sanitizeKey = Text.dropWhile (`elem` [' ', '#']) >>> Text.unpack >>> EnvironmentKey
     sanitizeValue = Text.dropWhile (== '=') >>> Text.filter (/= '"') >>> Text.unpack
 
 class FromEnvironmentValue a where

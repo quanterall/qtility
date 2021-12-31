@@ -7,7 +7,7 @@ import Data.Aeson (FromJSON, ToJSON)
 import RIO
 
 newtype EnvironmentKey = EnvironmentKey {_unEnvironmentKey :: String}
-  deriving (Eq, Show, Generic, FromJSON, ToJSON)
+  deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
 
 makeLenses ''EnvironmentKey
 
