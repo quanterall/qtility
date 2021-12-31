@@ -29,7 +29,7 @@ readEnvironmentVariable key = do
 loadDotEnvFile :: (MonadThrow m, MonadIO m) => EnvironmentFile -> m ()
 loadDotEnvFile ef@(EnvironmentFile path) = do
   unlessM (Directory.doesFileExist path) $ throwM $ EnvironmentFileNotFound ef
-  dotEnvValues <- parseDotEnvFile path
+  dotEnvValues <- parseDotEnvFile ef
   liftIO $
     forM_ dotEnvValues $ \(key, value) -> do
       -- If there is an environment variable that has the wrong formatting, we'll get an
@@ -37,8 +37,8 @@ loadDotEnvFile ef@(EnvironmentFile path) = do
       setEnv (_unEnvironmentKey key) value `catchIO` const (pure ())
 
 -- | Parses a `.env` file into a list of key value pairs.
-parseDotEnvFile :: (MonadIO m) => FilePath -> m [(EnvironmentKey, String)]
-parseDotEnvFile filePath = do
+parseDotEnvFile :: (MonadIO m) => EnvironmentFile -> m [(EnvironmentKey, String)]
+parseDotEnvFile (EnvironmentFile filePath) = do
   ( Text.lines
       >>> fmap Text.strip
       >>> filter (\l -> l /= "" && not (Text.isPrefixOf "#" l))

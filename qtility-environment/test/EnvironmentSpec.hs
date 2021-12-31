@@ -9,8 +9,8 @@ import Qtility.Environment.Types
 import RIO
 import RIO.Directory (removeFile)
 import RIO.FilePath ((</>))
+import RIO.List (isInfixOf)
 import qualified RIO.Map as Map
-import qualified RIO.Text as Text
 import System.Environment (setEnv)
 import System.IO (hPutStrLn)
 import Test.Hspec
@@ -101,22 +101,41 @@ spec = do
 
     it "Can read any `Text` value from the environment" $ do
       let key = EnvironmentKey "ANY_TEXT"
-      hedgehog $ do
-        -- Filter this so that we don't try to get a value that is actually just an empty string
-        value <- forAll $ Gen.filter (/= "") (Gen.text (Range.linear 0 512) Gen.unicode)
-        liftIO $ setEnv (_unEnvironmentKey key) (Text.unpack value)
-        result <- liftIO $ readEnvironmentVariable key
-        result === value
+      anyTextProp key
 
   describe "`parseDotEnvFile`" $ do
-    it "Parses a correctly written `.env` file" $ do
-      hedgehog $ do
-        (envMap, parsed) <- liftIO $ withTemporaryDotEnvFile parseDotEnvFile
-        parsed === Map.toList envMap
+    modifyMaxSuccess (const 150) $
+      it "Parses a correctly written `.env` file" $ do
+        parseDotEnvProp
+
+  describe "`loadDotEnvFile`" $ do
+    modifyMaxSuccess (const 150) $
+      it "Loads a correctly written `.env` file" $ do
+        loadDotEnvProp
+
+parseDotEnvProp :: PropertyT IO ()
+parseDotEnvProp = hedgehog $ do
+  (envMap, parsed) <- liftIO $ withTemporaryDotEnvFile parseDotEnvFile
+  parsed === Map.toList envMap
+
+loadDotEnvProp :: PropertyT IO ()
+loadDotEnvProp = hedgehog $ do
+  (envMap, ()) <- liftIO $ withTemporaryDotEnvFile loadDotEnvFile
+  forM_ (Map.toList envMap) $ \(key, value) -> do
+    liftIO $ readEnvironmentVariable key `shouldReturn` value
+
+anyTextProp :: EnvironmentKey -> PropertyT IO ()
+anyTextProp key = hedgehog $ do
+  value <-
+    -- Filter this so that we don't try to get a value that contains `NUL`
+    forAll $ Gen.string (Range.linear 1 512) Gen.unicode & Gen.filter (("\NUL" `isInfixOf`) >>> not)
+  liftIO $ setEnv (_unEnvironmentKey key) value
+  result <- liftIO $ readEnvironmentVariable key
+  result === value
 
 withTemporaryDotEnvFile ::
   (MonadUnliftIO m) =>
-  (FilePath -> m a) ->
+  (EnvironmentFile -> m a) ->
   m (Map EnvironmentKey String, a)
 withTemporaryDotEnvFile action = do
   envMap <- Gen.sample genEnvMap
@@ -126,25 +145,31 @@ withTemporaryDotEnvFile action = do
 withTemporaryDotEnvFile' ::
   (MonadUnliftIO m) =>
   Map EnvironmentKey String ->
-  (FilePath -> m a) ->
+  (EnvironmentFile -> m a) ->
   m a
 withTemporaryDotEnvFile' envMap action = do
   withSystemTempDirectory "envMap" $ \directory -> do
-    let filePath = directory </> "envFile.env"
+    let filePath = EnvironmentFile $ directory </> "envFile.env"
     liftIO $
-      withFile filePath WriteMode $ \h -> do
+      withFile (_unEnvironmentFile filePath) WriteMode $ \h -> do
         forM_ (Map.toList envMap) $ \(key, value) -> do
-          hPutStrLn h (_unEnvironmentKey key <> "=" <> value)
+          hPutStrLn h (_unEnvironmentKey key <> "=\"" <> value <> "\"")
     a <- action filePath
-    removeFile filePath
+    removeFile $ _unEnvironmentFile filePath
     pure a
 
 genEnvMap :: Gen (Map EnvironmentKey String)
 genEnvMap = do
-  keyCount <- Gen.int (Range.linear 0 50)
-  keys <- Gen.list (Range.linear 0 keyCount) genKey
-  values <- Gen.list (Range.linear 0 keyCount) genValue
+  keyCount <- Gen.int (Range.linear 0 100)
+  keys <- Gen.list (Range.singleton keyCount) genKey
+  values <- Gen.list (Range.singleton keyCount) genValue
   pure $ Map.fromList $ zip keys values
   where
-    genKey = EnvironmentKey <$> Gen.string (Range.linear 0 50) Gen.unicode
-    genValue = Gen.string (Range.linear 0 50) Gen.unicode
+    genKey = do
+      startingCharacter <- Gen.element ['A' .. 'Z']
+      ((startingCharacter :) >>> EnvironmentKey)
+        <$> Gen.string (Range.linear 1 50) Gen.alphaNum
+        & Gen.filter (_unEnvironmentKey >>> ("\"" `isInfixOf`) >>> not)
+    genValue =
+      Gen.string (Range.linear 1 50) Gen.unicode
+        & Gen.filter (("\"" `isInfixOf`) >>> not)
