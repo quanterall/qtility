@@ -3,6 +3,7 @@ resolver: lts-18.14
 packages:
 - ./qtility-environment
 - ./qtility-data
+- ./qtility-code
 - ./qtility-json
 - ./qaws
 - ./qaws-sqs

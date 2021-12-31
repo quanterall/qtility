@@ -42,6 +42,12 @@ cradle:
     - path: "./qtility-environment/test"
       component: "qtility-environment:test:qtility-environment-test"
 
+    - path: "./qtility-code/src"
+      component: "qtility-code:lib"
+
+    - path: "./qtility-code/test"
+      component: "qtility-code:test:qtility-code-test"
+
     - path: "./qtility-json/src"
       component: "qtility-json:lib"
 
