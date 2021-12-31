@@ -7,8 +7,12 @@ import qualified Hedgehog.Range as Range
 import Qtility.Environment
 import Qtility.Environment.Types
 import RIO
+import RIO.Directory (removeFile)
+import RIO.FilePath ((</>))
+import qualified RIO.Map as Map
 import qualified RIO.Text as Text
 import System.Environment (setEnv)
+import System.IO (hPutStrLn)
 import Test.Hspec
 import Test.Hspec.Hedgehog
 
@@ -103,3 +107,44 @@ spec = do
         liftIO $ setEnv (_unEnvironmentKey key) (Text.unpack value)
         result <- liftIO $ readEnvironmentVariable key
         result === value
+
+  describe "`parseDotEnvFile`" $ do
+    it "Parses a correctly written `.env` file" $ do
+      hedgehog $ do
+        (envMap, parsed) <- liftIO $ withTemporaryDotEnvFile parseDotEnvFile
+        parsed === Map.toList envMap
+
+withTemporaryDotEnvFile ::
+  (MonadUnliftIO m) =>
+  (FilePath -> m a) ->
+  m (Map EnvironmentKey String, a)
+withTemporaryDotEnvFile action = do
+  envMap <- Gen.sample genEnvMap
+  result <- withTemporaryDotEnvFile' envMap action
+  pure (envMap, result)
+
+withTemporaryDotEnvFile' ::
+  (MonadUnliftIO m) =>
+  Map EnvironmentKey String ->
+  (FilePath -> m a) ->
+  m a
+withTemporaryDotEnvFile' envMap action = do
+  withSystemTempDirectory "envMap" $ \directory -> do
+    let filePath = directory </> "envFile.env"
+    liftIO $
+      withFile filePath WriteMode $ \h -> do
+        forM_ (Map.toList envMap) $ \(key, value) -> do
+          hPutStrLn h (_unEnvironmentKey key <> "=" <> value)
+    a <- action filePath
+    removeFile filePath
+    pure a
+
+genEnvMap :: Gen (Map EnvironmentKey String)
+genEnvMap = do
+  keyCount <- Gen.int (Range.linear 0 50)
+  keys <- Gen.list (Range.linear 0 keyCount) genKey
+  values <- Gen.list (Range.linear 0 keyCount) genValue
+  pure $ Map.fromList $ zip keys values
+  where
+    genKey = EnvironmentKey <$> Gen.string (Range.linear 0 50) Gen.unicode
+    genValue = Gen.string (Range.linear 0 50) Gen.unicode
