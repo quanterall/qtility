@@ -9,5 +9,4 @@ cabal.sandbox.config
 *.swp
 *~
 \#*
-qtility-json.cabal
 .devcontainer/build

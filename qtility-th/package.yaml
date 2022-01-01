@@ -1,4 +1,4 @@
-name:    qtility-json
+name:    qtility-th
 version: "0.0.0"
 
 dependencies:
@@ -7,6 +7,7 @@ dependencies:
 - aeson
 - rio
 - template-haskell
+- lens
 
 default-extensions:
 - ApplicativeDo
@@ -71,12 +72,12 @@ library:
 
 # Test suite
 tests:
-  qtility-json-test:
+  qtility-th-test:
     main: Spec.hs
     source-dirs: test
     ghc-options: -Wall
     dependencies:
-    - qtility-json
+    - qtility-th
     - hspec >=2.0.0
     - hedgehog
     - hspec-hedgehog

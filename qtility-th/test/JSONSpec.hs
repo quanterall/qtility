@@ -5,7 +5,7 @@ module JSONSpec where
 import Data.Aeson (Value, eitherDecode, encode)
 import qualified Hedgehog.Gen as Gen
 import qualified Hedgehog.Range as Range
-import Qtility.JSON
+import Qtility.TH.JSON
 import RIO
 import qualified RIO.Map as Map
 import Test.Hspec

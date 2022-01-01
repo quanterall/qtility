@@ -4,16 +4,16 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           qtility-code
+name:           qtility-th
 version:        0.0.0
 build-type:     Simple
 
 library
   exposed-modules:
-      Qtility.Code
-      Qtility.Code.Types
+      Qtility.TH
+      Qtility.TH.JSON
   other-modules:
-      Paths_qtility_code
+      Paths_qtility_th
   hs-source-dirs:
       src
   default-extensions:
@@ -64,18 +64,17 @@ library
   build-depends:
       aeson
     , base >=4.9.1.0 && <5
-    , exceptions
-    , hint
     , lens
-    , qtility-th
     , rio
+    , template-haskell
   default-language: Haskell2010
 
-test-suite qtility-code-test
+test-suite qtility-th-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_qtility_code
+      JSONSpec
+      Paths_qtility_th
   hs-source-dirs:
       test
   default-extensions:
@@ -126,11 +125,11 @@ test-suite qtility-code-test
   build-depends:
       aeson
     , base >=4.9.1.0 && <5
-    , exceptions
-    , hint
+    , hedgehog
     , hspec >=2.0.0
+    , hspec-hedgehog
     , lens
-    , qtility-code
     , qtility-th
     , rio
+    , template-haskell
   default-language: Haskell2010

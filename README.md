@@ -6,7 +6,7 @@ A monorepo containing utility libraries for application development.
 
 - `qtility-environment`: Utilities for dealing with environment loading and management.
 - `qtility-data`: Utilities for data, i.e. functions like `note` & `hush`.
-- `qtility-json`: Utilities for dealing with common {To,From}JSON instance generation.
+- `qtility-th`: Utilities for dealing with common `TemplateHaskell` issues.
 - `qtility-code`: Utilities for executing/interpreting Haskell code.
 - `qaws`: Utilities for common general AWS tasks via `amazonka`
 - `qaws-sqs`: Utilities for common usage of AWS Simple Queue Service (SQS).

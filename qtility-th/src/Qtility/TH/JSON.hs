@@ -1,7 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Qtility.JSON
+module Qtility.TH.JSON
   ( deriveJSON,
     deriveJSON',
     deriveJSONs,

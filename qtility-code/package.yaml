@@ -9,7 +9,7 @@ dependencies:
 - exceptions
 - aeson
 - lens
-- qtility-json
+- qtility-th
 
 default-extensions:
 - ApplicativeDo
