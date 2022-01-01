@@ -13,8 +13,8 @@ newtype ModuleName = ModuleName {_unModuleName :: String}
 makeLenses ''ModuleName
 
 data Import = Import
-  { _importModule :: ModuleName,
-    _importQualifiedName :: Maybe ModuleName
+  { _importModule :: !ModuleName,
+    _importQualifiedName :: !(Maybe ModuleName)
   }
   deriving (Eq, Show, Generic)
 
