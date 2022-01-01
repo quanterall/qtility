@@ -9,4 +9,4 @@ import RIO
 newtype ARN = ARN {_unARN :: Text}
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
-makeLenses ''ARN
+foldMapM makeLenses [''ARN]

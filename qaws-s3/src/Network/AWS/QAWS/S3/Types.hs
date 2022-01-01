@@ -10,22 +10,14 @@ import RIO
 newtype KeyPrefix = KeyPrefix {_unKeyPrefix :: Text}
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
-makeLenses ''KeyPrefix
-
 newtype StartAfter = StartAfter {_unStartAfter :: Text}
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
-
-makeLenses ''StartAfter
 
 newtype ContinuationToken = ContinuationToken {_unContinuationToken :: Text}
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
-makeLenses ''ContinuationToken
-
 newtype MaxKeys = MaxKeys {_unMaxKeys :: Int}
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
-
-makeLenses ''MaxKeys
 
 data ListObjectOptions = ListObjectOptions
   { _looKeyPrefix :: Maybe KeyPrefix,
@@ -44,4 +36,11 @@ instance Default ListObjectOptions where
         _looMaxKeys = Nothing
       }
 
-makeLenses ''ListObjectOptions
+foldMapM
+  makeLenses
+  [ ''ListObjectOptions,
+    ''MaxKeys,
+    ''ContinuationToken,
+    ''KeyPrefix,
+    ''StartAfter
+  ]
