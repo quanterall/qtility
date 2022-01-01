@@ -42,17 +42,17 @@ cradle:
     - path: "./qtility-environment/test"
       component: "qtility-environment:test:qtility-environment-test"
 
-    - path: "./qtility-code/src"
-      component: "qtility-code:lib"
-
-    - path: "./qtility-code/test"
-      component: "qtility-code:test:qtility-code-test"
-
     - path: "./qtility-json/src"
       component: "qtility-json:lib"
 
     - path: "./qtility-json/test"
       component: "qtility-json:test:qtility-json-test"
+
+    - path: "./qtility-code/src"
+      component: "qtility-code:lib"
+
+    - path: "./qtility-code/test"
+      component: "qtility-code:test:qtility-code-test"
 
     - path: "./quanterall-brick/src"
       component: "quanterall-brick:lib"

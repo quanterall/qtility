@@ -2,10 +2,10 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Qtility.JSON
-  ( deriveJson,
-    deriveJson',
-    deriveJsons,
-    deriveJsons',
+  ( deriveJSON,
+    deriveJSON',
+    deriveJSONs,
+    deriveJSONs',
     prefixedLensOptions,
     camelToSnake,
     lowerCaseFirstCharacter,
@@ -39,8 +39,8 @@ prefixedLensOptions name f =
 -- @
 --    data Import = Import {_importName :: String, _importVersion :: String}
 -- @
-deriveJson :: Name -> Q [Dec]
-deriveJson name = do
+deriveJSON :: Name -> Q [Dec]
+deriveJSON name = do
   [d|
     instance FromJSON $(conT name) where
       parseJSON = genericParseJSON $ prefixedLensOptions $(lift $ nameBase name) id
@@ -51,8 +51,8 @@ deriveJson name = do
 
 -- | Generates JSON instances and allows one to pass the name of a function that takes the type name
 -- and creates an 'Options' object from it. This allows more flexibility when needed.
-deriveJson' :: Name -> Name -> Q [Dec]
-deriveJson' optionsName name = do
+deriveJSON' :: Name -> Name -> Q [Dec]
+deriveJSON' optionsName name = do
   [d|
     instance FromJSON $(conT name) where
       parseJSON = genericParseJSON $ $(varE optionsName) $(lift $ nameBase name)
@@ -62,13 +62,13 @@ deriveJson' optionsName name = do
     |]
 
 -- | Takes several names and generates standard 'ToJSON' and 'FromJSON' instances for each of them.
-deriveJsons :: [Name] -> Q [Dec]
-deriveJsons = foldMapM deriveJson
+deriveJSONs :: [Name] -> Q [Dec]
+deriveJSONs = foldMapM deriveJSON
 
 -- | Takes several names and generates standard 'ToJSON' and 'FromJSON' instances for each of them.
 -- Also allows one to pass the name of a function that will decide what 'Options' object to use.
-deriveJsons' :: Name -> [Name] -> Q [Dec]
-deriveJsons' optionsName = foldMapM (deriveJson' optionsName)
+deriveJSONs' :: Name -> [Name] -> Q [Dec]
+deriveJSONs' optionsName = foldMapM (deriveJSON' optionsName)
 
 -- | Modifies a string to go from camel case to snake case.
 camelToSnake :: String -> String

@@ -78,3 +78,5 @@ tests:
     dependencies:
     - qtility-json
     - hspec >=2.0.0
+    - hedgehog
+    - hspec-hedgehog
