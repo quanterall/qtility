@@ -30,12 +30,10 @@ createScrapingQueue startPortNumber count seleniumPath = do
   where
     workerLoop queue process = do
       maybeScrapingRequest <- atomically $ readTBMQueue queue
-      case maybeScrapingRequest of
-        Just ScrapingRequest {action, resultSlot} -> do
-          result <- tryAny $ waitForScrapingRequest process action
-          putMVar resultSlot result
-          workerLoop queue process
-        Nothing -> pure ()
+      forM_ maybeScrapingRequest $ \ScrapingRequest {action, resultSlot} -> do
+        result <- tryAny $ waitForScrapingRequest process action
+        putMVar resultSlot result
+        workerLoop queue process
 
 -- | Destroys a scraping queue, cleaning up all the sessions and workers associated with it.
 destroyScrapingQueue :: (MonadUnliftIO m) => ScrapingQueue a -> m ()
