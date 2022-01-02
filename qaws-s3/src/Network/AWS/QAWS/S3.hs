@@ -16,6 +16,7 @@ where
 
 import Conduit (ConduitT, ResourceT, runConduitRes, (.|))
 import Control.Lens ((?~))
+import Control.Lens.Prism (_Just)
 import Data.Aeson (ToJSON (..), encode)
 import qualified Network.AWS as AWS
 import qualified Network.AWS.Data.Body as AWS
@@ -140,14 +141,11 @@ listObjects' ::
 listObjects' awsEnv bucket listOptions = do
   let command =
         AWSS3.listObjectsV2 bucket
-          & AWSS3.lovContinuationToken .~ maybeTokenText
-          & AWSS3.lovPrefix .~ maybeKeyPrefix
-          & AWSS3.lovMaxKeys .~ maybeMaxKeys
-          & AWSS3.lovStartAfter .~ maybeStartAfter
-      maybeTokenText = _unContinuationToken <$> listOptions ^. looContinuationToken
-      maybeKeyPrefix = _unKeyPrefix <$> listOptions ^. looKeyPrefix
-      maybeMaxKeys = _unMaxKeys <$> listOptions ^. looMaxKeys
-      maybeStartAfter = _unStartAfter <$> listOptions ^. looStartAfter
+          & AWSS3.lovContinuationToken
+            .~ listOptions ^? looContinuationToken . _Just . unContinuationToken
+          & AWSS3.lovPrefix .~ listOptions ^? looKeyPrefix . _Just . unKeyPrefix
+          & AWSS3.lovMaxKeys .~ listOptions ^? looMaxKeys . _Just . unMaxKeys
+          & AWSS3.lovStartAfter .~ listOptions ^? looStartAfter . _Just . unStartAfter
   either Left (extractValues >>> Right) <$> tryRunAWS' awsEnv command
   where
     extractValues r = do
