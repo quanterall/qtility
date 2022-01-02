@@ -81,14 +81,9 @@ createSessionPool startPortNumber count seleniumPath = do
 
 -- | Checks out a session from the pool, throwing 'SessionPoolClosed' if the pool is closed. If the
 -- queue currently has no sessions, it will block until there are new ones.
-checkOutSession :: (MonadUnliftIO m, MonadThrow m) => TBMQueue SeleniumProcess -> m SeleniumProcess
+checkOutSession :: (MonadUnliftIO m) => TBMQueue SeleniumProcess -> m SeleniumProcess
 checkOutSession sessions = do
-  maybeSession <- liftIO $ atomically $ readTBMQueue sessions
-  case maybeSession of
-    Just session -> do
-      pure session
-    Nothing -> do
-      throwM SessionPoolClosed
+  fromMaybeM SessionPoolClosed $ liftIO $ atomically $ readTBMQueue sessions
 
 -- | Checks a session into the pool. If this were to mean that the queue exceeds the bounds
 -- (somehow), this blocks.
@@ -99,7 +94,7 @@ checkInSession sessions session = do
 -- | Executes an action with a session. If an exception is thrown along the way, the session is
 -- automatically checked in again.
 withSession ::
-  (MonadUnliftIO m, MonadThrow m) =>
+  (MonadUnliftIO m) =>
   TBMQueue SeleniumProcess ->
   (SeleniumProcess -> m a) ->
   m a
