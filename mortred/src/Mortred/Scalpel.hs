@@ -13,7 +13,5 @@ import Text.HTML.Scalpel (ScraperT, scrapeStringLikeT)
 -- running a 'ScraperT' can be useful when a structure is more readily scraped with one.
 scrapeElement :: (WebDriver m) => ScraperT Text m a -> Element -> m (Maybe a)
 scrapeElement scraper e = do
-  maybeHtmlContent <- e `attr` "innerHTML"
-  case maybeHtmlContent of
-    Just htmlContent -> scrapeStringLikeT htmlContent scraper
-    Nothing -> pure Nothing
+  maybeHtml <- e `attr` "innerHTML"
+  maybe (pure Nothing) (`scrapeStringLikeT` scraper) maybeHtml
