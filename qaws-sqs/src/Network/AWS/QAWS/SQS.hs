@@ -194,10 +194,7 @@ getQueueAttributes' awsEnv queueUrl = do
                AWSSQS.QANApproximateNumberOfMessagesNotVisible,
                AWSSQS.QANApproximateNumberOfMessagesDelayed
              ]
-  maybeResponse <- tryRunAWS' awsEnv command
-  case maybeResponse of
-    Right response -> pure $ Right $ createQueueAttributes queueUrl response
-    Left e -> pure $ Left e
+  fmap (createQueueAttributes queueUrl) <$> tryRunAWS' awsEnv command
 
 createQueueAttributes :: QueueUrl -> AWSSQS.GetQueueAttributesResponse -> QueueAttributes
 createQueueAttributes queueUrl response =
@@ -234,7 +231,4 @@ purgeQueue queueUrl = do
 -- environment.
 purgeQueue' :: (MonadUnliftIO m) => AWS.Env -> QueueUrl -> m (Either AWS.Error ())
 purgeQueue' awsEnv (QueueUrl queueUrl) = do
-  maybeResponse <- tryRunAWS' awsEnv $ AWSSQS.purgeQueue queueUrl
-  case maybeResponse of
-    Right _ -> pure $ Right ()
-    Left e -> pure $ Left e
+  void <$> tryRunAWS' awsEnv (AWSSQS.purgeQueue queueUrl)

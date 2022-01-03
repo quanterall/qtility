@@ -34,6 +34,7 @@ dependencies:
 - scalpel
 - aeson
 - qtility-data
+- lens
 
 default-extensions:
 - ApplicativeDo
