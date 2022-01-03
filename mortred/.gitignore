@@ -9,8 +9,6 @@ cabal.sandbox.config
 *.swp
 *~
 \#*
-mortred.cabal
-.devcontainer/build
 chromedriver
 selenium-*
 tmp.*

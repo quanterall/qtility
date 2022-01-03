@@ -9,4 +9,3 @@ cabal.sandbox.config
 *.swp
 *~
 \#*
-.devcontainer/build
