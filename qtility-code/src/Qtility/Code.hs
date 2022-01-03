@@ -21,9 +21,6 @@ execute importedModules text = do
               )
           )
           importedModules
-  result <- runInterpreter $ do
+  runInterpreter $ do
     setImportsQ imports
     interpret text (as :: a)
-  case result of
-    Right a -> pure $ Right a
-    Left err -> pure $ Left err
