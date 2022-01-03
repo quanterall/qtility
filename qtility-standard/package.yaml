@@ -1,42 +1,15 @@
-name:    mortred
-version: "0.0.2"
-maintainer: Rickard Andersson <gonz@severnatazvezda.com>
-synopsis: Library for setting up and running scrapers with webdriver.
-description: A set of setup- and helper-functions for using webdriver in Haskell, with auto-downloads of correct binaries.
-license: BSD2
-license-file: LICENSE.txt
-category: web-scraping, selenium
-github: quanterall/mortred
-extra-source-files:
-- licenses/*
+name:    qtility-standard
+version: "0.0.0"
 
 dependencies:
 
 - base >=4.9.1.0 && <5
-- webdriver
 - rio
-- typed-process
-- http-client
-- http-conduit
-- http-types
-- http-client-tls
-- zip-stream
-- conduit
-- conduit-extra
-- text
-- bytestring
-- transformers
-- errors
-- binary-conduit
-- stm
-- stm-chans
-- async
-- scalpel
+- lens
 - aeson
 - qtility-data
 - qtility-th
-- qtility-standard
-- lens
+- qtility-environment
 
 default-extensions:
 - ApplicativeDo
@@ -91,6 +64,8 @@ ghc-options:
 - -Wincomplete-uni-patterns
 - -Wpartial-fields
 - -Wredundant-constraints
+- -Wwarn=deprecations
+- -Werror=incomplete-patterns
 
 # The library contains all of our application code. The executable
 # defined below is just a thin wrapper.
@@ -98,23 +73,12 @@ library:
   source-dirs: src
 
 # Runnable executable for our application
-executables:
-  mortred:
-    main: Main.hs
-    source-dirs: app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - mortred
-
 # Test suite
 tests:
-  mortred-test:
+  qtility-standard-test:
     main: Spec.hs
     source-dirs: test
     ghc-options: -Wall
     dependencies:
-    - mortred
+    - qtility-standard
     - hspec >=2.0.0

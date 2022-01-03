@@ -5,6 +5,7 @@ packages:
 - ./qtility-data
 - ./qtility-th
 - ./qtility-code
+- ./qtility-standard
 - ./qaws
 - ./qaws-sqs
 - ./qaws-s3

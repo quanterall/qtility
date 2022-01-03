@@ -1,7 +1,7 @@
 module Qtility.Data where
 
-import Control.Lens.Wrapped (Unwrapped, Wrapped, _Unwrapped', _Wrapped')
-import RIO
+import Control.Lens.Wrapped (Unwrapped, Wrapped, _Wrapped')
+import RIO hiding (fromEither, fromEitherM)
 import qualified RIO.Text as Text
 
 -- | Annotates what would be a 'Nothing' with an error, taking it into the domain of 'Either'.
@@ -16,10 +16,22 @@ hush = either (const Nothing) Just
 tReadMaybe :: (Read a) => Text -> Maybe a
 tReadMaybe = Text.unpack >>> readMaybe
 
+-- | Throws an exception from an @Either e a@ where @e@ is an 'Exception'.
+fromEither :: (Exception e, MonadThrow m) => Either e a -> m a
+fromEither = either throwM pure
+
+-- | Throws an exception from an @m (Either e a)@ where @e@ is an 'Exception'.
+fromEitherM :: (Exception e, MonadThrow m) => m (Either e a) -> m a
+fromEitherM ma = ma >>= fromEither
+
 -- | Takes a monadic action producing a @m Maybe@ and throws a given exception @e@ from it. This
 -- is just a specialization of @'fromEitherM' '$' note e '<$>' action@.
-fromMaybeM :: (Exception e, MonadIO m) => e -> m (Maybe a) -> m a
+fromMaybeM :: (Exception e, MonadThrow m) => e -> m (Maybe a) -> m a
 fromMaybeM e = fmap (note e) >>> fromEitherM
+
+-- | Takes a @Maybe a@ and if it is 'Nothing', throws a given 'Exception' @e@.
+fromPureMaybeM :: (Exception e, MonadThrow m) => e -> Maybe a -> m a
+fromPureMaybeM e = note e >>> fromEither
 
 -- | Lifted version of 'Data.List.find'.
 findM :: (Monad m) => (a -> m Bool) -> [a] -> m (Maybe a)

@@ -22,8 +22,7 @@ import Mortred.Selenium
 import Mortred.Types
 import Mortred.Xvfb
 import Network.HTTP.Client (HttpException)
-import Qtility.Data (fromMaybeM)
-import RIO
+import Qtility.Standard
 import System.Process.Typed (stopProcess)
 import Test.WebDriver (Browser (..), WD, WDConfig (..), defaultConfig, runSession, useBrowser)
 
@@ -81,7 +80,7 @@ createSessionPool startPortNumber count seleniumPath = do
 
 -- | Checks out a session from the pool, throwing 'SessionPoolClosed' if the pool is closed. If the
 -- queue currently has no sessions, it will block until there are new ones.
-checkOutSession :: (MonadUnliftIO m) => TBMQueue SeleniumProcess -> m SeleniumProcess
+checkOutSession :: (MonadUnliftIO m, MonadThrow m) => TBMQueue SeleniumProcess -> m SeleniumProcess
 checkOutSession sessions = do
   fromMaybeM SessionPoolClosed $ liftIO $ atomically $ readTBMQueue sessions
 
@@ -94,7 +93,7 @@ checkInSession sessions session = do
 -- | Executes an action with a session. If an exception is thrown along the way, the session is
 -- automatically checked in again.
 withSession ::
-  (MonadUnliftIO m) =>
+  (MonadUnliftIO m, MonadThrow m) =>
   TBMQueue SeleniumProcess ->
   (SeleniumProcess -> m a) ->
   m a

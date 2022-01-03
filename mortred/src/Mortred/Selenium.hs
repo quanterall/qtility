@@ -18,8 +18,7 @@ import Mortred.Types
 import Network.HTTP.Client (HttpException (..), Response (..), httpLbs, parseRequest)
 import Network.HTTP.Client.TLS (getGlobalManager)
 import Numeric (readHex)
-import Qtility.Data (fromMaybeM, note, unwrap)
-import RIO
+import Qtility.Standard
 import qualified RIO.ByteString.Lazy as LazyByteString
 import RIO.Directory
   ( Permissions (..),
@@ -189,26 +188,14 @@ getChromeVersion :: (MonadThrow m, MonadUnliftIO m) => FilePath -> m ChromeVersi
 getChromeVersion path = do
   output <- liftIO $ getBinaryVersionText path
   case output & LazyByteString.toStrict & decodeUtf8Lenient & Text.strip & Text.split (== ' ') of
-    _google : _chrome : version : _ ->
-      version
-        & Text.takeWhile (/= '.')
-        & textToMajorVersion
-        & note (UnsupportedMajorVersion version)
-        & fromEither
-        & fmap ChromeVersion
+    _google : _chrome : version : _ -> ChromeVersion <$> constructMajorVersion version
     _other -> throwM $ BadChromeVersionOutput output
 
 getChromeDriverVersion :: (MonadThrow m, MonadUnliftIO m) => FilePath -> m ChromeDriverVersion
 getChromeDriverVersion path = do
   output <- liftIO $ getBinaryVersionText path
   case output & LazyByteString.toStrict & decodeUtf8Lenient & Text.strip & Text.split (== ' ') of
-    _chromeDriver : version : _ ->
-      version
-        & Text.takeWhile (/= '.')
-        & textToMajorVersion
-        & note (UnsupportedMajorVersion version)
-        & fromEither
-        & fmap ChromeDriverVersion
+    _chromeDriver : version : _ -> ChromeDriverVersion <$> constructMajorVersion version
     _other -> throwM $ BadChromeVersionOutput output
 
 textToMajorVersion :: Text -> Maybe MajorVersion
@@ -287,3 +274,10 @@ chromeDriverLinks =
 
 getChromeDriverLink :: ChromeVersion -> Maybe Url
 getChromeDriverLink chromeVersion = snd <$> List.find (fst >>> (== chromeVersion)) chromeDriverLinks
+
+constructMajorVersion :: (MonadThrow m) => Text -> m MajorVersion
+constructMajorVersion version =
+  version
+    & Text.takeWhile (/= '.')
+    & textToMajorVersion
+    & fromPureMaybeM (UnsupportedMajorVersion version)
