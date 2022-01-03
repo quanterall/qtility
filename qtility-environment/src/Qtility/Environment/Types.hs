@@ -2,7 +2,7 @@
 
 module Qtility.Environment.Types where
 
-import Control.Lens.TH (makeLenses)
+import Control.Lens.TH (makeClassyPrisms, makeLenses)
 import Data.Aeson (FromJSON, ToJSON)
 import RIO
 
@@ -35,3 +35,5 @@ foldMapM
     ''EnvironmentFile,
     ''EnvironmentFileNotFound
   ]
+
+foldMapM makeClassyPrisms [''ReadEnvironmentVariableError, ''EnvironmentFileNotFound]
