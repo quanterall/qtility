@@ -1,6 +1,7 @@
 module Qtility.Standard
   ( module Export,
     AesonOptions,
+    defaultAesonOptions,
   )
 where
 
@@ -22,3 +23,6 @@ import Qtility.TH.Lens as Export
 import RIO as Export hiding (fromEither, fromEitherM)
 
 type AesonOptions = Aeson.Options
+
+defaultAesonOptions :: AesonOptions
+defaultAesonOptions = Aeson.defaultOptions
