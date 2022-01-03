@@ -2,7 +2,7 @@
 
 module Network.AWS.QAWS.SQS.Types where
 
-import Control.Lens.TH (makeLenses)
+import Control.Lens.TH (makeClassyPrisms, makeLenses)
 import Data.Aeson (FromJSON (..), ToJSON (..))
 import qualified Network.AWS as AWS
 import Network.AWS.QAWS.Types (ARN)
@@ -76,3 +76,5 @@ foldMapM
     ''NotVisibleCount,
     ''SQSMessage
   ]
+
+foldMapM makeClassyPrisms [''ReceiveMessageError]
