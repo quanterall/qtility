@@ -67,6 +67,7 @@ library
     , exceptions
     , hint
     , lens
+    , qtility-data
     , qtility-th
     , rio
   default-language: Haskell2010
@@ -131,6 +132,7 @@ test-suite qtility-code-test
     , hspec >=2.0.0
     , lens
     , qtility-code
+    , qtility-data
     , qtility-th
     , rio
   default-language: Haskell2010

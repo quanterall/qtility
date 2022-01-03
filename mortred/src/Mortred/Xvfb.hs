@@ -7,7 +7,7 @@ module Mortred.Xvfb
 where
 
 import Mortred.Types
-import Qtility.Data (findM, fromMaybeM)
+import Qtility.Data (findM, fromMaybeM, unwrap)
 import RIO
 import RIO.Directory (doesFileExist)
 import System.Process.Typed
@@ -35,7 +35,7 @@ startXvfb = do
 startXvfbWithDisplay :: (MonadThrow m, MonadUnliftIO m) => DisplayNumber -> m XvfbProcess
 startXvfbWithDisplay displayNumber = do
   let processConfiguration =
-        proc "Xvfb" [":" <> (displayNumber ^. unDisplayNumber & show), "-screen", "0", "1920x1080x24"]
+        proc "Xvfb" [":" <> (displayNumber ^. unwrap & show), "-screen", "0", "1920x1080x24"]
           & setStdin nullStream
           & setStdout nullStream
           & setStderr nullStream

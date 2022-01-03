@@ -10,6 +10,7 @@ dependencies:
 - aeson
 - lens
 - qtility-th
+- qtility-data
 
 default-extensions:
 - ApplicativeDo

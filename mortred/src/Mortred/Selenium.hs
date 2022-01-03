@@ -18,7 +18,7 @@ import Mortred.Types
 import Network.HTTP.Client (HttpException (..), Response (..), httpLbs, parseRequest)
 import Network.HTTP.Client.TLS (getGlobalManager)
 import Numeric (readHex)
-import Qtility.Data (fromMaybeM, note)
+import Qtility.Data (fromMaybeM, note, unwrap)
 import RIO
 import qualified RIO.ByteString.Lazy as LazyByteString
 import RIO.Directory
@@ -90,7 +90,7 @@ startSeleniumOnPort ::
   XvfbProcess ->
   SeleniumPath ->
   m SeleniumProcess
-startSeleniumOnPort port@(SeleniumPort portNumber) xvfbProcess seleniumPath@(SeleniumPath sp) = do
+startSeleniumOnPort port xvfbProcess seleniumPath@(SeleniumPath sp) = do
   let chromeDriverPath = FilePath.takeDirectory sp </> "chromedriver"
   chromeDriverExists <- doesChromeDriverExist seleniumPath
   seleniumExists <- liftIO $ doesFileExist sp
@@ -108,13 +108,13 @@ startSeleniumOnPort port@(SeleniumPort portNumber) xvfbProcess seleniumPath@(Sel
       when (cdVersion /= cVersion) $ do
         throwM $ VersionMismatch chromeVersion chromeDriverVersion
       let processConfiguration =
-            proc "java" ["-jar", sp, "-port", show portNumber]
+            proc "java" ["-jar", sp, "-port", port ^. unwrap . unwrap & show]
               & setStdin nullStream
               & setStdout nullStream
               & setStderr nullStream
               & setEnv
                 [ ( "DISPLAY",
-                    xvfbProcess ^. xpDisplayNumber . unDisplayNumber & show & (":" <>)
+                    xvfbProcess ^. xpDisplayNumber . unwrap & show & (":" <>)
                   )
                 ]
       process <- startProcess processConfiguration
@@ -136,7 +136,7 @@ downloadChromeDriver path = do
   chromeVersion <- getChromeVersion chromeBinary
   chromeDriverLink <-
     fromEither $ note (NoValidChromeDriverUrl chromeVersion) $ getChromeDriverLink chromeVersion
-  request <- chromeDriverLink ^. unUrl & parseRequest
+  request <- chromeDriverLink ^. unwrap & parseRequest
   response <- mapExceptionM (DownloadError chromeDriverLink) $ liftIO $ httpLbs request manager
   mapExceptionM UnzipError $ unzipIntoPath path $ responseBody response
   liftIO $ setChromeDriverPermissions path
@@ -164,7 +164,7 @@ allocateServerPort = do
             error $ "Bad line in '/proc/net/tcp': '" <> show l <> "'"
       takenPorts = procNetTcpContents & Text.lines & drop 1 & map lineToPort
       takenIPV6Ports = procNetTcp6Contents & Text.lines & drop 1 & map lineToPort
-      allocate' p = if isTaken p then allocate' (p & unPortNumber %~ (+ 1)) else p
+      allocate' p = if isTaken p then allocate' (p & unwrap %~ (+ 1)) else p
       isTaken = (`elem` (takenPorts <> takenIPV6Ports))
   pure $ SeleniumPort $ allocate' $ PortNumber 4444
 

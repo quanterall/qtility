@@ -5,6 +5,7 @@ module Qtility.Code.Types where
 import Control.Lens.TH (makeLenses)
 import Data.Aeson (FromJSON, ToJSON)
 import Qtility.TH (deriveLensAndJSON)
+import Qtility.TH.Lens (deriveWrappeds)
 import RIO
 
 newtype ModuleName = ModuleName {_unModuleName :: String}
@@ -19,3 +20,5 @@ data Import = Import
   deriving (Eq, Show, Generic)
 
 deriveLensAndJSON ''Import
+
+deriveWrappeds [''ModuleName]

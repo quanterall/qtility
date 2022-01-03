@@ -23,6 +23,7 @@ import qualified Network.AWS.Data.Body as AWS
 import Network.AWS.QAWS
 import Network.AWS.QAWS.S3.Types
 import qualified Network.AWS.S3 as AWSS3
+import Qtility.Data (unwrap)
 import RIO
 import qualified RIO.HashMap as HashMap
 
@@ -141,11 +142,10 @@ listObjects' ::
 listObjects' awsEnv bucket listOptions = do
   let command =
         AWSS3.listObjectsV2 bucket
-          & AWSS3.lovContinuationToken
-            .~ listOptions ^? looContinuationToken . _Just . unContinuationToken
-          & AWSS3.lovPrefix .~ listOptions ^? looKeyPrefix . _Just . unKeyPrefix
-          & AWSS3.lovMaxKeys .~ listOptions ^? looMaxKeys . _Just . unMaxKeys
-          & AWSS3.lovStartAfter .~ listOptions ^? looStartAfter . _Just . unStartAfter
+          & AWSS3.lovContinuationToken .~ listOptions ^? looContinuationToken . _Just . unwrap
+          & AWSS3.lovPrefix .~ listOptions ^? looKeyPrefix . _Just . unwrap
+          & AWSS3.lovMaxKeys .~ listOptions ^? looMaxKeys . _Just . unwrap
+          & AWSS3.lovStartAfter .~ listOptions ^? looStartAfter . _Just . unwrap
   either Left (extractValues >>> Right) <$> tryRunAWS' awsEnv command
   where
     extractValues r = do

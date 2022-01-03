@@ -4,6 +4,7 @@ import Control.Lens.Prism (_Just)
 import Control.Monad.Catch (MonadMask)
 import Language.Haskell.Interpreter
 import Qtility.Code.Types
+import Qtility.Data (unwrap)
 import RIO
 
 execute ::
@@ -16,8 +17,8 @@ execute importedModules text = do
   let imports =
         map
           ( \i ->
-              ( i ^. importModule . unModuleName,
-                i ^? importQualifiedName . _Just . unModuleName
+              ( i ^. importModule . unwrap,
+                i ^? importQualifiedName . _Just . unwrap
               )
           )
           importedModules
