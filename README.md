@@ -39,7 +39,7 @@ If you want to use this repository and its packages, add the following to your `
 ```yaml
 extra-deps:
 - github: quanterall/qtility
-  commit: a23ebfdfe9337eaf711352053d38da8a63ed26bb
+  commit: b3648dd7a6cef282a956bd01cce6428d0ba58bc9
   subdirs:
   - qtility-standard
   - qtility-data
