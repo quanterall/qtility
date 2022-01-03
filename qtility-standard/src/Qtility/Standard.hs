@@ -47,29 +47,32 @@ type AesonOptions = Aeson.Options
 defaultAesonOptions :: AesonOptions
 defaultAesonOptions = Aeson.defaultOptions
 
-fieldLabelModifier :: AesonOptions -> String -> String
-fieldLabelModifier = Aeson.fieldLabelModifier
+fieldLabelModifier :: Lens' AesonOptions (String -> String)
+fieldLabelModifier = lens Aeson.fieldLabelModifier (\o f -> o {Aeson.fieldLabelModifier = f})
 
-constructorTagModifier :: AesonOptions -> String -> String
-constructorTagModifier = Aeson.constructorTagModifier
+constructorTagModifier :: Lens' AesonOptions (String -> String)
+constructorTagModifier =
+  lens Aeson.constructorTagModifier (\o f -> o {Aeson.constructorTagModifier = f})
 
-allNullaryToStringTag :: AesonOptions -> Bool
-allNullaryToStringTag = Aeson.allNullaryToStringTag
+allNullaryToStringTag :: Lens' AesonOptions Bool
+allNullaryToStringTag =
+  lens Aeson.allNullaryToStringTag (\o f -> o {Aeson.allNullaryToStringTag = f})
 
-omitNothingFields :: AesonOptions -> Bool
-omitNothingFields = Aeson.omitNothingFields
+omitNothingFields :: Lens' AesonOptions Bool
+omitNothingFields = lens Aeson.omitNothingFields (\o f -> o {Aeson.omitNothingFields = f})
 
-sumEncoding :: AesonOptions -> SumEncoding
-sumEncoding = Aeson.sumEncoding
+sumEncoding :: Lens' AesonOptions SumEncoding
+sumEncoding = lens Aeson.sumEncoding (\o f -> o {Aeson.sumEncoding = f})
 
-unwrapUnaryRecords :: AesonOptions -> Bool
-unwrapUnaryRecords = Aeson.unwrapUnaryRecords
+unwrapUnaryRecords :: Lens' AesonOptions Bool
+unwrapUnaryRecords = lens Aeson.unwrapUnaryRecords (\o f -> o {Aeson.unwrapUnaryRecords = f})
 
-tagSingleConstructors :: AesonOptions -> Bool
-tagSingleConstructors = Aeson.tagSingleConstructors
+tagSingleConstructors :: Lens' AesonOptions Bool
+tagSingleConstructors =
+  lens Aeson.tagSingleConstructors (\o f -> o {Aeson.tagSingleConstructors = f})
 
-rejectUnknownFields :: AesonOptions -> Bool
-rejectUnknownFields = Aeson.rejectUnknownFields
+rejectUnknownFields :: Lens' AesonOptions Bool
+rejectUnknownFields = lens Aeson.rejectUnknownFields (\o f -> o {Aeson.rejectUnknownFields = f})
 
 identity :: a -> a
 identity = RIO.id
