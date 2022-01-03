@@ -33,14 +33,14 @@ startXvfb = do
   startXvfbWithDisplay displayNumber
 
 startXvfbWithDisplay :: (MonadThrow m, MonadUnliftIO m) => DisplayNumber -> m XvfbProcess
-startXvfbWithDisplay displayNumber@(DisplayNumber d) = do
+startXvfbWithDisplay displayNumber = do
   let processConfiguration =
-        proc "Xvfb" [":" <> show d, "-screen", "0", "1920x1080x24"]
+        proc "Xvfb" [":" <> (displayNumber ^. unDisplayNumber & show), "-screen", "0", "1920x1080x24"]
           & setStdin nullStream
           & setStdout nullStream
           & setStderr nullStream
   process <- mapExceptionM XvfbProcessError $ startProcess processConfiguration
-  pure $ XvfbProcess {displayNumber, process}
+  pure $ XvfbProcess {_xpDisplayNumber = displayNumber, _xpProcess = process}
 
 allocateDisplayNumber :: (MonadUnliftIO m) => m (Maybe DisplayNumber)
 allocateDisplayNumber =

@@ -26,20 +26,20 @@ createScrapingQueue startPortNumber count seleniumPath = do
   -- @TODO: maybe use `link` to make sure the calling thread is notified when one of the worker
   -- threads go down?
   threads <- liftIO $ forM processes $ workerLoop queue >>> async
-  pure $ ScrapingQueue {queue, processes, threads}
+  pure $ ScrapingQueue {_sqQueue = queue, _sqProcesses = processes, _sqThreads = threads}
   where
     workerLoop queue process = do
       maybeScrapingRequest <- atomically $ readTBMQueue queue
-      forM_ maybeScrapingRequest $ \ScrapingRequest {action, resultSlot} -> do
-        result <- tryAny $ waitForScrapingRequest process action
-        putMVar resultSlot result
+      forM_ maybeScrapingRequest $ \scrapingRequest -> do
+        result <- tryAny $ scrapingRequest ^. srAction & waitForScrapingRequest process
+        scrapingRequest ^. srResultSlot & (`putMVar` result)
         workerLoop queue process
 
 -- | Destroys a scraping queue, cleaning up all the sessions and workers associated with it.
 destroyScrapingQueue :: (MonadUnliftIO m) => ScrapingQueue a -> m ()
-destroyScrapingQueue ScrapingQueue {processes, threads} = do
-  forM_ threads cancel
-  forM_ processes stopSession
+destroyScrapingQueue scrapingQueue = do
+  scrapingQueue ^. sqThreads & mapM_ cancel
+  scrapingQueue ^. sqProcesses & mapM_ stopSession
 
 -- | Schedules a scraping request to be executed on a queue, returning the 'MVar' that will have the
 -- result put into it.
@@ -48,9 +48,10 @@ scheduleScrapingRequest ::
   ScrapingQueue a ->
   WD a ->
   m (MVar (Either SomeException a))
-scheduleScrapingRequest ScrapingQueue {queue} action = do
+scheduleScrapingRequest scrapingQueue action = do
   resultSlot <- liftIO newEmptyMVar
-  atomically $ writeTBMQueue queue $ ScrapingRequest {action, resultSlot}
+  let request = ScrapingRequest {_srAction = action, _srResultSlot = resultSlot}
+  atomically $ writeTBMQueue (scrapingQueue ^. sqQueue) request
   pure resultSlot
 
 -- | Schedules a scraping request to be executed on a queue, but waits immediately for it to finish

@@ -103,8 +103,8 @@ withSession sessions = do
 
 -- | Takes a 'SeleniumProcess' and runs a 'WD' action using it, returning the result.
 waitForScrapingRequest :: (MonadUnliftIO m, MonadThrow m) => SeleniumProcess -> WD a -> m a
-waitForScrapingRequest SeleniumProcess {port} action = do
-  waitRunSession (Milliseconds 5000) (webdriverConfig port) action
+waitForScrapingRequest seleniumProcess action = do
+  waitRunSession (Milliseconds 5000) (webdriverConfig $ seleniumProcess ^. spPort) action
 
 -- | Tries to start a session, returning 'Left' with a 'SessionStartError' if it fails or 'Right'
 -- with a 'SessionStartResult' if it succeeds. Errors that can be expected to be caught here are
@@ -127,19 +127,19 @@ startSession ::
   SeleniumPath ->
   m SessionStartResult
 startSession SessionOnDemand seleniumPath = do
-  xvfbProcess@XvfbProcess {process} <- mapExceptionM XvfbSessionError startXvfb
+  xvfbProcess <- mapExceptionM XvfbSessionError startXvfb
   (StartedOnDemand <$> startSelenium xvfbProcess seleniumPath)
     `catch` ( \(e :: SeleniumStartError) -> do
-                stopProcess process
+                xvfbProcess ^. xpProcess & stopProcess
                 throwM $ SeleniumSessionError e
             )
 startSession (SessionAlreadyStarted seleniumPort) _seleniumPath = do
   pure $ PremadeSession seleniumPort
 
 stopSession :: (MonadUnliftIO m) => SeleniumProcess -> m ()
-stopSession SeleniumProcess {xvfbProcess = XvfbProcess {process = xvfbProcess}, process} = do
-  stopProcess process
-  stopProcess xvfbProcess
+stopSession seleniumProcess = do
+  seleniumProcess ^. spProcess & stopProcess
+  seleniumProcess ^. spXvfbProcess . xpProcess & stopProcess
 
 -- | @startSessions 0 6 '$' 'SeleniumPath' "./selenium.jar"@ attempts to start 6 sessions with
 -- associated Xvfb & Selenium processes, starting at @0@ for the display number (up to 6) and @4444@
@@ -159,11 +159,10 @@ startSessions (PortNumber startPortNumber) count seleniumPath = do
   where
     startSessions' sessions =
       forM [startPortNumber .. startPortNumber + count - 1] $ \x -> do
-        xvfbProcess@XvfbProcess {process = xvfbProcess'} <-
-          mapExceptionM XvfbSessionError $ startXvfbWithDisplay $ DisplayNumber x
+        xvfbProcess <- mapExceptionM XvfbSessionError $ startXvfbWithDisplay $ DisplayNumber x
         session <-
           startSeleniumOnPort (SeleniumPort $ 4444 + x) xvfbProcess seleniumPath
-            `onException` liftIO (stopProcess xvfbProcess')
+            `onException` liftIO (xvfbProcess ^. xpProcess & stopProcess)
         modifyIORef' sessions (session :)
         pure session
 

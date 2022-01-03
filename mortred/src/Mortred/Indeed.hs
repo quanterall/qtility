@@ -47,8 +47,8 @@ scrapeIndeed keyword _city = do
   maybeSeleniumProcess <-
     tryStartSession SessionOnDemand $ SeleniumPath "./selenium-server-standalone-2.53.1.jar"
   case maybeSeleniumProcess of
-    Right (StartedOnDemand seleniumProcess@SeleniumProcess {port}) -> do
-      waitRunSession (Milliseconds 10000) (webdriverConfig port) doScrape
+    Right (StartedOnDemand seleniumProcess) -> do
+      waitRunSession (Milliseconds 10000) (seleniumProcess ^. spPort & webdriverConfig) doScrape
         `finally` stopSession seleniumProcess
     Right (PremadeSession port) -> do
       waitRunSession (Milliseconds 10000) (webdriverConfig port) doScrape

@@ -8,6 +8,7 @@ where
 
 import qualified Codec.Archive.Zip.Conduit.UnZip as UnZip
 import Conduit
+import Control.Lens.Combinators
 import qualified Data.ByteString.Char8 as Char8
 import qualified Data.Conduit.Binary as CB
 import Data.Conduit.Serialization.Binary (ParseError)
@@ -111,9 +112,18 @@ startSeleniumOnPort port@(SeleniumPort portNumber) xvfbProcess seleniumPath@(Sel
               & setStdin nullStream
               & setStdout nullStream
               & setStderr nullStream
-              & setEnv [("DISPLAY", xvfbProcess & displayNumber & unDisplayNumber & show & (":" <>))]
+              & setEnv
+                [ ( "DISPLAY",
+                    xvfbProcess ^. xpDisplayNumber . unDisplayNumber & show & (":" <>)
+                  )
+                ]
       process <- startProcess processConfiguration
-      pure $ SeleniumProcess {xvfbProcess, process, port}
+      pure $
+        SeleniumProcess
+          { _spXvfbProcess = xvfbProcess,
+            _spProcess = process,
+            _spPort = port
+          }
     else throwM $ SeleniumNotFound seleniumPath
 
 downloadChromeDriver ::
@@ -126,7 +136,7 @@ downloadChromeDriver path = do
   chromeVersion <- getChromeVersion chromeBinary
   chromeDriverLink <-
     fromEither $ note (NoValidChromeDriverUrl chromeVersion) $ getChromeDriverLink chromeVersion
-  request <- chromeDriverLink & unUrl & parseRequest
+  request <- chromeDriverLink ^. unUrl & parseRequest
   response <- mapExceptionM (DownloadError chromeDriverLink) $ liftIO $ httpLbs request manager
   mapExceptionM UnzipError $ unzipIntoPath path $ responseBody response
   liftIO $ setChromeDriverPermissions path
@@ -173,9 +183,7 @@ getBinaryVersionText path = do
           & setStdout byteStringOutput
           & setStdin nullStream
           & setStderr nullStream
-  (_exitCode, result) <-
-    mapExceptionM (UnableToReadChromeProcess path) $ readProcessStdout processConfiguration
-  pure result
+  (^. _2) <$> mapExceptionM (UnableToReadChromeProcess path) (readProcessStdout processConfiguration)
 
 getChromeVersion :: (MonadThrow m, MonadUnliftIO m) => FilePath -> m ChromeVersion
 getChromeVersion path = do
