@@ -1,6 +1,7 @@
 module Qtility.Data where
 
-import Control.Lens.Wrapped (Unwrapped, Wrapped, _Wrapped')
+import Control.Lens.Prism (Prism', prism')
+import Control.Lens.Wrapped (Unwrapped, Wrapped, _Unwrapped', _Wrapped')
 import RIO hiding (fromEither, fromEitherM)
 import qualified RIO.Text as Text
 
@@ -15,6 +16,10 @@ hush = either (const Nothing) Just
 -- | 'readMaybe' but for 'Text'.
 tReadMaybe :: (Read a) => Text -> Maybe a
 tReadMaybe = Text.unpack >>> readMaybe
+
+-- | 'Prism'' for reading a value from 'Text'
+fromText :: (Read a, Show a) => Prism' Text a
+fromText = prism' tshow tReadMaybe
 
 -- | Throws an exception from an @Either e a@ where @e@ is an 'Exception'.
 fromEither :: (Exception e, MonadThrow m) => Either e a -> m a
@@ -60,3 +65,6 @@ findM p (a : as) = do
 -- @
 unwrap :: (Wrapped a) => Lens' a (Unwrapped a)
 unwrap = _Wrapped'
+
+wrap :: (Wrapped a) => Lens' (Unwrapped a) a
+wrap = _Unwrapped'
