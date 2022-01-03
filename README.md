@@ -1,12 +1,30 @@
 # qtility
 
-## Packages
+A monorepo containing utility libraries for application development. The repository is built on some
+basic ideas that follow throughout:
 
-A monorepo containing utility libraries for application development.
+- `MonadReader` is a good basis for most applications as well as a good way to make dependencies for
+  functions work across many different contexts.
+- MTL-style in general is how we make code easier to reuse.
+- If we have lenses/prisms in mind for the code we write, we'll have an easier time using library
+  functionality.
+- Using `try`, `mapException`, `fromEither`, `fromEitherM`, etc. make it so that we don't have to
+  worry so much about exactly which error interface we're using, but can decide more flexibly at the
+  call-site what to do.
 
-- `qtility-environment`: Utilities for dealing with environment loading and management.
-- `qtility-data`: Utilities for data, i.e. functions like `note` & `hush`.
-- `qtility-th`: Utilities for dealing with common `TemplateHaskell` issues.
+## `qtility-standard`
+
+This is a standard library/prelude version of several qtility libraries as well as common exports.
+This includes:
+
+- `RIO`
+- Common parts of `Data.Aeson` (including lenses for `AesonOptions`)
+- Re-works of `fromX` functions that take `Maybe`/`Either` and throw from them (`qtility-data`)
+- TemplateHaskell helpers for JSON & lenses (`qtility-th`)
+- Utilities for dealing with environment variables/`.env` files (`qtility-environment`)
+
+## Other, more specific libraries
+
 - `qtility-code`: Utilities for executing/interpreting Haskell code.
 - `qaws`: Utilities for common general AWS tasks via `amazonka`
 - `qaws-sqs`: Utilities for common usage of AWS Simple Queue Service (SQS).
@@ -21,11 +39,12 @@ If you want to use this repository and its packages, add the following to your `
 ```yaml
 extra-deps:
 - github: quanterall/qtility
-  commit: 84290f3dd5d9fb8629a3c60888a590eba81dca1c
+  commit: a23ebfdfe9337eaf711352053d38da8a63ed26bb
   subdirs:
-  - qtility-data
-  - qtility-environment
+  - qtility-standard
   - quanterall-brick
+  - qaws
+  - qaws-s3
 ```
 
 Note that you probably want the latest commit.
