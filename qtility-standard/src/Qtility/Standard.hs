@@ -27,6 +27,7 @@ import Data.Aeson as Export
     encode,
     genericParseJSON,
     genericToJSON,
+    withObject,
     (.:),
     (.:?),
     (.=),
