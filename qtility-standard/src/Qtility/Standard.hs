@@ -2,6 +2,7 @@ module Qtility.Standard
   ( module Export,
     AesonOptions,
     defaultAesonOptions,
+    identity,
   )
 where
 
@@ -24,8 +25,12 @@ import Qtility.TH as Export
 import Qtility.TH.JSON as Export
 import Qtility.TH.Lens as Export
 import RIO as Export hiding (fromEither, fromEitherM)
+import qualified RIO
 
 type AesonOptions = Aeson.Options
 
 defaultAesonOptions :: AesonOptions
 defaultAesonOptions = Aeson.defaultOptions
+
+identity :: a -> a
+identity = RIO.id
