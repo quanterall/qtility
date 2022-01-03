@@ -12,6 +12,7 @@ library
   exposed-modules:
       Qtility.TH
       Qtility.TH.JSON
+      Qtility.TH.Lens
   other-modules:
       Paths_qtility_th
   hs-source-dirs:
