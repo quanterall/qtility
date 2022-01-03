@@ -154,19 +154,19 @@ setChromeDriverPermissions path = do
 
 allocateServerPort :: (MonadUnliftIO m) => m SeleniumPort
 allocateServerPort = do
+  procNetTcpContents <- readFileUtf8 "/proc/net/tcp"
+  procNetTcp6Contents <- readFileUtf8 "/proc/net/tcp6"
   let lineToPort l =
         case l & Text.strip & Text.words & take 2 & drop 1 & fmap (Text.split (== ':')) of
           [[_localAddress, portText]] ->
-            portText & Text.unpack & readHex & Partial.head & fst
+            portText & Text.unpack & readHex & Partial.head & fst & PortNumber
           _other ->
             error $ "Bad line in '/proc/net/tcp': '" <> show l <> "'"
-  procNetTcpContents <- readFileUtf8 "/proc/net/tcp"
-  procNetTcp6Contents <- readFileUtf8 "/proc/net/tcp6"
-  let takenPorts = procNetTcpContents & Text.lines & drop 1 & map lineToPort
+      takenPorts = procNetTcpContents & Text.lines & drop 1 & map lineToPort
       takenIPV6Ports = procNetTcp6Contents & Text.lines & drop 1 & map lineToPort
-      allocate' p = if isTaken p then allocate' (p + 1) else p
+      allocate' p = if isTaken p then allocate' (p & unPortNumber %~ (+ 1)) else p
       isTaken = (`elem` (takenPorts <> takenIPV6Ports))
-  pure $ SeleniumPort $ allocate' 4444
+  pure $ SeleniumPort $ allocate' $ PortNumber 4444
 
 unzipIntoPath ::
   (MonadThrow m, MonadUnliftIO m, PrimMonad m, MonadFail m) =>

@@ -161,7 +161,7 @@ startSessions (PortNumber startPortNumber) count seleniumPath = do
       forM [startPortNumber .. startPortNumber + count - 1] $ \x -> do
         xvfbProcess <- mapExceptionM XvfbSessionError $ startXvfbWithDisplay $ DisplayNumber x
         session <-
-          startSeleniumOnPort (SeleniumPort $ 4444 + x) xvfbProcess seleniumPath
+          startSeleniumOnPort (SeleniumPort $ PortNumber $ 4444 + x) xvfbProcess seleniumPath
             `onException` liftIO (xvfbProcess ^. xpProcess & stopProcess)
         modifyIORef' sessions (session :)
         pure session
@@ -187,7 +187,7 @@ waitRunSession milliseconds@(Milliseconds ms) configuration@WDConfig {wdPort, wd
 
 webdriverConfig :: SeleniumPort -> WDConfig
 webdriverConfig (SeleniumPort port) =
-  defaultConfig {wdPort = port} & useBrowser chromeNoSandbox
+  defaultConfig {wdPort = _unPortNumber port} & useBrowser chromeNoSandbox
 
 chromeNoSandbox :: Browser
 chromeNoSandbox =
