@@ -39,9 +39,9 @@ newtype NotVisibleCount = NotVisibleCount {_unNotVisibleCount :: Int}
 -- | A message that is sent to a queue. In contrast to the standard message type in the amazonka
 -- libraries, this asserts that message id, receipt handle and body are all present.
 data SQSMessage a = SQSMessage
-  { _sqsMessageBody :: a,
-    _sqsMessageMessageId :: MessageId,
-    _sqsMessageReceiptHandle :: ReceiptHandle
+  { _sqsmBody :: a,
+    _sqsmMessageId :: MessageId,
+    _sqsmReceiptHandle :: ReceiptHandle
   }
   deriving (Eq, Show)
 
@@ -56,11 +56,11 @@ data ReceiveMessageError
 instance Exception ReceiveMessageError
 
 data QueueAttributes = QueueAttributes
-  { queueAttributesArn :: !(Maybe ARN),
-    queueAttributesUrl :: !QueueUrl,
-    queueAttributesMessages :: !(Maybe MessageCount),
-    queueAttributesDelayedMessages :: !(Maybe DelayedMessageCount),
-    queueAttributesNotVisibleMessages :: !(Maybe NotVisibleCount)
+  { _qaArn :: !(Maybe ARN),
+    _qaUrl :: !QueueUrl,
+    _qaMessages :: !(Maybe MessageCount),
+    _qaDelayedMessages :: !(Maybe DelayedMessageCount),
+    _qaNotVisibleMessages :: !(Maybe NotVisibleCount)
   }
   deriving (Eq, Show)
 

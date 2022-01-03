@@ -18,13 +18,14 @@ module Network.AWS.QAWS.SQS
 where
 
 import Control.Lens ((?~))
+import Control.Lens.Prism
 import Data.Aeson (FromJSON (..), ToJSON (..), eitherDecodeStrict, encode)
 import qualified Network.AWS as AWS
 import Network.AWS.QAWS
 import Network.AWS.QAWS.SQS.Types
 import Network.AWS.QAWS.Types
 import qualified Network.AWS.SQS as AWSSQS
-import Qtility.Data (note, tReadMaybe)
+import Qtility.Data (fromText, note)
 import RIO
 import qualified RIO.HashMap as HashMap
 
@@ -103,12 +104,12 @@ receiveWithPayload' awsEnv queueUrl waitTime messageLimit = do
     decodeMessage :: (FromJSON a) => AWSSQS.Message -> Either ReceiveMessageError (SQSMessage a)
     decodeMessage m = do
       body <- note ReceiveMessageNoBody $ m ^. AWSSQS.mBody
-      _sqsMessageReceiptHandle <-
+      _sqsmReceiptHandle <-
         ReceiptHandle <$> note ReceiveMessageNoReceiptHandle (m ^. AWSSQS.mReceiptHandle)
-      _sqsMessageMessageId <- MessageId <$> note ReceiveMessageNoMessageId (m ^. AWSSQS.mMessageId)
+      _sqsmMessageId <- MessageId <$> note ReceiveMessageNoMessageId (m ^. AWSSQS.mMessageId)
       let bytes = encodeUtf8 body
-      _sqsMessageBody <- mapLeft ReceiveMessageDecodingError $ eitherDecodeStrict bytes
-      pure $ SQSMessage {_sqsMessageBody, _sqsMessageReceiptHandle, _sqsMessageMessageId}
+      _sqsmBody <- mapLeft ReceiveMessageDecodingError $ eitherDecodeStrict bytes
+      pure $ SQSMessage {_sqsmBody, _sqsmReceiptHandle, _sqsmMessageId}
 
 -- | A'la carte version of 'deleteMessage' that takes an environment instead of looking for one in
 -- your environment.
@@ -199,21 +200,22 @@ getQueueAttributes' awsEnv queueUrl = do
 createQueueAttributes :: QueueUrl -> AWSSQS.GetQueueAttributesResponse -> QueueAttributes
 createQueueAttributes queueUrl response =
   let m = response ^. AWSSQS.gqarsAttributes
-      queueAttributesArn = ARN <$> HashMap.lookup AWSSQS.QANQueueARN m
-      queueAttributesMessages =
-        MessageCount <$> (HashMap.lookup AWSSQS.QANApproximateNumberOfMessages m >>= tReadMaybe)
-      queueAttributesDelayedMessages =
+      _qaArn = ARN <$> HashMap.lookup AWSSQS.QANQueueARN m
+      _qaMessages =
+        MessageCount <$> (HashMap.lookup AWSSQS.QANApproximateNumberOfMessages m ^? _Just . fromText)
+      -- MessageCount <$> (HashMap.lookup AWSSQS.QANApproximateNumberOfMessages m >>= tReadMaybe)
+      _qaDelayedMessages =
         DelayedMessageCount
-          <$> (HashMap.lookup AWSSQS.QANApproximateNumberOfMessagesDelayed m >>= tReadMaybe)
-      queueAttributesNotVisibleMessages =
+          <$> (HashMap.lookup AWSSQS.QANApproximateNumberOfMessagesDelayed m ^? _Just . fromText)
+      _qaNotVisibleMessages =
         NotVisibleCount
-          <$> (HashMap.lookup AWSSQS.QANApproximateNumberOfMessagesNotVisible m >>= tReadMaybe)
+          <$> (HashMap.lookup AWSSQS.QANApproximateNumberOfMessagesNotVisible m ^? _Just . fromText)
    in QueueAttributes
-        { queueAttributesArn,
-          queueAttributesUrl = queueUrl,
-          queueAttributesMessages,
-          queueAttributesDelayedMessages,
-          queueAttributesNotVisibleMessages
+        { _qaArn,
+          _qaUrl = queueUrl,
+          _qaMessages,
+          _qaDelayedMessages,
+          _qaNotVisibleMessages
         }
 
 -- | Purges all messages from a queue. This looks for the needed AWS environment in your current
