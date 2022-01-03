@@ -15,6 +15,7 @@ module Qtility.Standard
   )
 where
 
+import Control.Lens.TH as Export (makeLenses)
 import Data.Aeson as Export
   ( FromJSON (..),
     SumEncoding (..),
