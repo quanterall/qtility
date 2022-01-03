@@ -74,7 +74,8 @@ foldMapM
     ''MessageCount,
     ''DelayedMessageCount,
     ''NotVisibleCount,
-    ''SQSMessage
+    ''SQSMessage,
+    ''QueueAttributes
   ]
 
 foldMapM makeClassyPrisms [''ReceiveMessageError]
