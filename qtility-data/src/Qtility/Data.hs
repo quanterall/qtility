@@ -1,5 +1,6 @@
 module Qtility.Data where
 
+import Control.Lens.Wrapped (Unwrapped, Wrapped, _Unwrapped', _Wrapped')
 import RIO
 import qualified RIO.Text as Text
 
@@ -26,3 +27,24 @@ findM _p [] = pure Nothing
 findM p (a : as) = do
   result <- p a
   if result then pure (Just a) else findM p as
+
+-- | Convenience function for `_Wrapped` that seems to capture meaning better. Unwraps something
+-- that wraps another type safely, i.e. it can actually be coerced safely into the other type. This
+-- is a very useful lens to have for automatically reaching into a newtype without specifying
+-- the name exactly.
+--
+-- @
+--     newtype PortNumber = PortNumber {_unPortNumber :: Int}
+--       deriving (Eq, Show, Generic)
+--
+--     deriveWrapped ''PortNumber
+-- @
+--
+-- With the above defined and assuming @p@ wraps a numeric, the following will automatically apply
+-- @+ 1@ to the value inside the structure, and automatically keep it wrapped:
+--
+-- @
+--     p & unwrap %~ (+ 1)
+-- @
+unwrap :: (Wrapped a) => Lens' a (Unwrapped a)
+unwrap = _Wrapped'
