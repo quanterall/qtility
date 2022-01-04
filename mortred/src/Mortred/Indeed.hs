@@ -44,16 +44,14 @@ scrapeIndeed ::
   IndeedCity ->
   m [IndeedJobSummary]
 scrapeIndeed keyword _city = do
-  maybeSeleniumProcess <-
-    tryStartSession SessionOnDemand $ SeleniumPath "./selenium-server-standalone-2.53.1.jar"
-  case maybeSeleniumProcess of
-    Right (StartedOnDemand seleniumProcess) -> do
+  startResult <-
+    startSession SessionOnDemand $ SeleniumPath "./selenium-server-standalone-2.53.1.jar"
+  case startResult of
+    (StartedOnDemand seleniumProcess) -> do
       waitRunSession (Milliseconds 10000) (seleniumProcess ^. spPort & webdriverConfig) doScrape
         `finally` stopSession seleniumProcess
-    Right (PremadeSession port) -> do
+    (PremadeSession port) -> do
       waitRunSession (Milliseconds 10000) (webdriverConfig port) doScrape
-    Left err -> do
-      throwM err
   where
     doScrape = do
       openPage $ "https://www.indeed.com/q-" <> unIndeedKeyword keyword <> "-jobs.html"
