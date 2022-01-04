@@ -8,7 +8,7 @@ basic ideas that follow throughout:
 - MTL-style in general is how we make code easier to reuse.
 - If we have lenses/prisms in mind for the code we write, we'll have an easier time using library
   functionality.
-- Using `try`, `mapException`, `fromEither`, `fromEitherM`, etc. make it so that we don't have to
+- Using `try`, `mapException`, `fromEither`, `fromEitherM`, etc. makes it so that we don't have to
   worry so much about exactly which error interface we're using, but can decide more flexibly at the
   call-site what to do.
 
