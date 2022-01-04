@@ -86,5 +86,4 @@ instance FromEnvironmentValue Bool where
 
 getEnvironmentValue :: (MonadIO m) => EnvironmentKey -> m (Either EnvironmentKey String)
 getEnvironmentValue key = do
-  maybeEnvironmentValue <- liftIO $ lookupEnv $ _unEnvironmentKey key
-  pure $ maybe (Left key) Right maybeEnvironmentValue
+  maybe (Left key) Right <$> liftIO (lookupEnv $ _unEnvironmentKey key)
