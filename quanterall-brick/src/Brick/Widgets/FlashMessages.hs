@@ -18,6 +18,8 @@ import Control.Lens ((#))
 import RIO
 import qualified RIO.Map as Map
 
+-- | Draws a centered vertical box of flash messages. These use 'flashSuccessAttr' and
+-- 'flashErrorAttr' for styling.
 drawFlashMessages :: (HasFlashMessages s) => s -> Widget n
 drawFlashMessages s = centerLayer $ s ^. flashMessagesL & Map.elems & map drawFlashMessage & vBox
 
@@ -46,6 +48,7 @@ handleFlashMessageEvent state (AddFlashMessage m) =
 handleFlashMessageEvent state (RemoveFlashMessage i) =
   pure $ state & flashMessagesL %~ Map.delete i
 
+-- | Adds a flash message to your current state, making sure to also start a thread for removing it.
 addFlashMessage ::
   (MonadIO m, HasFlashMessages s, HasEventChannel s event, AsFlashMessageEvent event) =>
   s ->
@@ -62,8 +65,10 @@ addFlashMessage state msg = do
       & flashMessagesL %~ Map.insert currentId msg
       & flashMessageIdL %~ (+ 1)
 
+-- | Attribute for success flash messages.
 flashSuccessAttr :: AttrName
 flashSuccessAttr = "flash-success"
 
+-- | Attribute for error flash messages.
 flashErrorAttr :: AttrName
 flashErrorAttr = "flash-error"
