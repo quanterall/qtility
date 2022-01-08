@@ -6,6 +6,7 @@ dependencies:
 - base >=4.9.1.0 && <5
 - rio
 - brick
+- lens
 
 default-extensions:
 - ApplicativeDo

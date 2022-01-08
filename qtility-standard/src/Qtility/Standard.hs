@@ -15,6 +15,7 @@ module Qtility.Standard
   )
 where
 
+import Control.Lens as Export (re, (#))
 import Control.Lens.Prism as Export
 import Control.Lens.TH as Export (makeClassyPrisms, makeLenses)
 import Data.Aeson as Export
