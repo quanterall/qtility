@@ -33,15 +33,18 @@ drawFlashMessage flashMessage = do
     padAll 1 $
       borderWithLabel (txt title) (txt body)
 
+-- | Handles a 'FlashMessageEvent' and produces a new value. The reason we need 'MonadIO' here is
+-- because a thread is started in the case where we are adding a flash message, in order for the
+-- message to be removed at a later time.
 handleFlashMessageEvent ::
-  (HasFlashMessages s, HasEventChannel s event, AsFlashMessageEvent event) =>
+  (MonadIO m, HasFlashMessages s, HasEventChannel s event, AsFlashMessageEvent event) =>
   s ->
   FlashMessageEvent ->
-  EventM n (Next s)
+  m s
 handleFlashMessageEvent state (AddFlashMessage m) =
-  addFlashMessage state m >>= continue
+  addFlashMessage state m
 handleFlashMessageEvent state (RemoveFlashMessage i) =
-  continue $ state & flashMessagesL %~ Map.delete i
+  pure $ state & flashMessagesL %~ Map.delete i
 
 addFlashMessage ::
   (MonadIO m, HasFlashMessages s, HasEventChannel s event, AsFlashMessageEvent event) =>
