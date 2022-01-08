@@ -3,8 +3,7 @@
 
 module Mortred.Types where
 
-import Control.Lens.TH (makeLenses)
-import Qtility.TH.Lens (deriveWrappeds)
+import Control.Lens.TH (makeLenses, makeWrapped)
 import RIO
 import System.Process.Typed (Process)
 
@@ -73,7 +72,8 @@ foldMapM
     ''ChromeDriverVersion
   ]
 
-deriveWrappeds
+foldMapM
+  makeWrapped
   [ ''DisplayNumber,
     ''SeleniumPath,
     ''SeleniumPort,

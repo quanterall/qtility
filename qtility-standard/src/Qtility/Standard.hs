@@ -17,7 +17,7 @@ where
 
 import Control.Lens as Export (re, (#))
 import Control.Lens.Prism as Export
-import Control.Lens.TH as Export (makeClassyPrisms, makeLenses)
+import Control.Lens.TH as Export (makeClassy, makeClassyPrisms, makeLenses, makeWrapped)
 import Data.Aeson as Export
   ( FromJSON (..),
     SumEncoding (..),
@@ -41,7 +41,6 @@ import Qtility.Environment as Export
 import Qtility.Environment.Types as Export
 import Qtility.TH as Export
 import Qtility.TH.JSON as Export
-import Qtility.TH.Lens as Export
 import RIO as Export hiding (fromEither, fromEitherM, map)
 import qualified RIO
 

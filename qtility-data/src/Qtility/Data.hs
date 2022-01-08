@@ -54,7 +54,7 @@ findM p (a : as) = do
 --     newtype PortNumber = PortNumber {_unPortNumber :: Int}
 --       deriving (Eq, Show, Generic)
 --
---     deriveWrapped ''PortNumber
+--     makeWrapped ''PortNumber
 -- @
 --
 -- With the above defined and assuming @p@ wraps a numeric, the following will automatically apply

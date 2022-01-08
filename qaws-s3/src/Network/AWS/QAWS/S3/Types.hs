@@ -2,10 +2,9 @@
 
 module Network.AWS.QAWS.S3.Types where
 
-import Control.Lens.TH (makeLenses)
+import Control.Lens.TH (makeLenses, makeWrapped)
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Default (Default (..))
-import Qtility.TH.Lens (deriveWrappeds)
 import RIO
 
 newtype KeyPrefix = KeyPrefix {_unKeyPrefix :: Text}
@@ -46,4 +45,4 @@ foldMapM
     ''StartAfter
   ]
 
-deriveWrappeds [''KeyPrefix, ''StartAfter, ''ContinuationToken, ''MaxKeys]
+foldMapM makeWrapped [''KeyPrefix, ''StartAfter, ''ContinuationToken, ''MaxKeys]
