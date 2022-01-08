@@ -1,12 +1,36 @@
-module Brick.Widgets.FlashMessages where
+module Brick.Widgets.FlashMessages
+  ( drawFlashMessages,
+    handleFlashMessageEvent,
+    addFlashMessage,
+    flashSuccessAttr,
+    flashErrorAttr,
+  )
+where
 
-import Brick (AttrName, EventM, Next, continue)
+import Brick
 import Brick.BChan (writeBChan)
 import Brick.BChan.Class (HasEventChannel (..))
+import Brick.Widgets.Border (borderWithLabel)
+import Brick.Widgets.Center (centerLayer)
 import Brick.Widgets.FlashMessages.Class
 import Brick.Widgets.FlashMessages.Types
 import RIO
 import qualified RIO.Map as Map
+
+drawFlashMessages :: (HasFlashMessages s) => s -> Widget n
+drawFlashMessages s = centerLayer $ s ^. flashMessagesL & Map.elems & map drawFlashMessage & vBox
+
+drawFlashMessage :: FlashMessage -> Widget n
+drawFlashMessage flashMessage = do
+  let (flashAttribute, title, body) =
+        case flashMessage of
+          FlashSuccess b ->
+            (flashSuccessAttr, "Success", b)
+          FlashError b ->
+            (flashErrorAttr, "Error", b)
+  withAttr flashAttribute $
+    padAll 1 $
+      borderWithLabel (txt title) (txt body)
 
 handleFlashMessageEvent ::
   (HasFlashMessages s, HasEventChannel s event, AsFlashMessageEvent event) =>
