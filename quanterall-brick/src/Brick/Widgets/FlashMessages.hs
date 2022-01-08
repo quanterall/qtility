@@ -11,17 +11,16 @@ import Brick
 import Brick.BChan (writeBChan)
 import Brick.BChan.Class (HasEventChannel (..))
 import Brick.Widgets.Border (borderWithLabel)
-import Brick.Widgets.Center (centerLayer)
 import Brick.Widgets.FlashMessages.Class
 import Brick.Widgets.FlashMessages.Types
 import Control.Lens ((#))
 import RIO
 import qualified RIO.Map as Map
 
--- | Draws a centered vertical box of flash messages. These use 'flashSuccessAttr' and
--- 'flashErrorAttr' for styling.
+-- | Draws a vertical box of flash messages. These use 'flashSuccessAttr' and 'flashErrorAttr' for
+-- styling.
 drawFlashMessages :: (HasFlashMessages s) => s -> Widget n
-drawFlashMessages s = centerLayer $ s ^. flashMessagesL & Map.elems & map drawFlashMessage & vBox
+drawFlashMessages s = s ^. flashMessagesL & Map.elems & map drawFlashMessage & vBox
 
 drawFlashMessage :: FlashMessage -> Widget n
 drawFlashMessage flashMessage = do
