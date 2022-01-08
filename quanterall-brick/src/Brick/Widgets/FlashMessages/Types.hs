@@ -12,7 +12,7 @@ data FlashMessage
   | FlashError !Text
   deriving (Eq, Show)
 
--- | Represents an event to modify the application's flash message state.
+-- | Events to modify the application's flash message state.
 data FlashMessageEvent
   = -- | Removes a flash message, addressed by its index/id.
     RemoveFlashMessage !Int
