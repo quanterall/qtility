@@ -10,6 +10,7 @@ where
 import Brick
 import Brick.BChan (writeBChan)
 import Brick.BChan.Class (HasEventChannel (..))
+import Brick.Prism
 import Brick.Widgets.Border (borderWithLabel)
 import Brick.Widgets.Center (centerLayer)
 import Brick.Widgets.FlashMessages.Class
@@ -17,6 +18,15 @@ import Brick.Widgets.FlashMessages.Types
 import Control.Lens ((#))
 import RIO
 import qualified RIO.Map as Map
+
+handleFlashMessageEvent ::
+  (HasFlashMessages s, HasEventChannel s event, AsFlashMessageEvent event) =>
+  s ->
+  BrickEvent n event ->
+  EventM n (Next s)
+handleFlashMessageEvent state e = do
+  newState <- e ^? _AppEvent . _FlashMessageEvent & maybe (pure state) (handleEvent state)
+  continue newState
 
 drawFlashMessages :: (HasFlashMessages s) => s -> Widget n
 drawFlashMessages s = centerLayer $ s ^. flashMessagesL & Map.elems & map drawFlashMessage & vBox
@@ -33,15 +43,13 @@ drawFlashMessage flashMessage = do
     padAll 1 $
       borderWithLabel (txt title) (txt body)
 
-handleFlashMessageEvent ::
-  (HasFlashMessages s, HasEventChannel s event, AsFlashMessageEvent event) =>
+handleEvent ::
+  (MonadIO m, HasFlashMessages s, HasEventChannel s event, AsFlashMessageEvent event) =>
   s ->
   FlashMessageEvent ->
-  EventM n (Next s)
-handleFlashMessageEvent state (AddFlashMessage m) =
-  addFlashMessage state m >>= continue
-handleFlashMessageEvent state (RemoveFlashMessage i) =
-  continue $ state & flashMessagesL %~ Map.delete i
+  m s
+handleEvent state (AddFlashMessage m) = addFlashMessage state m
+handleEvent state (RemoveFlashMessage i) = pure $ state & flashMessagesL %~ Map.delete i
 
 addFlashMessage ::
   (MonadIO m, HasFlashMessages s, HasEventChannel s event, AsFlashMessageEvent event) =>

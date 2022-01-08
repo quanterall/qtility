@@ -11,6 +11,7 @@ build-type:     Simple
 library
   exposed-modules:
       Brick.BChan.Class
+      Brick.Prism
       Brick.Widgets.FlashMessages
       Brick.Widgets.FlashMessages.Class
       Brick.Widgets.FlashMessages.Types
