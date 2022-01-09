@@ -45,15 +45,15 @@ data SQSMessage a = SQSMessage
   }
   deriving (Eq, Show)
 
-data ReceiveMessageError
-  = ReceiveMessageAWSError AWS.Error
-  | ReceiveMessageDecodingError String
-  | ReceiveMessageNoBody
-  | ReceiveMessageNoReceiptHandle
-  | ReceiveMessageNoMessageId
+data ReceivePayloadError
+  = ReceivePayloadAWSError AWS.Error
+  | ReceivePayloadDecodingError String
+  | ReceivePayloadNoBody
+  | ReceivePayloadNoReceiptHandle
+  | ReceivePayloadNoMessageId
   deriving (Show)
 
-instance Exception ReceiveMessageError
+instance Exception ReceivePayloadError
 
 data QueueAttributes = QueueAttributes
   { _qaArn :: !(Maybe ARN),
@@ -78,4 +78,4 @@ foldMapM
     ''QueueAttributes
   ]
 
-foldMapM makeClassyPrisms [''ReceiveMessageError]
+foldMapM makeClassyPrisms [''ReceivePayloadError]

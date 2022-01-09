@@ -25,20 +25,20 @@ import Network.AWS.QAWS
 import Network.AWS.QAWS.SQS.Types
 import Network.AWS.QAWS.Types
 import qualified Network.AWS.SQS as AWSSQS
-import Qtility.Data (fromText, mapLeftAs, note)
+import Qtility.Data (fromText, note)
 import RIO
 import qualified RIO.HashMap as HashMap
 
 -- | Receives messages from a queue with the given 'QueueUrl', waiting for up to 'WaitTime' seconds,
 -- for a response and returns a maximum number of 'MessageLimit' messages. This looks for the needed
 -- AWS environment in your current environment via 'MonadReader', which makes it ideal for usage in
--- a 'MonadReader' based stack (like 'RIO') that implements 'AWS.HasEnv'.
+-- a 'MonadReader' based stack (like 'RIO') that implements 'AWS.HasEnv'. Throws 'AWS.Error'.
 receiveMessages ::
-  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, Exception e, AWS.AsError e) =>
+  (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env) =>
   QueueUrl ->
   WaitTime ->
   MessageLimit ->
-  m (Either e [AWSSQS.Message])
+  m [AWSSQS.Message]
 receiveMessages queueUrl waitTime messageLimit = do
   awsEnv <- view AWS.environment
   receiveMessages' awsEnv queueUrl waitTime messageLimit
@@ -46,163 +46,134 @@ receiveMessages queueUrl waitTime messageLimit = do
 -- | A version of 'receiveMessages' that automatically constructs a list of 'SQSMessage a', where
 -- @a@ is decoded as the body of the message. This looks for the needed AWS environment in your
 -- current environment via 'MonadReader', which makes it ideal for usage in a 'MonadReader' based
--- stack (like 'RIO') that implements 'AWS.HasEnv'.
+-- stack (like 'RIO') that implements 'AWS.HasEnv'. Throws 'AWS.Error'.
 receiveWithPayload ::
   ( MonadUnliftIO m,
-    MonadThrow m,
     MonadReader env m,
     AWS.HasEnv env,
-    FromJSON a,
-    AsReceiveMessageError e
+    FromJSON a
   ) =>
   QueueUrl ->
   WaitTime ->
   MessageLimit ->
-  m (Either e [SQSMessage a])
+  m [SQSMessage a]
 receiveWithPayload queueUrl waitTime messageLimit = do
   awsEnv <- view AWS.environment
   receiveWithPayload' awsEnv queueUrl waitTime messageLimit
 
 -- | Deletes the message with 'ReceiptHandle' in the queue with url 'QueueUrl'. This looks for the
 -- needed AWS environment in your current environment via 'MonadReader', which makes it ideal for
--- usage in a 'MonadReader' based stack (like 'RIO') that implements 'AWS.HasEnv'.
+-- usage in a 'MonadReader' based stack (like 'RIO') that implements 'AWS.HasEnv'. Throws
+-- 'AWS.Error'.
 deleteMessage ::
-  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, Exception e, AWS.AsError e) =>
-  QueueUrl ->
-  ReceiptHandle ->
-  m (Either e ())
+  (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env) => QueueUrl -> ReceiptHandle -> m ()
 deleteMessage queueUrl receiptHandle = do
   awsEnv <- view AWS.environment
   deleteMessage' awsEnv queueUrl receiptHandle
 
 -- | A'la carte version of 'receiveMessages' that takes an environment instead of looking for one
--- in your environment.
+-- in your environment. Throws 'AWS.Error'.
 receiveMessages' ::
-  (MonadUnliftIO m, MonadThrow m, Exception e, AWS.AsError e) =>
+  (MonadUnliftIO m) =>
   AWS.Env ->
   QueueUrl ->
   WaitTime ->
   MessageLimit ->
-  m (Either e [AWSSQS.Message])
+  m [AWSSQS.Message]
 receiveMessages' awsEnv (QueueUrl queueUrl) (WaitTime waitTime) (MessageLimit messageLimit) = do
   let command =
         AWSSQS.receiveMessage queueUrl
           & AWSSQS.rmWaitTimeSeconds ?~ waitTime
           & AWSSQS.rmMaxNumberOfMessages ?~ messageLimit
-  commandResult <- tryRunAWS' awsEnv command
-  either (Left >>> pure) ((^. AWSSQS.rmrsMessages) >>> Right >>> pure) commandResult
+  (^. AWSSQS.rmrsMessages) <$> runAWS' awsEnv command
 
 -- | A'la carte version of 'receiveWithPayload' that takes an environment instead of looking for one
--- in your environment.
+-- in your environment. Throws 'ReceivePayloadError'.
 receiveWithPayload' ::
   ( MonadUnliftIO m,
-    MonadThrow m,
-    FromJSON a,
-    AsReceiveMessageError e
+    FromJSON a
   ) =>
   AWS.Env ->
   QueueUrl ->
   WaitTime ->
   MessageLimit ->
-  m (Either e [SQSMessage a])
+  m [SQSMessage a]
 receiveWithPayload' awsEnv queueUrl waitTime messageLimit = do
   commandResult <-
-    mapLeftAs _ReceiveMessageAWSError <$> receiveMessages' awsEnv queueUrl waitTime messageLimit
-  pure $ either Left (mapLeftAs _ReceiveMessageError <$> mapM decodeMessage) commandResult
+    mapExceptionM ReceivePayloadAWSError $ receiveMessages' awsEnv queueUrl waitTime messageLimit
+  fromEither $ mapM decodeMessage commandResult
   where
-    decodeMessage :: (FromJSON a) => AWSSQS.Message -> Either ReceiveMessageError (SQSMessage a)
+    decodeMessage :: (FromJSON a) => AWSSQS.Message -> Either ReceivePayloadError (SQSMessage a)
     decodeMessage m = do
-      body <- note ReceiveMessageNoBody $ m ^. AWSSQS.mBody
+      body <- note ReceivePayloadNoBody $ m ^. AWSSQS.mBody
       _sqsmReceiptHandle <-
-        ReceiptHandle <$> note ReceiveMessageNoReceiptHandle (m ^. AWSSQS.mReceiptHandle)
-      _sqsmMessageId <- MessageId <$> note ReceiveMessageNoMessageId (m ^. AWSSQS.mMessageId)
+        ReceiptHandle <$> note ReceivePayloadNoReceiptHandle (m ^. AWSSQS.mReceiptHandle)
+      _sqsmMessageId <- MessageId <$> note ReceivePayloadNoMessageId (m ^. AWSSQS.mMessageId)
       let bytes = encodeUtf8 body
-      _sqsmBody <- mapLeft ReceiveMessageDecodingError $ eitherDecodeStrict bytes
+      _sqsmBody <- mapLeft ReceivePayloadDecodingError $ eitherDecodeStrict bytes
       pure $ SQSMessage {_sqsmBody, _sqsmReceiptHandle, _sqsmMessageId}
 
 -- | A'la carte version of 'deleteMessage' that takes an environment instead of looking for one in
--- your environment.
+-- your environment. Throws 'AWS.Error'.
 deleteMessage' ::
-  (MonadUnliftIO m, MonadThrow m, Exception e, AWS.AsError e) =>
-  AWS.Env ->
-  QueueUrl ->
-  ReceiptHandle ->
-  m (Either e ())
+  (MonadUnliftIO m) => AWS.Env -> QueueUrl -> ReceiptHandle -> m ()
 deleteMessage' awsEnv (QueueUrl queueUrl) (ReceiptHandle receiptHandle) = do
   let command = AWSSQS.deleteMessage queueUrl receiptHandle
-  void <$> tryRunAWS' awsEnv command
+  void $ runAWS' awsEnv command
 
 -- | Sends any @a@ with a 'ToJSON' instance to the queue with the given 'QueueUrl'. This looks for
 -- the needed AWS environment in your current environment via 'MonadReader', which makes it ideal
--- for usage in a 'MonadReader' based stack (like 'RIO') that implements 'AWS.HasEnv'.
+-- for usage in a 'MonadReader' based stack (like 'RIO') that implements 'AWS.HasEnv'. Throws
+-- 'AWS.Error'.
 sendJSONMessage ::
   ( MonadUnliftIO m,
-    MonadThrow m,
     MonadReader env m,
     AWS.HasEnv env,
-    ToJSON a,
-    Exception e,
-    AWS.AsError e
+    ToJSON a
   ) =>
   QueueUrl ->
   a ->
-  m (Either e (Maybe Text))
+  m (Maybe Text)
 sendJSONMessage queueUrl a = do
   awsEnv <- view AWS.environment
   sendJSONMessage' awsEnv queueUrl a
 
 -- | A'la carte version of 'sendJSONMessage' that takes an environment instead of looking for one in
--- your environment.
-sendJSONMessage' ::
-  (MonadUnliftIO m, MonadThrow m, ToJSON a, Exception e, AWS.AsError e) =>
-  AWS.Env ->
-  QueueUrl ->
-  a ->
-  m (Either e (Maybe Text))
+-- your environment. Throws 'AWS.Error'.
+sendJSONMessage' :: (MonadUnliftIO m, ToJSON a) => AWS.Env -> QueueUrl -> a -> m (Maybe Text)
 sendJSONMessage' awsEnv queueUrl a = do
   a & encode & toStrictBytes & decodeUtf8Lenient & sendMessage' awsEnv queueUrl
 
 -- | Sends 'Text' to the queue with the given 'QueueUrl'. This looks for the needed AWS environment
 -- in your current environment via 'MonadReader', which makes it ideal for usage in a 'MonadReader'
--- based stack (like 'RIO') that implements 'AWS.HasEnv'.
+-- based stack (like 'RIO') that implements 'AWS.HasEnv'. Throws 'AWS.Error'.
 sendMessage ::
-  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, Exception e, AWS.AsError e) =>
+  (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env) =>
   QueueUrl ->
   Text ->
-  m (Either e (Maybe Text))
+  m (Maybe Text)
 sendMessage queueUrl message = do
   awsEnv <- view AWS.environment
   sendMessage' awsEnv queueUrl message
 
 -- | A'la carte version of 'sendMessage' that takes an environment instead of looking for one in
--- your environment.
-sendMessage' ::
-  (MonadUnliftIO m, MonadThrow m, Exception e, AWS.AsError e) =>
-  AWS.Env ->
-  QueueUrl ->
-  Text ->
-  m (Either e (Maybe Text))
+-- your environment. Throws 'AWS.Error'.
+sendMessage' :: (MonadUnliftIO m) => AWS.Env -> QueueUrl -> Text -> m (Maybe Text)
 sendMessage' awsEnv (QueueUrl queueUrl) message = do
-  fmap (^. AWSSQS.smrsMessageId) <$> tryRunAWS' awsEnv (AWSSQS.sendMessage queueUrl message)
+  (^. AWSSQS.smrsMessageId) <$> runAWS' awsEnv (AWSSQS.sendMessage queueUrl message)
 
 -- | Gets the queue attributes of the queue associated with 'QueueUrl'. This looks for the needed
 -- AWS environment in your current environment via 'MonadReader', which makes it ideal for usage in
--- a 'MonadReader' based stack (like 'RIO') that implements 'AWS.HasEnv'.
+-- a 'MonadReader' based stack (like 'RIO') that implements 'AWS.HasEnv'. Throws 'AWS.Error'.
 getQueueAttributes ::
-  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, Exception e, AWS.AsError e) =>
-  QueueUrl ->
-  m (Either e QueueAttributes)
+  (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env) => QueueUrl -> m QueueAttributes
 getQueueAttributes queueUrl = do
   awsEnv <- view AWS.environment
   getQueueAttributes' awsEnv queueUrl
 
 -- | A'la carte version of 'getQueueAttributes' that takes an environment instead of looking for one
--- in your environment.
-getQueueAttributes' ::
-  (MonadUnliftIO m, MonadThrow m, Exception e, AWS.AsError e) =>
-  AWS.Env ->
-  QueueUrl ->
-  m (Either e QueueAttributes)
+-- in your environment. Throws 'AWS.Error'.
+getQueueAttributes' :: (MonadUnliftIO m) => AWS.Env -> QueueUrl -> m QueueAttributes
 getQueueAttributes' awsEnv queueUrl = do
   let command =
         queueUrl & _unQueueUrl & AWSSQS.getQueueAttributes & AWSSQS.gqaAttributeNames
@@ -211,7 +182,21 @@ getQueueAttributes' awsEnv queueUrl = do
                AWSSQS.QANApproximateNumberOfMessagesNotVisible,
                AWSSQS.QANApproximateNumberOfMessagesDelayed
              ]
-  fmap (createQueueAttributes queueUrl) <$> tryRunAWS' awsEnv command
+  createQueueAttributes queueUrl <$> runAWS' awsEnv command
+
+-- | Purges all messages from a queue. This looks for the needed AWS environment in your current
+-- environment via 'MonadReader', which makes it ideal for usage in a 'MonadReader' based stack
+-- (like 'RIO') that implements 'AWS.HasEnv'. Throws 'AWS.Error'.
+purgeQueue :: (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env) => QueueUrl -> m ()
+purgeQueue queueUrl = do
+  awsEnv <- view AWS.environment
+  purgeQueue' awsEnv queueUrl
+
+-- | A'la carte version of 'purgeQueue' that takes an environment instead of looking for one in your
+-- environment. Throws 'AWS.Error'.
+purgeQueue' :: (MonadUnliftIO m) => AWS.Env -> QueueUrl -> m ()
+purgeQueue' awsEnv (QueueUrl queueUrl) = do
+  void $ runAWS' awsEnv (AWSSQS.purgeQueue queueUrl)
 
 createQueueAttributes :: QueueUrl -> AWSSQS.GetQueueAttributesResponse -> QueueAttributes
 createQueueAttributes queueUrl response =
@@ -233,28 +218,3 @@ createQueueAttributes queueUrl response =
           _qaDelayedMessages,
           _qaNotVisibleMessages
         }
-
--- | Purges all messages from a queue. This looks for the needed AWS environment in your current
--- environment via 'MonadReader', which makes it ideal for usage in a 'MonadReader' based stack
--- (like 'RIO') that implements 'AWS.HasEnv'.
-purgeQueue ::
-  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, Exception e, AWS.AsError e) =>
-  QueueUrl ->
-  m (Either e ())
-purgeQueue queueUrl = do
-  awsEnv <- view AWS.environment
-  purgeQueue' awsEnv queueUrl
-
--- | A'la carte version of 'purgeQueue' that takes an environment instead of looking for one in your
--- environment.
-purgeQueue' ::
-  ( MonadUnliftIO m,
-    MonadThrow m,
-    Exception e,
-    AWS.AsError e
-  ) =>
-  AWS.Env ->
-  QueueUrl ->
-  m (Either e ())
-purgeQueue' awsEnv (QueueUrl queueUrl) = do
-  void <$> tryRunAWS' awsEnv (AWSSQS.purgeQueue queueUrl)
