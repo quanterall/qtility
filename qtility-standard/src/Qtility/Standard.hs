@@ -11,7 +11,6 @@ module Qtility.Standard
     rejectUnknownFields,
     allNullaryToStringTag,
     identity,
-    map,
   )
 where
 
@@ -43,7 +42,7 @@ import Qtility.Environment as Export
 import Qtility.Environment.Types as Export
 import Qtility.TH as Export
 import Qtility.TH.JSON as Export
-import RIO as Export hiding (fromEither, fromEitherM, map)
+import RIO as Export hiding (fromEither, fromEitherM)
 import qualified RIO
 
 type AesonOptions = Aeson.Options
@@ -80,6 +79,3 @@ rejectUnknownFields = lens Aeson.rejectUnknownFields (\o f -> o {Aeson.rejectUnk
 
 identity :: a -> a
 identity = RIO.id
-
-map :: (Functor f) => (a -> b) -> f a -> f b
-map = RIO.fmap
