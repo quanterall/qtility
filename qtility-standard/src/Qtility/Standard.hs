@@ -45,8 +45,13 @@ import Qtility.TH.JSON as Export
 import RIO as Export hiding (fromEither, fromEitherM)
 import qualified RIO
 
+-- | A type alias for 'Aeson.Options'. 'Aeson.Options' is unfortunately named and will often clash
+-- with project-specific types called @Options@, so with this we can use 'AesonOptions' to
+-- disambiguate the situation. For a 'Aeson.defaultOptions' alias, see 'defaultAesonOptions'.
 type AesonOptions = Aeson.Options
 
+-- | An alias for 'Aeson.defaultOptions'. See documentation for 'AesonOptions' for more information
+-- on purpose.
 defaultAesonOptions :: AesonOptions
 defaultAesonOptions = Aeson.defaultOptions
 
@@ -77,5 +82,6 @@ tagSingleConstructors =
 rejectUnknownFields :: Lens' AesonOptions Bool
 rejectUnknownFields = lens Aeson.rejectUnknownFields (\o f -> o {Aeson.rejectUnknownFields = f})
 
+-- | An alias for `id`, so we can disambiguate in cases where `id` could mean several things.
 identity :: a -> a
 identity = RIO.id
