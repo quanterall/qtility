@@ -1,6 +1,5 @@
 module Mortred.Session
-  ( tryStartSession,
-    startSession,
+  ( startSession,
     startSessions,
     SessionMode (..),
     SessionStartResult (..),
@@ -68,20 +67,6 @@ waitForScrapingRequest :: (MonadUnliftIO m, MonadThrow m) => SeleniumProcess -> 
 waitForScrapingRequest seleniumProcess action = do
   waitRunSession (Milliseconds 5000) (webdriverConfig $ seleniumProcess ^. spPort) action
 
--- | Tries to start a session, returning 'Left' with a 'SessionStartError' if it fails or 'Right'
--- with a 'SessionStartResult' if it succeeds. Errors that can be expected to be caught here are
--- process read errors (for `google-chrome` & `chromedriver`), display allocation errors (for Xvfb),
--- and Selenium start errors (port allocation, unable to find selenium file) as well as HTTP errors
--- for automatically downloading `chromedriver`.
-tryStartSession ::
-  (MonadUnliftIO m, MonadThrow m, PrimMonad m, MonadFail m) =>
-  SessionMode ->
-  SeleniumPath ->
-  m (Either SessionStartError SessionStartResult)
-tryStartSession sessionMode =
-  startSession sessionMode >>> try
-
--- | Starts a session, throwing a 'SessionStartError' on failure. Use 'tryStartSession' in order to
 -- | Tries to start a session, throwing a 'SessionStartError' if it fails. This includes exceptions
 -- for starting Xvfb, Selenium and reading process output to determine if we have compatible
 -- webdriver versions, etc.
