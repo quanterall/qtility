@@ -42,9 +42,6 @@ extra-deps:
   commit: b3648dd7a6cef282a956bd01cce6428d0ba58bc9
   subdirs:
   - qtility
-  - qtility-data
-  - qtility-th
-  - qtility-environment
   - qtility-brick
   - qaws
   - qaws-s3
