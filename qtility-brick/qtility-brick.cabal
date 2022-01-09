@@ -4,16 +4,20 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           qtility-th
-version:        0.0.0
+name:           qtility-brick
+version:        0.1.0
 build-type:     Simple
 
 library
   exposed-modules:
-      Qtility.TH
-      Qtility.TH.JSON
+      Brick.BChan.Class
+      Brick.Prism
+      Brick.Widgets.FlashMessages
+      Brick.Widgets.FlashMessages.Class
+      Brick.Widgets.FlashMessages.Types
+      Brick.Widgets.Histogram
   other-modules:
-      Paths_qtility_th
+      Paths_qtility_brick
   hs-source-dirs:
       src
   default-extensions:
@@ -62,19 +66,17 @@ library
       TypeApplications
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints -Wwarn=deprecations -Werror=incomplete-patterns
   build-depends:
-      aeson
-    , base >=4.9.1.0 && <5
+      base >=4.9.1.0 && <5
+    , brick
     , lens
     , rio
-    , template-haskell
   default-language: Haskell2010
 
-test-suite qtility-th-test
+test-suite qtility-brick-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      JSONSpec
-      Paths_qtility_th
+      Paths_qtility_brick
   hs-source-dirs:
       test
   default-extensions:
@@ -123,13 +125,10 @@ test-suite qtility-th-test
       TypeApplications
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints -Wwarn=deprecations -Werror=incomplete-patterns -Wall
   build-depends:
-      aeson
-    , base >=4.9.1.0 && <5
-    , hedgehog
+      base >=4.9.1.0 && <5
+    , brick
     , hspec >=2.0.0
-    , hspec-hedgehog
     , lens
-    , qtility-th
+    , qtility-brick
     , rio
-    , template-haskell
   default-language: Haskell2010

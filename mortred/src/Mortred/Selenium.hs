@@ -18,7 +18,7 @@ import Mortred.Types
 import Network.HTTP.Client (HttpException (..), Response (..), httpLbs, parseRequest)
 import Network.HTTP.Client.TLS (getGlobalManager)
 import Numeric (readHex)
-import Qtility.Standard
+import Qtility
 import qualified RIO.ByteString.Lazy as LazyByteString
 import RIO.Directory
   ( Permissions (..),

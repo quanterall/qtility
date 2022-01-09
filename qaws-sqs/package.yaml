@@ -10,8 +10,7 @@ dependencies:
 - amazonka-sqs
 - lens
 - aeson
-- qtility-data
-- qtility-environment
+- qtility
 
 default-extensions:
 - ApplicativeDo

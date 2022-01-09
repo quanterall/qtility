@@ -11,8 +11,8 @@ dependencies:
 - lens
 - rio
 - aeson
-- qtility-environment
 - exceptions
+- qtility
 
 default-extensions:
 - ApplicativeDo

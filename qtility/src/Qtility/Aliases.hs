@@ -1,4 +1,4 @@
-module Qtility.Standard.Aliases where
+module Qtility.Aliases where
 
 import qualified Data.Aeson as Aeson
 import qualified RIO

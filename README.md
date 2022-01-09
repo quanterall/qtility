@@ -12,7 +12,7 @@ basic ideas that follow throughout:
   worry so much about exactly which error interface we're using, but can decide more flexibly at the
   call-site what to do.
 
-## `qtility-standard`
+## `qtility`
 
 This is a standard library/prelude version of several qtility libraries as well as common exports.
 This includes:
@@ -25,11 +25,11 @@ This includes:
 
 ## Other, more specific libraries
 
-- `qtility-code`: Utilities for executing/interpreting Haskell code.
 - `qaws`: Utilities for common general AWS tasks via `amazonka`
 - `qaws-sqs`: Utilities for common usage of AWS Simple Queue Service (SQS).
 - `qaws-s3`: Utilities for common usage of AWS Simple Storage Service (S3).
-- `quanterall-brick`: Utilities for writing `brick` applications.
+- `qtility-brick`: Utilities for writing `brick` applications.
+- `qtility-code`: Utilities for executing/interpreting Haskell code.
 - `mortred`: Utilities for web scraping/frontend testing via `hs-webdriver` & Selenium.
 
 ## Depending on this repo
@@ -41,11 +41,11 @@ extra-deps:
 - github: quanterall/qtility
   commit: b3648dd7a6cef282a956bd01cce6428d0ba58bc9
   subdirs:
-  - qtility-standard
+  - qtility
   - qtility-data
   - qtility-th
   - qtility-environment
-  - quanterall-brick
+  - qtility-brick
   - qaws
   - qaws-s3
 ```

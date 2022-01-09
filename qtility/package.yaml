@@ -1,13 +1,14 @@
-name:    qtility-th
+name:    qtility
 version: "0.0.0"
 
 dependencies:
 
 - base >=4.9.1.0 && <5
-- aeson
 - rio
-- template-haskell
 - lens
+- aeson
+- stm-chans
+- template-haskell
 
 default-extensions:
 - ApplicativeDo
@@ -70,14 +71,13 @@ ghc-options:
 library:
   source-dirs: src
 
+# Runnable executable for our application
 # Test suite
 tests:
-  qtility-th-test:
+  qtility-test:
     main: Spec.hs
     source-dirs: test
     ghc-options: -Wall
     dependencies:
-    - qtility-th
+    - qtility
     - hspec >=2.0.0
-    - hedgehog
-    - hspec-hedgehog

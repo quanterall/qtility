@@ -54,14 +54,14 @@ cradle:
     - path: "./qtility-code/test"
       component: "qtility-code:test:qtility-code-test"
 
-    - path: "./qtility-standard/src"
-      component: "qtility-standard:lib"
+    - path: "./qtility/src"
+      component: "qtility:lib"
 
-    - path: "./qtility-standard/test"
-      component: "qtility-standard:test:qtility-standard-test"
+    - path: "./qtility/test"
+      component: "qtility:test:qtility-test"
 
-    - path: "./quanterall-brick/src"
-      component: "quanterall-brick:lib"
+    - path: "./qtility-brick/src"
+      component: "qtility-brick:lib"
 
-    - path: "./quanterall-brick/test"
-      component: "quanterall-brick:test:quanterall-brick-test"
+    - path: "./qtility-brick/test"
+      component: "qtility-brick:test:qtility-brick-test"

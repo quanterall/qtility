@@ -1,10 +1,11 @@
-name:    qtility-data
-version: "0.0.0"
+name:    qtility-brick
+version: "0.1.0"
 
 dependencies:
 
 - base >=4.9.1.0 && <5
 - rio
+- brick
 - lens
 
 default-extensions:
@@ -70,10 +71,10 @@ library:
 
 # Test suite
 tests:
-  qtility-data-test:
+  qtility-brick-test:
     main: Spec.hs
     source-dirs: test
     ghc-options: -Wall
     dependencies:
-    - qtility-data
+    - qtility-brick
     - hspec >=2.0.0

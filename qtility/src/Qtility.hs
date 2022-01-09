@@ -1,4 +1,4 @@
-module Qtility.Standard
+module Qtility
   ( module Export,
   )
 where
@@ -25,11 +25,11 @@ import Data.Aeson as Export
     (.:?),
     (.=),
   )
+import Qtility.Aeson.Lenses as Export
+import Qtility.Aliases as Export
 import Qtility.Data as Export
 import Qtility.Environment as Export
 import Qtility.Environment.Types as Export
-import Qtility.Standard.Aeson.Lenses as Export
-import Qtility.Standard.Aliases as Export
 import Qtility.TH as Export
 import Qtility.TH.JSON as Export
 import RIO as Export hiding (fromEither, fromEitherM)

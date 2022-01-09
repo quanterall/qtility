@@ -1,4 +1,4 @@
-## qtility-standard
+## qtility
 
 Run this project with:
 

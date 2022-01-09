@@ -1,15 +1,12 @@
 resolver: lts-18.14
 
 packages:
-- ./qtility-environment
-- ./qtility-data
-- ./qtility-th
 - ./qtility-code
-- ./qtility-standard
+- ./qtility
 - ./qaws
 - ./qaws-sqs
 - ./qaws-s3
-- ./quanterall-brick
+- ./qtility-brick
 - ./mortred
 
 allow-different-user: true

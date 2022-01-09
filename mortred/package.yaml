@@ -33,9 +33,7 @@ dependencies:
 - async
 - scalpel
 - aeson
-- qtility-data
-- qtility-th
-- qtility-standard
+- qtility
 - lens
 
 default-extensions:

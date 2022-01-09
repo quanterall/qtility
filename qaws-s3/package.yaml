@@ -14,8 +14,7 @@ dependencies:
 - conduit
 - safe-exceptions
 - data-default
-- qtility-data
-- qtility-th
+- qtility
 
 default-extensions:
 - ApplicativeDo

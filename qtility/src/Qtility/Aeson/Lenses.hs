@@ -1,8 +1,8 @@
-module Qtility.Standard.Aeson.Lenses where
+module Qtility.Aeson.Lenses where
 
 import Data.Aeson (SumEncoding (..))
 import qualified Data.Aeson as Aeson
-import Qtility.Standard.Aliases (AesonOptions)
+import Qtility.Aliases (AesonOptions)
 import RIO
 
 fieldLabelModifier :: Lens' AesonOptions (String -> String)

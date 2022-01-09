@@ -96,9 +96,7 @@ library
     , http-conduit
     , http-types
     , lens
-    , qtility-data
-    , qtility-standard
-    , qtility-th
+    , qtility
     , rio
     , scalpel
     , stm
@@ -176,9 +174,7 @@ executable mortred
     , http-types
     , lens
     , mortred
-    , qtility-data
-    , qtility-standard
-    , qtility-th
+    , qtility
     , rio
     , scalpel
     , stm
@@ -258,9 +254,7 @@ test-suite mortred-test
     , http-types
     , lens
     , mortred
-    , qtility-data
-    , qtility-standard
-    , qtility-th
+    , qtility
     , rio
     , scalpel
     , stm

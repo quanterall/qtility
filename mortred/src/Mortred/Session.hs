@@ -17,12 +17,11 @@ module Mortred.Session
   )
 where
 
-import Control.Concurrent.STM.TBMQueue (TBMQueue, newTBMQueueIO, readTBMQueue, writeTBMQueue)
 import Mortred.Selenium
 import Mortred.Types
 import Mortred.Xvfb
 import Network.HTTP.Client (HttpException)
-import Qtility.Standard
+import Qtility
 import System.Process.Typed (stopProcess)
 import Test.WebDriver (Browser (..), WD, WDConfig (..), defaultConfig, runSession, useBrowser)
 
