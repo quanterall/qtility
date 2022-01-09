@@ -10,6 +10,7 @@ dependencies:
 - qtility-data
 - qtility-th
 - qtility-environment
+- stm-chans
 
 default-extensions:
 - ApplicativeDo

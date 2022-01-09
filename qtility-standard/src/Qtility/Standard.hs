@@ -15,6 +15,8 @@ module Qtility.Standard
   )
 where
 
+import Control.Concurrent.STM.TBMChan as Export
+import Control.Concurrent.STM.TBMQueue as Export
 import Control.Lens as Export (re, (#))
 import Control.Lens.Prism as Export
 import Control.Lens.TH as Export (makeClassy, makeClassyPrisms, makeLenses, makeWrapped)
