@@ -23,25 +23,25 @@ import qualified Network.AWS.Data.Body as AWS
 import Network.AWS.QAWS
 import Network.AWS.QAWS.S3.Types
 import qualified Network.AWS.S3 as AWSS3
-import Qtility.Data (unwrap)
+import Qtility.Data (tryAs, unwrap)
 import RIO
 import qualified RIO.HashMap as HashMap
 
 objectExists ::
-  (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env) =>
+  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, Exception e, AWS.AsError e) =>
   AWSS3.BucketName ->
   AWSS3.ObjectKey ->
-  m (Either AWS.Error Bool)
+  m (Either e Bool)
 objectExists bucketName objectKey = do
   awsEnv <- view AWS.environment
   objectExists' awsEnv bucketName objectKey
 
 objectExists' ::
-  (MonadUnliftIO m) =>
+  (MonadUnliftIO m, MonadThrow m, Exception e, AWS.AsError e) =>
   AWS.Env ->
   AWSS3.BucketName ->
   AWSS3.ObjectKey ->
-  m (Either AWS.Error Bool)
+  m (Either e Bool)
 objectExists' awsEnv bucket key = do
   let command = AWSS3.headObject bucket key
   either Left (((^. AWSS3.horsResponseStatus) >>> (== 200)) >>> Right) <$> tryRunAWS' awsEnv command
@@ -56,67 +56,81 @@ getFileStream bucket key = do
   ((^. AWSS3.gorsBody) >>> AWS._streamBody) <$> AWS.send command
 
 runWithFileStream ::
-  (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env) =>
+  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, Exception e, AWS.AsError e) =>
   AWSS3.BucketName ->
   AWSS3.ObjectKey ->
   ConduitT ByteString Void (ResourceT IO) a ->
-  m (Either AWS.Error a)
+  m (Either e a)
 runWithFileStream bucket key downstream = do
   awsEnv <- view AWS.environment
   runWithFileStream' awsEnv bucket key downstream
 
 runWithFileStream' ::
-  (MonadUnliftIO m) =>
+  (MonadUnliftIO m, MonadThrow m, Exception e, AWS.AsError e) =>
   AWS.Env ->
   AWSS3.BucketName ->
   AWSS3.ObjectKey ->
   ConduitT ByteString Void (ResourceT IO) a ->
-  m (Either AWS.Error a)
+  m (Either e a)
 runWithFileStream' awsEnv bucket key downstream = do
-  try $
+  tryAs AWS._Error $
     AWS.runResourceT $
       AWS.runAWS awsEnv $ do
         fileStream <- getFileStream bucket key
         liftIO $ runConduitRes $ fileStream .| downstream
 
 putObject ::
-  (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env, AWS.ToBody a) =>
+  ( MonadUnliftIO m,
+    MonadThrow m,
+    MonadReader env m,
+    AWS.HasEnv env,
+    AWS.ToBody a,
+    Exception e,
+    AWS.AsError e
+  ) =>
   AWSS3.BucketName ->
   AWSS3.ObjectKey ->
   a ->
-  m (Either AWS.Error ())
+  m (Either e ())
 putObject bucket key a = do
   awsEnv <- view AWS.environment
   putObject' awsEnv bucket key a
 
 putObject' ::
-  (MonadUnliftIO m, AWS.ToBody a) =>
+  (MonadUnliftIO m, MonadThrow m, AWS.ToBody a, Exception e, AWS.AsError e) =>
   AWS.Env ->
   AWSS3.BucketName ->
   AWSS3.ObjectKey ->
   a ->
-  m (Either AWS.Error ())
+  m (Either e ())
 putObject' awsEnv bucket key a = do
   let command = AWSS3.putObject bucket key (AWS.toBody a)
   void <$> tryRunAWS' awsEnv command
 
 putJSON ::
-  (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env, ToJSON a) =>
+  ( MonadUnliftIO m,
+    MonadThrow m,
+    MonadReader env m,
+    AWS.HasEnv env,
+    ToJSON a,
+    Exception e,
+    AWS.AsError e
+  ) =>
   AWSS3.BucketName ->
   AWSS3.ObjectKey ->
   a ->
-  m (Either AWS.Error ())
+  m (Either e ())
 putJSON bucket key a = do
   awsEnv <- view AWS.environment
   putJSON' awsEnv bucket key a
 
 putJSON' ::
-  (MonadUnliftIO m, ToJSON a) =>
+  (MonadUnliftIO m, MonadThrow m, ToJSON a, Exception e, AWS.AsError e) =>
   AWS.Env ->
   AWSS3.BucketName ->
   AWSS3.ObjectKey ->
   a ->
-  m (Either AWS.Error ())
+  m (Either e ())
 putJSON' awsEnv bucket key a = do
   let command =
         AWSS3.putObject bucket key (AWS.toBody (encode a))
@@ -125,20 +139,20 @@ putJSON' awsEnv bucket key a = do
   void <$> tryRunAWS' awsEnv command
 
 listObjects ::
-  (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env) =>
+  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, Exception e, AWS.AsError e) =>
   AWSS3.BucketName ->
   ListObjectOptions ->
-  m (Either AWS.Error ([AWSS3.Object], Maybe ContinuationToken))
+  m (Either e ([AWSS3.Object], Maybe ContinuationToken))
 listObjects bucket listObjectOptions = do
   awsEnv <- view AWS.environment
   listObjects' awsEnv bucket listObjectOptions
 
 listObjects' ::
-  (MonadUnliftIO m) =>
+  (MonadUnliftIO m, MonadThrow m, Exception e, AWS.AsError e) =>
   AWS.Env ->
   AWSS3.BucketName ->
   ListObjectOptions ->
-  m (Either AWS.Error ([AWSS3.Object], Maybe ContinuationToken))
+  m (Either e ([AWSS3.Object], Maybe ContinuationToken))
 listObjects' awsEnv bucket listOptions = do
   let command =
         AWSS3.listObjectsV2 bucket

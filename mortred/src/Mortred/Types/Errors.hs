@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Mortred.Types.Errors where
 
 import Data.Conduit.Serialization.Binary (ParseError)
@@ -33,6 +35,8 @@ data SessionStartError
   | SeleniumSessionError SeleniumStartError
   deriving (Show)
 
+instance Exception SessionStartError
+
 -- | Error representing a failure to set up @chromedriver@.
 data ChromeDriverSetupError
   = -- | Unable to find @google-chrome@, which means we don't know which @chromedriver@ version to
@@ -66,8 +70,6 @@ data SeleniumStartError
 
 instance Exception SeleniumStartError
 
-instance Exception SessionStartError
-
 data SessionRunTimedOut = SessionRunTimedOut
   { _srtoPort :: Int,
     _srtoHost :: String,
@@ -81,3 +83,14 @@ data SessionPoolClosed = SessionPoolClosed
   deriving (Show)
 
 instance Exception SessionPoolClosed
+
+foldMapM
+  makeClassyPrisms
+  [ ''XvfbStartError,
+    ''SessionMode,
+    ''SessionStartResult,
+    ''SeleniumStartError,
+    ''SessionRunTimedOut,
+    ''SessionPoolClosed,
+    ''ChromeDriverSetupError
+  ]

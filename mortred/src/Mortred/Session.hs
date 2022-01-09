@@ -3,7 +3,6 @@ module Mortred.Session
     startSessions,
     SessionMode (..),
     SessionStartResult (..),
-    SessionStartError (..),
     stopSession,
     waitRunSession,
     SessionRunTimedOut (..),

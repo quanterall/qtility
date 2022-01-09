@@ -9,12 +9,11 @@ import Conduit
 import Control.Lens.Combinators
 import qualified Data.ByteString.Char8 as Char8
 import qualified Data.Conduit.Binary as CB
-import Data.Conduit.Serialization.Binary (ParseError)
 import qualified Data.Text as DataText
 import qualified Data.Text.IO as TIO
 import Mortred.Types
 import Mortred.Types.Errors
-import Network.HTTP.Client (HttpException (..), Response (..), httpLbs, parseRequest)
+import Network.HTTP.Client (Response (..), httpLbs, parseRequest)
 import Network.HTTP.Client.TLS (getGlobalManager)
 import Numeric (readHex)
 import Qtility

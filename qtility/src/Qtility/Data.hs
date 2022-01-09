@@ -1,5 +1,6 @@
 module Qtility.Data where
 
+import Control.Lens ((#))
 import Control.Lens.Prism (Prism', prism')
 import Control.Lens.Wrapped (Unwrapped, Wrapped, _Unwrapped', _Wrapped')
 import RIO hiding (fromEither, fromEitherM)
@@ -20,6 +21,17 @@ tReadMaybe = Text.unpack >>> readMaybe
 -- | 'Prism'' for reading a value from 'Text'
 fromText :: (Read a, Show a) => Prism' Text a
 fromText = prism' tshow tReadMaybe
+
+-- | Takes a prism and an action to run. If the action fails with an exception matching the prism,
+-- the exception is caught and wrapped up in an 'Either'. Notably this does not narrow the type of
+-- the exception like 'Control.Exception.Lens.catching' does.
+tryAs :: (MonadThrow m, MonadUnliftIO m, Exception e) => Prism' e e' -> m a -> m (Either e a)
+tryAs p m = catchJust (^? p) (Right <$> m) ((p #) >>> Left >>> pure)
+
+-- | Takes a @'Prism' e e'@ and maps a `Left e'` to a `Left e`. This widens the error type into what
+-- is probably idiomatically an `AsError` class.
+mapLeftAs :: Prism' e e' -> Either e' a -> Either e a
+mapLeftAs p = mapLeft (p #)
 
 -- | Throws an exception from an @Either e a@ where @e@ is an 'Exception'.
 fromEither :: (Exception e, MonadThrow m) => Either e a -> m a

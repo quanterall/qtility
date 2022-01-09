@@ -3,10 +3,12 @@ module Network.AWS.QAWS where
 import Control.Monad.Catch (MonadCatch)
 import qualified Network.AWS as AWS
 import qualified Network.AWS.Auth as AWS
+import Qtility.Data (tryAs)
 import Qtility.Environment (loadDotEnvFile)
 import Qtility.Environment.Types
 import RIO
 
+-- @TODO: add a `Types` module for this
 data LoadEnvironmentError
   = LoadEnvironmentNotFoundError EnvironmentFileNotFound
   | LoadEnvironmentAWSAuthError AWS.AuthError
@@ -25,10 +27,17 @@ loadAWSEnvironment environmentFile = do
   mapExceptionM LoadEnvironmentAWSAuthError $ AWS.newEnv AWS.Discover
 
 tryRunAWS ::
-  (MonadReader env m, AWS.AWSRequest a, AWS.HasEnv env, MonadUnliftIO m) =>
+  ( MonadReader env m,
+    AWS.AWSRequest a,
+    AWS.HasEnv env,
+    MonadUnliftIO m,
+    MonadCatch m,
+    AWS.AsError e,
+    Exception e
+  ) =>
   a ->
-  m (Either AWS.Error (AWS.Rs a))
-tryRunAWS = runAWS >>> try
+  m (Either e (AWS.Rs a))
+tryRunAWS a = tryAs AWS._Error $ runAWS a
 
 runAWS ::
   (MonadReader env m, AWS.AWSRequest a, AWS.HasEnv env, MonadUnliftIO m) =>
@@ -39,11 +48,11 @@ runAWS action = do
   AWS.runResourceT $ AWS.runAWS awsEnvironment $ AWS.send action
 
 tryRunAWS' ::
-  (AWS.AWSRequest a, MonadUnliftIO m) =>
+  (AWS.AWSRequest a, MonadUnliftIO m, MonadThrow m, Exception e, AWS.AsError e) =>
   AWS.Env ->
   a ->
-  m (Either AWS.Error (AWS.Rs a))
-tryRunAWS' env = runAWS' env >>> try
+  m (Either e (AWS.Rs a))
+tryRunAWS' env = runAWS' env >>> tryAs AWS._Error
 
 runAWS' ::
   (AWS.AWSRequest a, MonadUnliftIO m) =>
