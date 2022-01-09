@@ -19,48 +19,12 @@ where
 
 import Mortred.Selenium
 import Mortred.Types
+import Mortred.Types.Errors
 import Mortred.Xvfb
 import Network.HTTP.Client (HttpException)
 import Qtility
 import System.Process.Typed (stopProcess)
 import Test.WebDriver (Browser (..), WD, WDConfig (..), defaultConfig, runSession, useBrowser)
-
--- | Defines how to handle potential starting up of Xvfb & Selenium.
-data SessionMode
-  = -- | Start Xvfb and Selenium.
-    SessionOnDemand
-  | -- | Don't start Xvfb and Selenium.
-    SessionAlreadyStarted SeleniumPort
-  deriving (Eq, Show)
-
--- | The result of successfully starting a session.
-data SessionStartResult
-  = -- | Xvfb and Selenium were started and here is the Selenium process.
-    StartedOnDemand !SeleniumProcess
-  | -- | The session was premade and here is the port to connect to.
-    PremadeSession !SeleniumPort
-  deriving (Show)
-
-data SessionStartError
-  = XvfbSessionError XvfbStartError
-  | SeleniumSessionError SeleniumStartError
-  deriving (Show)
-
-instance Exception SessionStartError
-
-data SessionRunTimedOut = SessionRunTimedOut
-  { port :: Int,
-    host :: String,
-    milliseconds :: Milliseconds
-  }
-  deriving (Show)
-
-instance Exception SessionRunTimedOut
-
-data SessionPoolClosed = SessionPoolClosed
-  deriving (Show)
-
-instance Exception SessionPoolClosed
 
 -- | Creates a pool of sessions that can be checked out so that one can run scraping actions. Throws
 -- 'SessionStartError' on failure and the already started sessions are cleaned up.
@@ -118,7 +82,9 @@ tryStartSession sessionMode =
   startSession sessionMode >>> try
 
 -- | Starts a session, throwing a 'SessionStartError' on failure. Use 'tryStartSession' in order to
--- automatically capture this error.
+-- | Tries to start a session, throwing a 'SessionStartError' if it fails. This includes exceptions
+-- for starting Xvfb, Selenium and reading process output to determine if we have compatible
+-- webdriver versions, etc.
 startSession ::
   (MonadThrow m, MonadUnliftIO m, PrimMonad m, MonadFail m) =>
   SessionMode ->

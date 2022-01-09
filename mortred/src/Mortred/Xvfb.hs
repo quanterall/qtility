@@ -1,12 +1,12 @@
 module Mortred.Xvfb
   ( startXvfb,
     startXvfbWithDisplay,
-    XvfbStartError (..),
     allocateDisplayNumber,
   )
 where
 
 import Mortred.Types
+import Mortred.Types.Errors
 import Qtility.Data (findM, fromMaybeM, unwrap)
 import RIO
 import RIO.Directory (doesFileExist)
@@ -18,13 +18,6 @@ import System.Process.Typed
     setStdout,
     startProcess,
   )
-
-data XvfbStartError
-  = XvfbProcessError IOException
-  | UnableToAllocateDisplay
-  deriving (Eq, Show)
-
-instance Exception XvfbStartError
 
 -- | Attempts to start an `Xvfb` process. Throws 'XvfbStartError' on failure.
 startXvfb :: (MonadThrow m, MonadUnliftIO m) => m XvfbProcess

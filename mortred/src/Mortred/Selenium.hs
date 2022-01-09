@@ -1,8 +1,6 @@
 module Mortred.Selenium
   ( startSelenium,
     startSeleniumOnPort,
-    SeleniumStartError (..),
-    ChromeDriverSetupError (..),
   )
 where
 
@@ -15,6 +13,7 @@ import Data.Conduit.Serialization.Binary (ParseError)
 import qualified Data.Text as DataText
 import qualified Data.Text.IO as TIO
 import Mortred.Types
+import Mortred.Types.Errors
 import Network.HTTP.Client (HttpException (..), Response (..), httpLbs, parseRequest)
 import Network.HTTP.Client.TLS (getGlobalManager)
 import Numeric (readHex)
@@ -37,39 +36,6 @@ import qualified RIO.Text as Text
 import System.Environment (getEnv)
 import System.IO (putStrLn)
 import System.Process.Typed
-
--- | Error representing a failure to set up @chromedriver@.
-data ChromeDriverSetupError
-  = -- | Unable to find @google-chrome@, which means we don't know which @chromedriver@ version to
-    -- download.
-    ChromeBinaryNotFound
-  | -- | The chrome version we have has no valid @chromedriver@ version to download.
-    NoValidChromeDriverUrl ChromeVersion
-  | -- | The extracted major version of @google-chrome@ or @chromedriver@ is not supported.
-    UnsupportedMajorVersion Text
-  | -- | Unable to read the output of @google-chrome --version@.
-    BadChromeVersionOutput LByteString
-  | -- | Something went wrong when getting the output of @google-chrome --version@.
-    UnableToReadChromeProcess FilePath IOException
-  | -- | Something went wrong when downloading @chromedriver@.
-    DownloadError Url HttpException
-  | -- | Something went wrong when unzipping @chromedriver@.
-    UnzipError ParseError
-  deriving (Show)
-
-instance Exception ChromeDriverSetupError
-
--- | Represents a failure to start Selenium.
-data SeleniumStartError
-  = -- | Unable to find Selenium at the given 'SeleniumPath'.
-    SeleniumNotFound SeleniumPath
-  | -- | We were unable to fulfill the pre-requisites of setting up @chromedriver@.
-    SeleniumStartChromeDriverError ChromeDriverSetupError
-  | -- | The @google-chrome@ and @chromedriver@ we have do not have matching major versions.
-    VersionMismatch ChromeVersion ChromeDriverVersion
-  deriving (Show)
-
-instance Exception SeleniumStartError
 
 -- | Starts a Selenium server backed by a given `Xvfb` process. The `SeleniumPath` parameter should
 -- point to the actual JAR-file to run. Throws `SeleniumStartError` if the Selenium server cannot be

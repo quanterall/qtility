@@ -31,6 +31,7 @@ library
       Mortred.Selenium
       Mortred.Session
       Mortred.Types
+      Mortred.Types.Errors
       Mortred.WebDriver.Queries
       Mortred.Xvfb
   other-modules:
