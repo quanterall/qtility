@@ -19,9 +19,9 @@ This includes:
 
 - `RIO`
 - Common parts of `Data.Aeson` (including lenses for `AesonOptions`)
-- Re-works of `fromX` functions that take `Maybe`/`Either` and throw from them (`qtility-data`)
-- TemplateHaskell helpers for JSON & lenses (`qtility-th`)
-- Utilities for dealing with environment variables/`.env` files (`qtility-environment`)
+- Re-works of `fromX` functions that take `Maybe`/`Either` and throw from them
+- TemplateHaskell helpers
+- Utilities for dealing with environment variables/`.env` files
 
 ## Other, more specific libraries
 
