@@ -11,6 +11,8 @@ build-type:     Simple
 library
   exposed-modules:
       Qtility.Standard
+      Qtility.Standard.Aeson.Lenses
+      Qtility.Standard.Aliases
   other-modules:
       Paths_qtility_standard
   hs-source-dirs:
