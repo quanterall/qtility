@@ -19,6 +19,7 @@ library
       Qtility.Environment.Types
       Qtility.TH
       Qtility.TH.JSON
+      Qtility.TH.Optics
   other-modules:
       Paths_qtility
   hs-source-dirs:

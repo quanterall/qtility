@@ -2,9 +2,9 @@
 
 module Qtility.Environment.Types where
 
-import Control.Exception.Lens (exception)
 import Control.Lens.TH (makeClassyPrisms, makeLenses)
 import Data.Aeson (FromJSON, ToJSON)
+import Qtility.TH.Optics (makeClassyException)
 import RIO
 
 newtype EnvironmentKey = EnvironmentKey {_unEnvironmentKey :: String}
@@ -17,8 +17,6 @@ data ReadEnvironmentVariableError
   = ReadEnvironmentInvalidValue !EnvironmentKey !EnvironmentValue !String
   | ReadEnvironmentMissingValue !EnvironmentKey
   deriving (Eq, Show)
-
-instance Exception ReadEnvironmentVariableError
 
 newtype EnvironmentFile = EnvironmentFile {_unEnvironmentFile :: FilePath}
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
@@ -37,7 +35,6 @@ foldMapM
     ''EnvironmentFileNotFound
   ]
 
-foldMapM makeClassyPrisms [''ReadEnvironmentVariableError, ''EnvironmentFileNotFound]
+foldMapM makeClassyPrisms [''EnvironmentFileNotFound]
 
-instance AsReadEnvironmentVariableError SomeException where
-  _ReadEnvironmentVariableError = exception
+foldMapM makeClassyException [''ReadEnvironmentVariableError]
