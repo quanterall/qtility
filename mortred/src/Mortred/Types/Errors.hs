@@ -6,13 +6,12 @@ import Data.Conduit.Serialization.Binary (ParseError)
 import Mortred.Types
 import Network.HTTP.Client (HttpException (..))
 import Qtility
+import Qtility.TH.Optics (makeClassyException)
 
 data XvfbStartError
   = XvfbProcessError IOException
   | UnableToAllocateDisplay
   deriving (Eq, Show)
-
-instance Exception XvfbStartError
 
 -- | Defines how to handle potential starting up of Xvfb & Selenium.
 data SessionMode
@@ -35,8 +34,6 @@ data SessionStartError
   | SeleniumSessionError SeleniumStartError
   deriving (Show)
 
-instance Exception SessionStartError
-
 -- | Error representing a failure to set up @chromedriver@.
 data ChromeDriverSetupError
   = -- | Unable to find @google-chrome@, which means we don't know which @chromedriver@ version to
@@ -56,8 +53,6 @@ data ChromeDriverSetupError
     UnzipError ParseError
   deriving (Show)
 
-instance Exception ChromeDriverSetupError
-
 -- | Represents a failure to start Selenium.
 data SeleniumStartError
   = -- | Unable to find Selenium at the given 'SeleniumPath'.
@@ -67,8 +62,6 @@ data SeleniumStartError
   | -- | The @google-chrome@ and @chromedriver@ we have do not have matching major versions.
     VersionMismatch ChromeVersion ChromeDriverVersion
   deriving (Show)
-
-instance Exception SeleniumStartError
 
 data SessionRunTimedOut = SessionRunTimedOut
   { _srtoPort :: Int,
@@ -84,13 +77,14 @@ data SessionPoolClosed = SessionPoolClosed
 
 instance Exception SessionPoolClosed
 
+foldMapM makeClassyPrisms [''SessionRunTimedOut, ''SessionPoolClosed]
+
 foldMapM
-  makeClassyPrisms
+  makeClassyException
   [ ''XvfbStartError,
     ''SessionMode,
     ''SessionStartResult,
+    ''SessionStartError,
     ''SeleniumStartError,
-    ''SessionRunTimedOut,
-    ''SessionPoolClosed,
     ''ChromeDriverSetupError
   ]

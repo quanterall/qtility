@@ -2,19 +2,11 @@ module Network.AWS.QAWS where
 
 import Control.Monad.Catch (MonadCatch)
 import qualified Network.AWS as AWS
-import qualified Network.AWS.Auth as AWS
+import Network.AWS.QAWS.Types
 import Qtility.Data (tryAs)
 import Qtility.Environment (loadDotEnvFile)
 import Qtility.Environment.Types
 import RIO
-
--- @TODO: add a `Types` module for this
-data LoadEnvironmentError
-  = LoadEnvironmentNotFoundError EnvironmentFileNotFound
-  | LoadEnvironmentAWSAuthError AWS.AuthError
-  deriving (Show)
-
-instance Exception LoadEnvironmentError
 
 -- | Loads the available AWS environment in part with the help of the given 'EnvironmentFile'. The
 -- environment file is read and injected into the process environment, and the values that make up

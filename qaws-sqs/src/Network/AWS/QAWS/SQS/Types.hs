@@ -2,11 +2,12 @@
 
 module Network.AWS.QAWS.SQS.Types where
 
-import Control.Lens.TH (makeClassyPrisms, makeLenses)
+import Control.Lens.TH (makeLenses)
 import Data.Aeson (FromJSON (..), ToJSON (..))
 import qualified Network.AWS as AWS
 import Network.AWS.QAWS.Types (ARN)
 import Qtility.Environment (FromEnvironmentValue (..))
+import Qtility.TH.Optics (makeClassyException)
 import RIO
 
 newtype QueueUrl = QueueUrl {_unQueueUrl :: Text}
@@ -53,8 +54,6 @@ data ReceivePayloadError
   | ReceivePayloadNoMessageId
   deriving (Show)
 
-instance Exception ReceivePayloadError
-
 data QueueAttributes = QueueAttributes
   { _qaArn :: !(Maybe ARN),
     _qaUrl :: !QueueUrl,
@@ -78,4 +77,4 @@ foldMapM
     ''QueueAttributes
   ]
 
-foldMapM makeClassyPrisms [''ReceivePayloadError]
+foldMapM makeClassyException [''ReceivePayloadError]
