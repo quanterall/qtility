@@ -29,9 +29,18 @@ import Data.Aeson as Export
   )
 import Qtility.Aeson.Lenses as Export
 import Qtility.Aliases as Export
+import Qtility.Aliases.IOErrorLens as Export
 import Qtility.Data as Export
 import Qtility.Environment as Export
 import Qtility.Environment.Types as Export
 import Qtility.TH as Export
 import Qtility.TH.JSON as Export
 import RIO as Export hiding (Handler, catches, catchesDeep, fromEither, fromEitherM)
+import System.IO.Error.Lens as Export hiding
+  ( description,
+    errno,
+    errorType,
+    fileName,
+    handle,
+    location,
+  )

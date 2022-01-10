@@ -13,6 +13,7 @@ library
       Qtility
       Qtility.Aeson.Lenses
       Qtility.Aliases
+      Qtility.Aliases.IOErrorLens
       Qtility.Data
       Qtility.Data.Types
       Qtility.Environment
