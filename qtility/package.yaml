@@ -9,6 +9,7 @@ dependencies:
 - aeson
 - stm-chans
 - template-haskell
+- safe-exceptions
 
 default-extensions:
 - ApplicativeDo

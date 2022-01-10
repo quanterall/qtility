@@ -6,6 +6,7 @@ where
 import Control.Concurrent.STM.TBMChan as Export
 import Control.Concurrent.STM.TBMQueue as Export
 import Control.Exception.Lens as Export
+import Control.Exception.Safe as Export (Handler, catches, catchesDeep)
 import Control.Lens as Export (re, (#))
 import Control.Lens.Prism as Export
 import Control.Lens.TH as Export (makeClassy, makeClassyPrisms, makeLenses, makeWrapped)
@@ -33,4 +34,4 @@ import Qtility.Environment as Export
 import Qtility.Environment.Types as Export
 import Qtility.TH as Export
 import Qtility.TH.JSON as Export
-import RIO as Export hiding (fromEither, fromEitherM)
+import RIO as Export hiding (Handler, catches, catchesDeep, fromEither, fromEitherM)
