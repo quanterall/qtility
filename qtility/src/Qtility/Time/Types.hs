@@ -2,7 +2,7 @@
 
 module Qtility.Time.Types where
 
-import Control.Lens.TH (makeLenses)
+import Control.Lens.TH (makeLenses, makeWrapped)
 import RIO
 import RIO.Time (NominalDiffTime)
 
@@ -22,3 +22,5 @@ data TimedResult a = TimedResult
   deriving (Eq, Show, Generic)
 
 foldMapM makeLenses [''Seconds, ''Milliseconds, ''Microseconds, ''TimedResult]
+
+foldMapM makeWrapped [''Seconds, ''Milliseconds, ''Microseconds]
