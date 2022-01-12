@@ -4,6 +4,7 @@
 module Mortred.Types where
 
 import Control.Lens.TH (makeLenses, makeWrapped)
+import Qtility.Time.Types (Milliseconds)
 import RIO
 import System.Process.Typed (Process)
 
@@ -25,9 +26,6 @@ newtype Url = Url {_unUrl :: String}
   deriving (Eq, Show, Generic)
 
 newtype MajorVersion = MajorVersion {_unMajorVersion :: Int}
-  deriving (Eq, Show, Generic)
-
-newtype Milliseconds = Milliseconds {_unMilliseconds :: Int}
   deriving (Eq, Show, Generic)
 
 newtype ChromeVersion = ChromeVersion {_unChromeVersion :: MajorVersion}
@@ -80,7 +78,6 @@ foldMapM
     ''PortNumber,
     ''Url,
     ''MajorVersion,
-    ''Milliseconds,
     ''ChromeVersion,
     ''ChromeDriverVersion
   ]

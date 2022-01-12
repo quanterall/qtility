@@ -4,6 +4,7 @@ module Mortred.Indeed where
 import Mortred.Session
 import Mortred.Types
 import Qtility.Data (fromMaybeM)
+import Qtility.Time.Types (Milliseconds (..))
 import RIO
 import qualified RIO.List as List
 import qualified RIO.Text as Text

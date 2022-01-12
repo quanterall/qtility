@@ -7,6 +7,7 @@ import Mortred.Types
 import Network.HTTP.Client (HttpException (..))
 import Qtility
 import Qtility.TH.Optics (makeClassyException)
+import Qtility.Time.Types (Milliseconds)
 
 data XvfbStartError
   = XvfbProcessError IOException
@@ -66,7 +67,7 @@ data SeleniumStartError
 data SessionRunTimedOut = SessionRunTimedOut
   { _srtoPort :: Int,
     _srtoHost :: String,
-    _srtoMilliseconds :: Milliseconds
+    _srtoMilliseconds :: Milliseconds Int
   }
   deriving (Show)
 
