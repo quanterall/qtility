@@ -2,7 +2,7 @@
 
 module Qtility.Data.Types where
 
-import Control.Lens.TH (makeLenses)
+import Control.Lens.TH (makeLenses, makeWrapped)
 import RIO
 
 newtype Seconds a = Seconds {_unSeconds :: a}
@@ -15,3 +15,5 @@ newtype Microseconds a = Microseconds {_unMicroseconds :: a}
   deriving (Eq, Show)
 
 foldMapM makeLenses [''Seconds, ''Milliseconds, ''Microseconds]
+
+foldMapM makeWrapped [''Seconds, ''Milliseconds, ''Microseconds]
