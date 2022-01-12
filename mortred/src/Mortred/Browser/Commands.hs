@@ -1,7 +1,7 @@
 -- | Holds commands to execute client-side.
 module Mortred.Browser.Commands where
 
-import Qtility.Data.Types (Seconds (..))
+import Qtility.Time.Types (Seconds (..))
 import RIO
 import Test.WebDriver
 import Test.WebDriver.Commands.Wait
