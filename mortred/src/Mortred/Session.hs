@@ -21,7 +21,7 @@ import Mortred.Types.Errors
 import Mortred.Xvfb
 import Network.HTTP.Client (HttpException)
 import Qtility
-import Qtility.Data.Types (Milliseconds (..))
+import Qtility.Time.Types (Milliseconds (..))
 import System.Process.Typed (stopProcess)
 import Test.WebDriver (Browser (..), WD, WDConfig (..), defaultConfig, runSession, useBrowser)
 

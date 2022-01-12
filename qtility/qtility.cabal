@@ -15,12 +15,13 @@ library
       Qtility.Aliases
       Qtility.Aliases.IOErrorLens
       Qtility.Data
-      Qtility.Data.Types
       Qtility.Environment
       Qtility.Environment.Types
       Qtility.TH
       Qtility.TH.JSON
       Qtility.TH.Optics
+      Qtility.Time
+      Qtility.Time.Types
   other-modules:
       Paths_qtility
   hs-source-dirs:

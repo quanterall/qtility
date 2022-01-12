@@ -3,7 +3,7 @@ module Main where
 import Mortred.Browser.Commands (waitForVisibleElement)
 import Mortred.Session (createSessionPool, waitForScrapingRequest, withSession)
 import Mortred.Types
-import Qtility.Data.Types (Seconds (..))
+import Qtility.Time.Types (Seconds (..))
 import RIO hiding (link)
 import System.IO (print)
 import Test.WebDriver (Selector (..), WD, closeSession, maximize, openPage, screenshot)

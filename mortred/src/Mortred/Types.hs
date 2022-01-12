@@ -4,7 +4,7 @@
 module Mortred.Types where
 
 import Control.Lens.TH (makeLenses, makeWrapped)
-import Qtility.Data.Types (Milliseconds)
+import Qtility.Time.Types (Milliseconds)
 import RIO
 import System.Process.Typed (Process)
 

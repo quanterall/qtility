@@ -6,8 +6,8 @@ import Data.Conduit.Serialization.Binary (ParseError)
 import Mortred.Types
 import Network.HTTP.Client (HttpException (..))
 import Qtility
-import Qtility.Data.Types (Milliseconds)
 import Qtility.TH.Optics (makeClassyException)
+import Qtility.Time.Types (Milliseconds)
 
 data XvfbStartError
   = XvfbProcessError IOException
