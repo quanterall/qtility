@@ -152,14 +152,14 @@ getBinaryVersionText path = do
 getChromeVersion :: (MonadThrow m, MonadUnliftIO m) => FilePath -> m ChromeVersion
 getChromeVersion path = do
   output <- liftIO $ getBinaryVersionText path
-  case output & LazyByteString.toStrict & decodeUtf8Lenient & Text.strip & Text.split (== ' ') of
+  case splitOnSpaces output of
     _google : _chrome : version : _ -> ChromeVersion <$> constructMajorVersion version
     _other -> throwM $ BadChromeVersionOutput output
 
 getChromeDriverVersion :: (MonadThrow m, MonadUnliftIO m) => FilePath -> m ChromeDriverVersion
 getChromeDriverVersion path = do
   output <- liftIO $ getBinaryVersionText path
-  case output & LazyByteString.toStrict & decodeUtf8Lenient & Text.strip & Text.split (== ' ') of
+  case splitOnSpaces output of
     _chromeDriver : version : _ -> ChromeDriverVersion <$> constructMajorVersion version
     _other -> throwM $ BadChromeVersionOutput output
 
@@ -246,3 +246,6 @@ constructMajorVersion version =
     & Text.takeWhile (/= '.')
     & textToMajorVersion
     & fromPureMaybeM (UnsupportedMajorVersion version)
+
+splitOnSpaces :: LByteString -> [Text]
+splitOnSpaces = LazyByteString.toStrict >>> decodeUtf8Lenient >>> Text.strip >>> Text.split (== ' ')
