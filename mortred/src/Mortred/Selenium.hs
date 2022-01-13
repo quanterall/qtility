@@ -150,18 +150,24 @@ getBinaryVersionText path = do
   (^. _2) <$> mapExceptionM (UnableToReadChromeProcess path) (readProcessStdout processConfiguration)
 
 getChromeVersion :: (MonadThrow m, MonadUnliftIO m) => FilePath -> m ChromeVersion
-getChromeVersion path = do
-  output <- liftIO $ getBinaryVersionText path
-  case splitOnSpaces output of
-    _google : _chrome : version : _ -> ChromeVersion <$> constructMajorVersion version
-    _other -> throwM $ BadChromeVersionOutput output
+getChromeVersion = getBinaryVersion 2 ChromeVersion BadChromeVersionOutput
 
 getChromeDriverVersion :: (MonadThrow m, MonadUnliftIO m) => FilePath -> m ChromeDriverVersion
-getChromeDriverVersion path = do
+getChromeDriverVersion = getBinaryVersion 1 ChromeDriverVersion BadChromeDriverVersionOutput
+
+getBinaryVersion ::
+  (MonadThrow m, MonadUnliftIO m, Exception e) =>
+  Int ->
+  (MajorVersion -> v) ->
+  (LByteString -> e) ->
+  FilePath ->
+  m v
+getBinaryVersion outputIndex versionConstructor e path = do
   output <- liftIO $ getBinaryVersionText path
-  case splitOnSpaces output of
-    _chromeDriver : version : _ -> ChromeDriverVersion <$> constructMajorVersion version
-    _other -> throwM $ BadChromeVersionOutput output
+  splitOnSpaces output ^? ix outputIndex
+    & maybe
+      (throwM $ e output)
+      (constructMajorVersion >>> fmap versionConstructor)
 
 textToMajorVersion :: Text -> Maybe MajorVersion
 textToMajorVersion "93" = Just $ MajorVersion 93

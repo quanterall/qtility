@@ -46,6 +46,8 @@ data ChromeDriverSetupError
     UnsupportedMajorVersion Text
   | -- | Unable to read the output of @google-chrome --version@.
     BadChromeVersionOutput LByteString
+  | -- | Unable to read the output of @chromedriver --version@.
+    BadChromeDriverVersionOutput LByteString
   | -- | Something went wrong when getting the output of @google-chrome --version@.
     UnableToReadChromeProcess FilePath IOException
   | -- | Something went wrong when downloading @chromedriver@.
