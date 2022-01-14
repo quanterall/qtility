@@ -76,11 +76,7 @@ startSeleniumOnPort port xvfbProcess seleniumPath@(SeleniumPath sp) = do
               & setStdin nullStream
               & setStdout nullStream
               & setStderr nullStream
-              & setEnv
-                [ ( "DISPLAY",
-                    xvfbProcess ^. xpDisplayNumber . unwrap & show & (":" <>)
-                  )
-                ]
+              & setEnv [("DISPLAY", xvfbProcess ^. xpDisplayNumber . unwrap & show & (":" <>))]
       process <- startProcess processConfiguration
       pure $
         SeleniumProcess
@@ -165,9 +161,7 @@ getBinaryVersion ::
 getBinaryVersion outputIndex versionConstructor e path = do
   output <- liftIO $ getBinaryVersionText path
   splitOnSpaces output ^? ix outputIndex
-    & maybe
-      (throwM $ e output)
-      (constructMajorVersion >>> fmap versionConstructor)
+    & maybe (throwM $ e output) (constructMajorVersion >>> fmap versionConstructor)
 
 textToMajorVersion :: Text -> Maybe MajorVersion
 textToMajorVersion "93" = Just $ MajorVersion 93
