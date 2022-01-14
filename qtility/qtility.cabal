@@ -85,6 +85,8 @@ test-suite qtility-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Qtility.EnvironmentSpec
+      Qtility.TimeSpec
       Paths_qtility
   hs-source-dirs:
       test
@@ -136,7 +138,9 @@ test-suite qtility-test
   build-depends:
       aeson
     , base >=4.9.1.0 && <5
+    , hedgehog
     , hspec >=2.0.0
+    , hspec-hedgehog
     , lens
     , qtility
     , rio
