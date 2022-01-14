@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+
 module Qtility.TimeSpec where
 
 import qualified Hedgehog.Gen as Gen
