@@ -8,6 +8,7 @@ packages:
 - ./qaws-s3
 - ./qtility-brick
 - ./mortred
+- ./qtility-metrics
 
 allow-different-user: true
 
@@ -16,3 +17,7 @@ extra-deps:
 - unliftio-core-0.1.2.0@sha256:b0a7652ffce2284a6cebe05c99eb60573a8fb6631163f34b0b30a80b4a78cb23,1081
 - github: codedownio/hs-webdriver
   commit: 96400ea0ba6ef118033d6a727ef4f57c31a187ca
+- github: Simspace/ekg-prometheus-adapter 
+  commit: ea798a02cee0f6aa011eccd730a3d78ecd6491d1
+- github: Simspace/ekg-wai
+  commit: 1fc13cdcb18eecf0f97eadab4f9344beaa3a81de

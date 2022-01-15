@@ -29,6 +29,28 @@ packages:
       sha256: ed9af2f807e88ba033a28f02de751ada83bf7a24309b6259d8cbba084edfc526
   original:
     url: https://github.com/codedownio/hs-webdriver/archive/96400ea0ba6ef118033d6a727ef4f57c31a187ca.tar.gz
+- completed:
+    size: 5616
+    url: https://github.com/Simspace/ekg-prometheus-adapter/archive/ea798a02cee0f6aa011eccd730a3d78ecd6491d1.tar.gz
+    name: ekg-prometheus-adapter
+    version: 0.1.0.4
+    sha256: ea98c6c0c166ea9ccbb11774825c17379fa85fd5d859602031da11710f8c6708
+    pantry-tree:
+      size: 504
+      sha256: 39fd081c4969b837d20e8985f43b3a0a92ac0183f1407d78f96c45c25b4b2589
+  original:
+    url: https://github.com/Simspace/ekg-prometheus-adapter/archive/ea798a02cee0f6aa011eccd730a3d78ecd6491d1.tar.gz
+- completed:
+    size: 170068
+    url: https://github.com/Simspace/ekg-wai/archive/1fc13cdcb18eecf0f97eadab4f9344beaa3a81de.tar.gz
+    name: ekg-wai
+    version: 0.1.0.3
+    sha256: c88e47c221cab0b91e0a695fcc8453cddcf2527c7ffe70bee9ff081730efb043
+    pantry-tree:
+      size: 1445
+      sha256: 25d2542bff91dc4c3ffe597f535a0e2763fc2d7c566f353e8166dd965492df0c
+  original:
+    url: https://github.com/Simspace/ekg-wai/archive/1fc13cdcb18eecf0f97eadab4f9344beaa3a81de.tar.gz
 snapshots:
 - completed:
     size: 586069
