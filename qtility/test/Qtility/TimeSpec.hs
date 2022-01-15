@@ -22,7 +22,7 @@ spec = do
           result <- timedM $ do
             threadDelay $ toMicroseconds time
             pure value
-          assertCloseEnough 0.001 (result ^. trTime) time
+          assertCloseEnough 0.01 (result ^. trTime) time
           result ^. trValue === value
 
 randomNominalDiffTime :: Gen NominalDiffTime
