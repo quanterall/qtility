@@ -3,7 +3,6 @@
 module Qtility.DataSpec where
 
 import qualified Hedgehog.Gen as Gen
-import qualified Hedgehog.Range as Range
 import Qtility.Data
 import RIO
 import Test.Hspec
@@ -19,3 +18,11 @@ spec = do
             doesNotHaveValue = note @String @Int "we have nothing" Nothing
         hasValue === Right x
         doesNotHaveValue === Left "we have nothing"
+  describe "`hush`" $ do
+    it "Should silence `Left`s and keep `Right`s" $ do
+      hedgehog $ do
+        x <- forAll Gen.enumBounded
+        let hasValue = hush @String @Int $ Right x
+            doesNotHaveValue = hush @String @Int $ Left "we have nothing"
+        hasValue === Just x
+        doesNotHaveValue === Nothing
