@@ -16,3 +16,4 @@ defaultAesonOptions = Aeson.defaultOptions
 -- | An alias for `id`, so we can disambiguate in cases where `id` could mean several things.
 identity :: a -> a
 identity = RIO.id
+{-# INLINE identity #-}
