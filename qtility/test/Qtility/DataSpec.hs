@@ -26,7 +26,7 @@ spec = do
             doesNotHaveValue = hush @String @Int $ Left "we have nothing"
         hasValue === Just x
         doesNotHaveValue === Nothing
-  describe "tReadMaybe" $
+  describe "tReadMaybe" $ do
     it "Parses float values" $ do
       tReadMaybe @Int "1" `shouldBe` Just 1
       tReadMaybe @Float "1.0" `shouldBe` Just 1.0
@@ -51,3 +51,14 @@ spec = do
       tReadMaybe @Float "1.0e-2" `shouldBe` Just 0.01
       tReadMaybe @Float "1.0e+2" `shouldBe` Just 100.0
       tReadMaybe @Float "1.0e2" `shouldBe` Just 100.0
+    it "Should be able to parse random integer values in containers" $ do
+      hedgehog $ do
+        x <- forAll Gen.enumBounded
+        let just = "Just " <> tshow @Int x
+            nothing = "Nothing"
+            right = "Right " <> tshow @Int x
+            left = "Left " <> tshow @String "we have nothing"
+        tReadMaybe @(Maybe Int) just === Just (Just x)
+        tReadMaybe @(Maybe Int) nothing === Just Nothing
+        tReadMaybe @(Either String Int) right === Just (Right x)
+        tReadMaybe @(Either String Int) left === Just (Left "we have nothing")
