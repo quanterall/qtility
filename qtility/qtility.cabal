@@ -137,7 +137,8 @@ test-suite qtility-test
       TypeApplications
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints -Wwarn=deprecations -Werror=incomplete-patterns -Wall
   build-depends:
-      aeson
+      QuickCheck
+    , aeson
     , base >=4.9.1.0 && <5
     , hedgehog
     , hspec >=2.0.0

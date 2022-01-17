@@ -84,3 +84,4 @@ tests:
     - hspec >=2.0.0
     - hedgehog
     - hspec-hedgehog
+    - QuickCheck
