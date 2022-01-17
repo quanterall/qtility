@@ -26,3 +26,28 @@ spec = do
             doesNotHaveValue = hush @String @Int $ Left "we have nothing"
         hasValue === Just x
         doesNotHaveValue === Nothing
+  describe "tReadMaybe" $
+    it "Should parse a string into a value" $ do
+      tReadMaybe @Int "1" `shouldBe` Just 1
+      tReadMaybe @Float "1.0" `shouldBe` Just 1.0
+      tReadMaybe @Float "1.0e-2" `shouldBe` Just 0.01
+      tReadMaybe @Float "1.0e+2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e-2" `shouldBe` Just 0.01
+      tReadMaybe @Float "1.0e+2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e-2" `shouldBe` Just 0.01
+      tReadMaybe @Float "1.0e+2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e-2" `shouldBe` Just 0.01
+      tReadMaybe @Float "1.0e+2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e-2" `shouldBe` Just 0.01
+      tReadMaybe @Float "1.0e+2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e-2" `shouldBe` Just 0.01
+      tReadMaybe @Float "1.0e+2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e-2" `shouldBe` Just 0.01
+      tReadMaybe @Float "1.0e+2" `shouldBe` Just 100.0
+      tReadMaybe @Float "1.0e2" `shouldBe` Just 100.0
