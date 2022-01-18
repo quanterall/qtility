@@ -17,6 +17,7 @@ library
       Qtility.Data
       Qtility.Environment
       Qtility.Environment.Types
+      Qtility.Exceptions
       Qtility.TH
       Qtility.TH.JSON
       Qtility.TH.Optics

@@ -33,6 +33,7 @@ import Qtility.Aliases.IOErrorLens as Export
 import Qtility.Data as Export
 import Qtility.Environment as Export
 import Qtility.Environment.Types as Export
+import Qtility.Exceptions as Export
 import Qtility.TH as Export
 import Qtility.TH.JSON as Export
 import RIO as Export hiding (Handler, catches, catchesDeep, fromEither, fromEitherM)
