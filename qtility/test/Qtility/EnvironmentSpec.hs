@@ -26,62 +26,52 @@ spec = do
     it "Succeeds if we set the variable first" $ do
       let key = EnvironmentKey "SET"
       setEnv (_unEnvironmentKey key) "VALUE"
-      result <- readEnvironmentVariable @String key
-      result `shouldBe` "VALUE"
+      readEnvironmentVariable @String key `shouldReturn` "VALUE"
 
     it "Can read `Text` values correctly" $ do
       let key = EnvironmentKey "TEXT"
       setEnv (_unEnvironmentKey key) "VALUE"
-      result <- readEnvironmentVariable @Text key
-      result `shouldBe` "VALUE"
+      readEnvironmentVariable @Text key `shouldReturn` "VALUE"
 
     it "Can read `Int` values correctly" $ do
       let key = EnvironmentKey "INT"
       setEnv (_unEnvironmentKey key) "42"
-      result <- readEnvironmentVariable @Int key
-      result `shouldBe` 42
+      readEnvironmentVariable @Int key `shouldReturn` 42
 
     it "Can read `Double` values correctly" $ do
       let key = EnvironmentKey "DOUBLE"
       setEnv (_unEnvironmentKey key) "42"
-      result <- readEnvironmentVariable @Double key
-      result `shouldBe` 42.0
+      readEnvironmentVariable @Double key `shouldReturn` 42.0
 
     it "Can read `Bool` values correctly ('true')" $ do
       let key = EnvironmentKey "BOOL"
       setEnv (_unEnvironmentKey key) "true"
-      result <- readEnvironmentVariable key
-      result `shouldBe` True
+      readEnvironmentVariable key `shouldReturn` True
 
     it "Can read `Bool` values correctly ('false')" $ do
       let key = EnvironmentKey "BOOL"
       setEnv (_unEnvironmentKey key) "false"
-      result <- readEnvironmentVariable key
-      result `shouldBe` False
+      readEnvironmentVariable key `shouldReturn` False
 
     it "Can read `Bool` values correctly ('yes')" $ do
       let key = EnvironmentKey "BOOL"
       setEnv (_unEnvironmentKey key) "yes"
-      result <- readEnvironmentVariable key
-      result `shouldBe` True
+      readEnvironmentVariable key `shouldReturn` True
 
     it "Can read `Bool` values correctly ('no')" $ do
       let key = EnvironmentKey "BOOL"
       setEnv (_unEnvironmentKey key) "no"
-      result <- readEnvironmentVariable key
-      result `shouldBe` False
+      readEnvironmentVariable key `shouldReturn` False
 
     it "Can read `Bool` values correctly ('on')" $ do
       let key = EnvironmentKey "BOOL"
       setEnv (_unEnvironmentKey key) "on"
-      result <- readEnvironmentVariable key
-      result `shouldBe` True
+      readEnvironmentVariable key `shouldReturn` True
 
     it "Can read `Bool` values correctly ('off')" $ do
       let key = EnvironmentKey "BOOL"
       setEnv (_unEnvironmentKey key) "off"
-      result <- readEnvironmentVariable key
-      result `shouldBe` False
+      readEnvironmentVariable key `shouldReturn` False
 
     it "Can read any `Int` value from the environment" $ do
       let key = EnvironmentKey "ANY_INT"
