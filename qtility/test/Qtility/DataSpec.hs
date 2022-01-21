@@ -62,7 +62,7 @@ spec = do
   describe "`findM`" $ do
     prop "Should find the first element that satisfies the predicate" $ do
       quickCheck $ \xs ys -> do
-        findM ((== 3) >>> pure) (xs <> [3] <> ys) `shouldReturn` (Just @Int 3)
+        findM ((== 3) >>> pure) (xs <> [3] <> ys) `shouldReturn` Just @Int 3
 
       quickCheck $ \(xs :: [Int]) -> do
         findM ((== 3) >>> pure) (filter (/= 3) xs) `shouldReturn` Nothing
