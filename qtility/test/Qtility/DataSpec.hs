@@ -50,15 +50,17 @@ spec = do
       tReadMaybe @Float "1.0e+2" `shouldBe` Just 100.0
       tReadMaybe @Float "1.0e2" `shouldBe` Just 100.0
     prop "Should be able to parse random integer values in containers" $ do
-      quickCheck $ \x -> do
-        let just = "Just " <> tshow @Int x
-            nothing = "Nothing"
-            right = "Right " <> tshow @Int x
-            left = "Left " <> tshow @String "we have nothing"
-        tReadMaybe @(Maybe Int) just `shouldBe` Just (Just x)
-        tReadMaybe @(Maybe Int) nothing `shouldBe` Just Nothing
-        tReadMaybe @(Either String Int) right `shouldBe` Just (Right x)
-        tReadMaybe @(Either String Int) left `shouldBe` Just (Left "we have nothing")
+      quickCheck $ \(x :: Int) (xs :: [Int]) -> do
+        let just = tshow $ Just x
+            nothing = tshow $ Nothing @Int
+            right = tshow $ Right @String x
+            left = tshow $ Left @String @Int "we have nothing"
+            xsText = tshow xs
+        tReadMaybe just `shouldBe` Just (Just x)
+        tReadMaybe nothing `shouldBe` Just (Nothing @Int)
+        tReadMaybe right `shouldBe` Just (Right @String x)
+        tReadMaybe left `shouldBe` Just (Left @String @Int "we have nothing")
+        tReadMaybe xsText `shouldBe` Just xs
   describe "`findM`" $ do
     prop "Should find the first element that satisfies the predicate" $ do
       quickCheck $ \xs ys -> do
