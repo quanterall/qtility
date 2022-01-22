@@ -76,6 +76,7 @@ library
       aeson
     , base >=4.9.1.0 && <5
     , lens
+    , lens-aeson
     , rio
     , safe-exceptions
     , stm-chans
@@ -145,6 +146,7 @@ test-suite qtility-test
     , hspec >=2.0.0
     , hspec-hedgehog
     , lens
+    , lens-aeson
     , qtility
     , rio
     , safe-exceptions

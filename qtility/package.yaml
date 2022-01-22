@@ -6,6 +6,7 @@ dependencies:
 - base >=4.9.1.0 && <5
 - rio
 - lens
+- lens-aeson
 - aeson
 - stm-chans
 - template-haskell

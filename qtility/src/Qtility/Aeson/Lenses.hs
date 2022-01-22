@@ -1,7 +1,9 @@
 module Qtility.Aeson.Lenses where
 
+import Control.Lens.Combinators (at)
 import Data.Aeson (SumEncoding (..))
 import qualified Data.Aeson as Aeson
+import Data.Aeson.Lens
 import Qtility.Aliases (AesonOptions)
 import RIO
 
@@ -31,3 +33,12 @@ tagSingleConstructors =
 
 rejectUnknownFields :: Lens' AesonOptions Bool
 rejectUnknownFields = lens Aeson.rejectUnknownFields (\o f -> o {Aeson.rejectUnknownFields = f})
+
+-- | Prism for reaching into a 'Value' as an 'Object' and accessing a given key.
+atKey ::
+  (AsValue t, Applicative f) =>
+  Text ->
+  (Maybe Aeson.Value -> f (Maybe Aeson.Value)) ->
+  t ->
+  f t
+atKey k = _Object . at k
