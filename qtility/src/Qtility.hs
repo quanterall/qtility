@@ -8,6 +8,8 @@ import Control.Concurrent.STM.TBMQueue as Export
 import Control.Exception.Lens as Export
 import Control.Exception.Safe as Export (Handler (..), catches, catchesDeep)
 import Control.Lens as Export (re, (#))
+import Control.Lens.Combinators as Export (at, ix, non)
+import Control.Lens.Operators as Export ((?~))
 import Control.Lens.Prism as Export
 import Control.Lens.TH as Export (makeClassy, makeClassyPrisms, makeLenses, makeWrapped)
 import Data.Aeson as Export
