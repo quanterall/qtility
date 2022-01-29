@@ -36,8 +36,8 @@ import System.Environment (getEnv)
 import System.IO (putStrLn)
 import System.Process.Typed
 
--- | Starts a Selenium server backed by a given `Xvfb` process. The `SeleniumPath` parameter should
--- point to the actual JAR-file to run. Throws `SeleniumStartError` if the Selenium server cannot be
+-- | Starts a Selenium server backed by a given @Xvfb@ process. The 'SeleniumPath' parameter should
+-- point to the actual JAR-file to run. Throws 'SeleniumStartError' if the Selenium server cannot be
 -- started.
 startSelenium ::
   (MonadThrow m, MonadUnliftIO m, PrimMonad m, MonadFail m) =>
@@ -189,7 +189,7 @@ searchPathForBinary binary = do
   pure $ (fst >>> (</> binary)) <$> maybeFoundInPath
 
 -- Lifted from https://github.com/dylex/zip-stream/blob/master/cmd/unzip.hs
--- See `licenses/zip-stream.txt` for license information.
+-- See @licenses/zip-stream.txt@ for license information.
 extract ::
   (MonadIO m, MonadFail m) =>
   FilePath ->

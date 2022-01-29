@@ -48,7 +48,7 @@ drawHistogram (FillCharacter fillCharacter) sorting keyValues = do
       total = keyValues & map snd & List.sum
       relativeValues = map (scaleTo total maxValue) keyValues
       longestNameLength =
-        -- We know because of the other pattern match that `maximumBy` is safe here
+        -- We know because of the other pattern match that @maximumBy@ is safe here
         keyValues & PartialList.maximumBy (comparing (fst >>> Text.length)) & fst & Text.length
       sortValues = case sorting of
         KeyAscending -> List.sortOn name

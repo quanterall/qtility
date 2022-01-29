@@ -18,7 +18,7 @@ waitForVisibleElement (Seconds waitTime) selector = do
     displayed <- isDisplayed element
     expect displayed
 
--- | @'waitForCompleteReadyState' timeout@ waits for the browser to set `document.readyState` to
+-- | @'waitForCompleteReadyState' timeout@ waits for the browser to set @document.readyState@ to
 -- ""complete"". Note that this does not mean that the page is fully loaded; we may still be waiting
 -- for API calls to complete.
 waitForCompleteReadyState :: Seconds Double -> WD ()

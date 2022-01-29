@@ -12,7 +12,7 @@ import RIO
 -- boilerplate instance of the generated @As@ class for 'SomeException'. Note that this is not
 -- useful for cases where your prism has two leading underscores, i.e. if you're using a @newtype@
 -- as an exception type. With some more work we could solve this by looking at the type and asking
--- whether or not `makeClassyPrisms` would have generated a prism with two leading underscores, but
+-- whether or not 'makeClassyPrisms' would have generated a prism with two leading underscores, but
 -- without doing more work it will not be solved.
 makeClassyException :: Name -> DecsQ
 makeClassyException name = do

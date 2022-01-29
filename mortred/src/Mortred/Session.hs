@@ -142,7 +142,7 @@ chromeNoSandbox :: Browser
 chromeNoSandbox =
   Chrome
     { chromeDriverVersion = Nothing,
-      -- @NOTE: The `--disable-dev-shm-usage` was needed because we were getting crashes when taking
+      -- @NOTE: The @--disable-dev-shm-usage@ was needed because we were getting crashes when taking
       -- screenshots with a maximized window. I've yet to understand why this is the case.
       chromeOptions = ["--no-sandbox", "--disable-dev-shm-usage"],
       chromeBinary = Nothing,

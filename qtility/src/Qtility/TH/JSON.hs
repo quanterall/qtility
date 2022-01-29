@@ -34,7 +34,7 @@ prefixedLensOptions name f =
 
 -- | Generates standard 'ToJSON' and 'FromJSON' instances based on the format that the fields in a
 -- type are prefixed both with underscores as well as the name of the type that they are defined
--- for. An example would be a type called `Import` that has two fields, `name` and `version`:
+-- for. An example would be a type called @Import@ that has two fields, @name@ and @version@:
 --
 -- @
 --    data Import = Import {_importName :: String, _importVersion :: String}

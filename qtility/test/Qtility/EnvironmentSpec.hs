@@ -117,7 +117,7 @@ loadDotEnvProp = hedgehog $ do
 anyTextProp :: EnvironmentKey -> PropertyT IO ()
 anyTextProp key = hedgehog $ do
   value <-
-    -- Filter this so that we don't try to get a value that contains `NUL`
+    -- Filter this so that we don't try to get a value that contains @NUL@
     forAll $ Gen.string (Range.linear 1 512) Gen.unicode & Gen.filter (("\NUL" `isInfixOf`) >>> not)
   liftIO $ setEnv (_unEnvironmentKey key) value
   result <- liftIO $ readEnvironmentVariable key

@@ -28,7 +28,7 @@ findM p (a : as) = do
   result <- p a
   if result then pure (Just a) else findM p as
 
--- | Convenience function for `_Wrapped` that seems to capture meaning better. Unwraps something
+-- | Convenience function for '_Wrapped' that seems to capture meaning better. Unwraps something
 -- that wraps another type safely, i.e. it can actually be coerced safely into the other type. This
 -- is a very useful lens to have for automatically reaching into a newtype without specifying
 -- the name exactly.

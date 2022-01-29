@@ -1,4 +1,4 @@
--- | Utilities for taking structures like `Maybe` & `Either` and turning them into exceptions, as
+-- | Utilities for taking structures like 'Maybe' & 'Either' and turning them into exceptions, as
 -- well as utilities for dealing with exceptions with the help of prisms.
 module Qtility.Exceptions where
 
@@ -14,7 +14,7 @@ tryAs :: (MonadThrow m, MonadUnliftIO m, Exception e) => Prism' e e' -> m a -> m
 tryAs p m = catchJust (^? p) (Right <$> m) ((p #) >>> Left >>> pure)
 
 -- | Takes a @'Prism' e e'@ and maps a @'Left' e'@ to a @'Left' e@. This widens the error type into
--- what is probably idiomatically an `AsError` class, often created with
+-- what is probably idiomatically an @AsError@ class, often created with
 -- 'Control.Lens.TH.makeClassyPrisms'.
 mapLeftAs :: Prism' e e' -> Either e' a -> Either e a
 mapLeftAs p = mapLeft (p #)

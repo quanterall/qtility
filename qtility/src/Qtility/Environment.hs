@@ -24,7 +24,7 @@ readEnvironmentVariable key = do
   where
     handleDecodingError k v = ReadEnvironmentInvalidValue k (EnvironmentValue v)
 
--- | Loads a `.env` file if it's available, changing the current environment. Throws
+-- | Loads a @.env@ file if it's available, changing the current environment. Throws
 -- 'EnvironmentFileNotFound' if the environment file cannot be found.
 loadDotEnvFile :: (MonadThrow m, MonadIO m) => EnvironmentFile -> m ()
 loadDotEnvFile ef@(EnvironmentFile path) = do
@@ -33,10 +33,10 @@ loadDotEnvFile ef@(EnvironmentFile path) = do
   liftIO $
     forM_ dotEnvValues $ \(key, value) -> do
       -- If there is an environment variable that has the wrong formatting, we'll get an
-      -- `IOException` here. We'll just ignore it and move on.
+      -- @IOException@ here. We'll just ignore it and move on.
       setEnv (_unEnvironmentKey key) value `catchIO` const (pure ())
 
--- | Parses a `.env` file into a list of key value pairs.
+-- | Parses a @.env@ file into a list of key value pairs.
 parseDotEnvFile :: (MonadIO m) => EnvironmentFile -> m [(EnvironmentKey, String)]
 parseDotEnvFile (EnvironmentFile filePath) = do
   ( Text.lines

@@ -20,7 +20,7 @@ import System.Process.Typed
     startProcess,
   )
 
--- | Attempts to start an `Xvfb` process. Throws 'XvfbStartError' on failure.
+-- | Attempts to start an @Xvfb@ process. Throws 'XvfbStartError' on failure.
 startXvfb :: (MonadThrow m, MonadUnliftIO m) => m XvfbProcess
 startXvfb = do
   displayNumber <- fromMaybeM UnableToAllocateDisplay allocateDisplayNumber
