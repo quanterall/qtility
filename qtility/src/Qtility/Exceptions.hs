@@ -15,20 +15,20 @@ tryAs p m = catchJust (^? p) (Right <$> m) ((p #) >>> Left >>> pure)
 
 -- | Takes a @'Prism' e e'@ and maps a @'Left' e'@ to a @'Left' e@. This widens the error type into
 -- what is probably idiomatically an `AsError` class, often created with
--- 'Control.Lens.TH.makeClassyPrisms'
+-- 'Control.Lens.TH.makeClassyPrisms'.
 mapLeftAs :: Prism' e e' -> Either e' a -> Either e a
 mapLeftAs p = mapLeft (p #)
 
--- | Throws an exception from an @Either e a@ where @e@ is an 'Exception'.
+-- | Throws an exception from an @'Either' e a@ where @e@ is an 'Exception'.
 fromEither :: (Exception e, MonadThrow m) => Either e a -> m a
 fromEither = either throwM pure
 
--- | Throws an exception from an @m (Either e a)@ where @e@ is an 'Exception'.
+-- | Throws an exception from an @m ('Either' e a)@ where @e@ is an 'Exception'.
 fromEitherM :: (Exception e, MonadThrow m) => m (Either e a) -> m a
 fromEitherM ma = ma >>= fromEither
 
--- | Takes a monadic action producing a @m Maybe@ and throws a given exception @e@ from it. This
--- is just a specialization of @'fromEitherM' '$' note e '<$>' action@.
+-- | Takes a monadic action producing a @m 'Maybe'@ and throws a given exception @e@ from it. This
+-- is just a specialization of @'fromEitherM' '$' 'note' e '<$>' action@.
 fromMaybeM :: (Exception e, MonadThrow m) => e -> m (Maybe a) -> m a
 fromMaybeM e = fmap (note e) >>> fromEitherM
 
