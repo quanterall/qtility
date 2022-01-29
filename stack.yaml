@@ -25,3 +25,6 @@ extra-deps:
   commit: 1fc13cdcb18eecf0f97eadab4f9344beaa3a81de
   # nix-sha256: sha256-dVZ/zDNGECXEY66sb6TidWf57YpX2ytrGFAEeHHIQzo=
 
+nix:
+  enable: true
+  packages: [zlib]
