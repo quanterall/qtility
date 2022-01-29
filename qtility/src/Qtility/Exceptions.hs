@@ -13,8 +13,9 @@ import RIO hiding (fromEither, fromEitherM)
 tryAs :: (MonadThrow m, MonadUnliftIO m, Exception e) => Prism' e e' -> m a -> m (Either e a)
 tryAs p m = catchJust (^? p) (Right <$> m) ((p #) >>> Left >>> pure)
 
--- | Takes a @'Prism' e e'@ and maps a `Left e'` to a `Left e`. This widens the error type into what
--- is probably idiomatically an `AsError` class.
+-- | Takes a @'Prism' e e'@ and maps a @'Left' e'@ to a @'Left' e@. This widens the error type into
+-- what is probably idiomatically an `AsError` class, often created with
+-- 'Control.Lens.TH.makeClassyPrisms'
 mapLeftAs :: Prism' e e' -> Either e' a -> Either e a
 mapLeftAs p = mapLeft (p #)
 
