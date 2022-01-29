@@ -3,7 +3,7 @@ module Mortred.Indeed where
 
 import Mortred.Session
 import Mortred.Types
-import Qtility.Data (fromMaybeM)
+import Qtility.Exceptions (fromMaybeM)
 import Qtility.Time.Types (Milliseconds (..))
 import RIO
 import qualified RIO.List as List

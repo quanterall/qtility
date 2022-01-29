@@ -7,7 +7,8 @@ where
 
 import Mortred.Types
 import Mortred.Types.Errors
-import Qtility.Data (findM, fromMaybeM, unwrap)
+import Qtility.Data (findM, unwrap)
+import Qtility.Exceptions (fromMaybeM)
 import RIO
 import RIO.Directory (doesFileExist)
 import System.Process.Typed

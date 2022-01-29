@@ -30,30 +30,6 @@ cradle:
     - path: "./qaws-sqs/test"
       component: "qaws-sqs:test:qaws-sqs-test"
 
-    - path: "./qtility-data/src"
-      component: "qtility-data:lib"
-
-    - path: "./qtility-data/test"
-      component: "qtility-data:test:qtility-data-test"
-
-    - path: "./qtility-environment/src"
-      component: "qtility-environment:lib"
-
-    - path: "./qtility-environment/test"
-      component: "qtility-environment:test:qtility-environment-test"
-
-    - path: "./qtility-th/src"
-      component: "qtility-th:lib"
-
-    - path: "./qtility-th/test"
-      component: "qtility-th:test:qtility-th-test"
-
-    - path: "./qtility-code/src"
-      component: "qtility-code:lib"
-
-    - path: "./qtility-code/test"
-      component: "qtility-code:test:qtility-code-test"
-
     - path: "./qtility/src"
       component: "qtility:lib"
 
@@ -65,3 +41,15 @@ cradle:
 
     - path: "./qtility-brick/test"
       component: "qtility-brick:test:qtility-brick-test"
+
+    - path: "./qtility-code/src"
+      component: "qtility-code:lib"
+
+    - path: "./qtility-code/test"
+      component: "qtility-code:test:qtility-code-test"
+
+    - path: "./qtility-metrics/src"
+      component: "qtility-metrics:lib"
+
+    - path: "./qtility-metrics/test"
+      component: "qtility-metrics:test:qtility-metrics-test"

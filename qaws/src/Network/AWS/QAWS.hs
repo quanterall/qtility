@@ -3,9 +3,9 @@ module Network.AWS.QAWS where
 import Control.Monad.Catch (MonadCatch)
 import qualified Network.AWS as AWS
 import Network.AWS.QAWS.Types
-import Qtility.Data (tryAs)
 import Qtility.Environment (loadDotEnvFile)
 import Qtility.Environment.Types
+import Qtility.Exceptions (tryAs)
 import RIO
 
 -- | Loads the available AWS environment in part with the help of the given 'EnvironmentFile'. The
