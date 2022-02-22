@@ -19,7 +19,7 @@ makeClassyException name = do
   classyPrismOutput <- makeClassyPrisms name
   let className = mkName $ "As" <> nameBase name
       prismName = mkName $ "_" <> nameBase name
-      where' = valD (varP prismName) (normalB $ varE 'exception) []
+      where' = valD (varP prismName) (normalB [|exception|]) []
   instance' <- instanceD (cxt []) (conT className `appT` conT ''SomeException) [where']
   exceptionOutput <- [d|instance Exception $(conT name)|]
   pure $ classyPrismOutput <> exceptionOutput <> [instance']
