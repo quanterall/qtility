@@ -26,5 +26,5 @@ extra-deps:
   # nix-sha256: sha256-dVZ/zDNGECXEY66sb6TidWf57YpX2ytrGFAEeHHIQzo=
 
 nix:
-  enable: true
+  enable: false
   packages: [zlib]
