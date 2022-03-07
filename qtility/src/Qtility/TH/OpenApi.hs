@@ -9,11 +9,6 @@ import Language.Haskell.TH.Syntax (lift)
 import RIO hiding (lift)
 import qualified RIO.Char as Char
 
--- instance ToSchema Board where
---   declareNamedSchema =
---     genericDeclareNamedSchema
---       defaultSchemaOptions {OpenApi.fieldLabelModifier = unlensName "Board"}
-
 lowerCaseFirstCharacter :: String -> String
 lowerCaseFirstCharacter [] = []
 lowerCaseFirstCharacter (x : xs) = Char.toLower x : xs
