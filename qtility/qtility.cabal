@@ -20,6 +20,7 @@ library
       Qtility.Exceptions
       Qtility.TH
       Qtility.TH.JSON
+      Qtility.TH.OpenApi
       Qtility.TH.Optics
       Qtility.Time
       Qtility.Time.Types
@@ -77,6 +78,7 @@ library
     , base >=4.9.1.0 && <5
     , lens
     , lens-aeson
+    , openapi3
     , rio
     , safe-exceptions
     , stm-chans
@@ -147,6 +149,7 @@ test-suite qtility-test
     , hspec-hedgehog
     , lens
     , lens-aeson
+    , openapi3
     , qtility
     , rio
     , safe-exceptions
