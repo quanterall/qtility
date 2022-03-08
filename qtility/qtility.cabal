@@ -10,6 +10,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Database.Persist.Sql.Utilities
       Qtility
       Qtility.Aeson.Lenses
       Qtility.Aliases
@@ -79,6 +80,8 @@ library
     , lens
     , lens-aeson
     , openapi3
+    , persistent
+    , persistent-postgresql
     , rio
     , safe-exceptions
     , stm-chans
@@ -150,6 +153,8 @@ test-suite qtility-test
     , lens
     , lens-aeson
     , openapi3
+    , persistent
+    , persistent-postgresql
     , qtility
     , rio
     , safe-exceptions

@@ -12,6 +12,8 @@ dependencies:
 - template-haskell
 - safe-exceptions
 - openapi3
+- persistent
+- persistent-postgresql
 
 default-extensions:
 - ApplicativeDo

@@ -27,4 +27,6 @@ extra-deps:
 
 nix:
   enable: false
-  packages: [zlib]
+  packages:
+  - zlib
+  - postgresql
