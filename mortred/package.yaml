@@ -3,8 +3,8 @@ version: "0.0.2"
 maintainer: Rickard Andersson <gonz@severnatazvezda.com>
 synopsis: Library for setting up and running scrapers with webdriver.
 description: A set of setup- and helper-functions for using webdriver in Haskell, with auto-downloads of correct binaries.
-license: BSD2
-license-file: LICENSE.txt
+license: MIT
+license-file: LICENSE
 category: web-scraping, selenium
 github: quanterall/mortred
 extra-source-files:

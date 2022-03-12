@@ -1,5 +1,7 @@
 name:    qtility-brick
 version: "0.1.0"
+license: MIT
+license-file: LICENSE
 
 dependencies:
 
