@@ -12,8 +12,8 @@ category:       web-scraping, selenium
 homepage:       https://github.com/quanterall/mortred#readme
 bug-reports:    https://github.com/quanterall/mortred/issues
 maintainer:     Rickard Andersson <gonz@severnatazvezda.com>
-license:        BSD2
-license-file:   LICENSE.txt
+license:        MIT
+license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     licenses/zip-stream.txt
