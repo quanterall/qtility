@@ -26,6 +26,7 @@ library
       Qtility.TH.OpenApi
       Qtility.TH.Optics
       Qtility.Time
+      Qtility.Time.Class
       Qtility.Time.Types
   other-modules:
       Paths_qtility
@@ -88,6 +89,7 @@ library
     , safe-exceptions
     , stm-chans
     , template-haskell
+    , time
   default-language: Haskell2010
 
 test-suite qtility-test
@@ -162,4 +164,5 @@ test-suite qtility-test
     , safe-exceptions
     , stm-chans
     , template-haskell
+    , time
   default-language: Haskell2010

@@ -16,6 +16,7 @@ dependencies:
 - openapi3
 - persistent
 - persistent-postgresql
+- time
 
 default-extensions:
 - ApplicativeDo

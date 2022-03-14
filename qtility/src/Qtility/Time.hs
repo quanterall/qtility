@@ -1,5 +1,7 @@
 module Qtility.Time where
 
+import qualified Data.Time.Clock.POSIX as PosixTime
+import Qtility.Time.Class
 import Qtility.Time.Types
 import RIO
 import RIO.Time (diffUTCTime, getCurrentTime)
@@ -11,3 +13,15 @@ timedM m = do
   end <- liftIO getCurrentTime
   let difference = diffUTCTime end start
   pure $ TimedResult difference a
+
+getCurrentTimeInMilliseconds :: (CurrentTime m) => m Timestamp
+getCurrentTimeInMilliseconds = do
+  currentTime <- getCurrentTimeM
+  currentTime
+    & PosixTime.utcTimeToPOSIXSeconds
+    & realToFrac
+    & (*) @Float 1000
+    & floor
+    & Milliseconds
+    & Timestamp
+    & pure
