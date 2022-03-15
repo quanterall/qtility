@@ -6,7 +6,6 @@ packages:
 - ./qaws
 - ./qaws-sqs
 - ./qaws-s3
-- ./qaws-cloudwatch-logs
 - ./qtility-brick
 - ./mortred
 - ./qtility-metrics
