@@ -53,7 +53,7 @@ createDatabaseIfNotExists name owner = do
       void $ execute connection [sql|CREATE DATABASE ? WITH OWNER ?|] (name, owner)
 
 doesDatabaseExist :: DatabaseName -> Connection -> IO Bool
-doesDatabaseExist name connection = do
+doesDatabaseExist (DatabaseName name) connection = do
   (length @[] @[Text] >>> (> 0))
     <$> query
       connection
