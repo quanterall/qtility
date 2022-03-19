@@ -1,10 +1,13 @@
 {-# LANGUAGE QuasiQuotes #-}
 
+-- | Utilities for dealing with `postgresql-simple`. This includes support for running queries and
+-- statements if one has a 'Pool Connection' available in the current environment.
 module Database.PostgreSQL.Simple.Utilities where
 
 import Data.Pool (Pool, withResource)
-import Database.PostgreSQL.Simple (Connection, Only (..), query)
+import Database.PostgreSQL.Simple (Connection, Only (..), execute, query)
 import Database.PostgreSQL.Simple.SqlQQ (sql)
+import Database.PostgreSQL.Simple.Utilities.Types
 import Qtility
 
 class HasPostgresqlPool env where
@@ -38,6 +41,16 @@ runMasterDB ::
 runMasterDB action = do
   pool <- view postgresqlMasterPoolL
   liftIO $ withResource pool action
+
+createDatabaseIfNotExists ::
+  (MonadIO m, MonadReader env m, HasPostgresqlMasterPool env) =>
+  DatabaseName ->
+  DatabaseOwner ->
+  m ()
+createDatabaseIfNotExists (DatabaseName name) (DatabaseOwner owner) = do
+  runMasterDB $ \connection -> do
+    unlessM (doesDatabaseExist name connection) $ do
+      void $ execute connection [sql| CREATE DATABASE ? WITH OWNER ?|] (name, owner)
 
 doesDatabaseExist :: Text -> Connection -> IO Bool
 doesDatabaseExist name connection = do
