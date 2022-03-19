@@ -47,12 +47,12 @@ createDatabaseIfNotExists ::
   DatabaseName ->
   DatabaseOwner ->
   m ()
-createDatabaseIfNotExists (DatabaseName name) (DatabaseOwner owner) = do
+createDatabaseIfNotExists name owner = do
   runMasterDB $ \connection -> do
     unlessM (doesDatabaseExist name connection) $ do
-      void $ execute connection [sql| CREATE DATABASE ? WITH OWNER ?|] (name, owner)
+      void $ execute connection [sql|CREATE DATABASE ? WITH OWNER ?|] (name, owner)
 
-doesDatabaseExist :: Text -> Connection -> IO Bool
+doesDatabaseExist :: DatabaseName -> Connection -> IO Bool
 doesDatabaseExist name connection = do
   (length @[] @[Text] >>> (> 0))
     <$> query
