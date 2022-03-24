@@ -46,7 +46,8 @@ receiveMessages queueUrl waitTime messageLimit = do
 -- | A version of 'receiveMessages' that automatically constructs a list of 'SQSMessage a', where
 -- @a@ is decoded as the body of the message. This looks for the needed AWS environment in your
 -- current environment via 'MonadReader', which makes it ideal for usage in a 'MonadReader' based
--- stack (like 'RIO') that implements 'AWS.HasEnv'. Throws 'AWS.Error'.
+-- stack (like 'RIO') that implements 'AWS.HasEnv'. Throws 'AWS.Error' if there was an error while
+-- interacting with AWS or 'ReceivePayloadError' if we could not decode the message correctly.
 receiveWithPayload ::
   ( MonadUnliftIO m,
     MonadReader env m,
@@ -90,9 +91,7 @@ receiveMessages' awsEnv (QueueUrl queueUrl) (WaitTime waitTime) (MessageLimit me
 -- | A'la carte version of 'receiveWithPayload' that takes an environment instead of looking for one
 -- in your environment. Throws 'ReceivePayloadError'.
 receiveWithPayload' ::
-  ( MonadUnliftIO m,
-    FromJSON a
-  ) =>
+  (MonadUnliftIO m, FromJSON a) =>
   AWS.Env ->
   QueueUrl ->
   WaitTime ->
