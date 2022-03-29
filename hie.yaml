@@ -36,6 +36,12 @@ cradle:
     - path: "./qaws-cloudwatch-logs/test"
       component: "qaws-cloudwatch-logs:test:qaws-cloudwatch-logs-test"
 
+    - path: "./qaws-secretsmanager/src"
+      component: "qaws-secretsmanager:lib"
+
+    - path: "./qaws-secretsmanager/test"
+      component: "qaws-secretsmanager:test:qaws-secretsmanager-test"
+
     - path: "./qtility/src"
       component: "qtility:lib"
 
