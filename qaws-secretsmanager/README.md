@@ -1,3 +1,3 @@
-# qaws-s3
+# qaws-secretsmanager
 
-Utility library for common S3 interactions via `amazonka`.
+Utility library for common SecretsManager interactions via `amazonka`.
