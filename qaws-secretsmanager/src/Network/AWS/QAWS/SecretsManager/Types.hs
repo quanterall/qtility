@@ -10,4 +10,9 @@ newtype SecretARN = SecretARN {unSecretARN :: Text}
 newtype SecretValue = SecretValue {unSecretValue :: Text}
   deriving (Eq, Ord, Show, Read, Generic)
 
-foldMapM makeWrapped [''SecretARN, ''SecretValue]
+newtype GetSecretDecodingError = GetSecretDecodingError {unGetSecretDecodingError :: String}
+  deriving (Eq, Ord, Show, Read, Generic)
+
+instance Exception GetSecretDecodingError
+
+foldMapM makeWrapped [''SecretARN, ''SecretValue, ''GetSecretDecodingError]
