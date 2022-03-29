@@ -1,4 +1,4 @@
--- | Has utility functions for dealing with Amazon's Simple Storage Service (S3).
+-- | Has utility functions for dealing with Amazon's SecretsManager.
 module Network.AWS.QAWS.SecretsManager
   ( getSecretValueAs,
     getSecretValueAs',
