@@ -42,6 +42,12 @@ cradle:
     - path: "./qaws-secretsmanager/test"
       component: "qaws-secretsmanager:test:qaws-secretsmanager-test"
 
+    - path: "./qaws-sns/src"
+      component: "qaws-sns:lib"
+
+    - path: "./qaws-sns/test"
+      component: "qaws-sns:test:qaws-sns-test"
+
     - path: "./qtility/src"
       component: "qtility:lib"
 
