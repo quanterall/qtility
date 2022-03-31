@@ -48,6 +48,12 @@ cradle:
     - path: "./qaws-sns/test"
       component: "qaws-sns:test:qaws-sns-test"
 
+    - path: "./qaws-dynamodb/src"
+      component: "qaws-dynamodb:lib"
+
+    - path: "./qaws-dynamodb/test"
+      component: "qaws-dynamodb:test:qaws-dynamodb-test"
+
     - path: "./qtility/src"
       component: "qtility:lib"
 
