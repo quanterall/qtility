@@ -1,21 +1,77 @@
 module Network.AWS.QAWS.DynamoDB.Class
   ( ToAttributeValue (..),
     ToAttributeValueMap (..),
+    FromAttributeValueMap (..),
+    FromAttributeValue (..),
   )
 where
 
+import Data.Aeson.Types
 import Data.Scientific (floatingOrInteger)
+import Data.Typeable (typeRep)
 import qualified Network.AWS.DynamoDB as DynamoDB
 import Qtility
 import Qtility.Time.Types (Milliseconds (..))
+import qualified RIO.HashMap as HashMap
+import RIO.Partial (fromJust)
+import qualified RIO.Vector as Vector
 
 class ToAttributeValueMap a where
   toAttributeValueMap :: a -> HashMap Text DynamoDB.AttributeValue
+
+class FromAttributeValueMap a where
+  fromAttributeValueMap :: HashMap Text DynamoDB.AttributeValue -> Either String a
 
 class ToAttributeValue a where
   toAttributeValue :: a -> DynamoDB.AttributeValue
   default toAttributeValue :: (ToJSON a) => a -> DynamoDB.AttributeValue
   toAttributeValue = toJSON >>> toAttributeValue
+
+class FromAttributeValue a where
+  fromAttributeValue :: DynamoDB.AttributeValue -> Either String a
+  default fromAttributeValue ::
+    (FromJSON a, Typeable a) =>
+    DynamoDB.AttributeValue ->
+    Either String a
+  fromAttributeValue =
+    fromAttributeValue @Value
+      >=> ( fromJSON >>> \case
+              Success a -> Right a
+              Error e ->
+                Left $ "Error parsing JSON for type '" <> show (typeRep (Proxy @a)) <> "': " <> e
+          )
+
+instance FromAttributeValue Value where
+  fromAttributeValue v
+    | v ^. DynamoDB.avNULL == Just True = Right Null
+    | isJust (v ^. DynamoDB.avBOOL) = Right (Bool (v ^. DynamoDB.avBOOL & fromJust))
+    | isJust (v ^. DynamoDB.avN) = do
+      n <- v ^? DynamoDB.avN . _Just & note "Number value not present in value despite guard"
+      decodedNumber <- n & encodeUtf8 & eitherDecodeStrict
+      case decodedNumber of
+        Left e -> e & realToFrac @Double & Number & Right
+        Right e -> e & fromInteger & Number & Right
+    | isJust (v ^. DynamoDB.avS) = Right $ String (v ^. DynamoDB.avS & fromJust)
+    | not (null $ v ^. DynamoDB.avSS) =
+      v ^. DynamoDB.avSS & map String & Vector.fromList & Array & Right
+    | not (null $ v ^. DynamoDB.avNS) = do
+      xs <- v ^. DynamoDB.avNS & mapM (encodeUtf8 >>> eitherDecodeStrict >>> fmap Number)
+      xs & Vector.fromList & Array & Right
+    | isJust (v ^. DynamoDB.avB) = Right $ String (v ^. DynamoDB.avB & fromJust & decodeUtf8Lenient)
+    | not (null $ v ^. DynamoDB.avBS) =
+      v ^. DynamoDB.avBS & map (decodeUtf8Lenient >>> String) & Vector.fromList & Array & Right
+    | not (HashMap.null $ v ^. DynamoDB.avM) = do
+      newItems <-
+        v ^. DynamoDB.avM
+          & HashMap.toList
+          & mapM
+            ( \(k, v') -> do
+                newItem <- fromAttributeValue v'
+                pure (k, newItem)
+            )
+      newItems & HashMap.fromList & Object & Right
+    | isJust (v ^. DynamoDB.avNULL) = Right Null
+    | otherwise = Left $ "No matching attribute value type found: " <> show v
 
 instance ToAttributeValue Int where
   toAttributeValue v = DynamoDB.attributeValue & DynamoDB.avN ?~ tshow v
