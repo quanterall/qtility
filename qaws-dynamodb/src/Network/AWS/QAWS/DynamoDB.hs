@@ -2,7 +2,7 @@
 module Network.AWS.QAWS.DynamoDB
   ( putItem,
     putItem',
-    getItemParameters,
+    defaultGetItemParameters,
     getItem,
     getItem',
   )
