@@ -40,12 +40,11 @@ putItem' awsEnv tableName a = do
   let command = DynamoDB.putItem (tableName ^. unwrap) & DynamoDB.piItem .~ toAttributeValueMap a
   ((^. DynamoDB.pirsResponseStatus) >>> PutItemStatusCode) <$> runAWS' awsEnv command
 
--- { getItemParametersTableName :: !DynamoTableName,
---   getItemParametersProjectionExpression :: ![Text],
---   getItemParametersKey :: !(HashMap Text AttributeValue),
---   getItemParametersConsistentRead :: !Bool
-getItemParameters :: DynamoTableName -> HashMap Text DynamoDB.AttributeValue -> GetItemParameters
-getItemParameters tableName key =
+-- | Default structure for 'getItem' parameters. Modify using lenses to set options to not be an
+-- empty projection expression and consistent reads.
+defaultGetItemParameters ::
+  DynamoTableName -> HashMap Text DynamoDB.AttributeValue -> GetItemParameters
+defaultGetItemParameters tableName key =
   GetItemParameters
     { _getItemParametersTableName = tableName,
       _getItemParametersKey = key,
