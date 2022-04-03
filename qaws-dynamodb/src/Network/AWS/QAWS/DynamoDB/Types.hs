@@ -19,12 +19,12 @@ newtype GetItemDecodingError = GetItemDecodingError {unGetItemDecodingError :: S
 
 instance Exception GetItemDecodingError
 
-data GetItemParameters = GetItemParameters
-  { _getItemParametersProjectionExpression :: ![Text],
-    _getItemParametersConsistentRead :: !Bool
+data GetItemOptions = GetItemOptions
+  { _getItemOptionsProjectionExpression :: ![Text],
+    _getItemOptionsConsistentRead :: !Bool
   }
   deriving (Eq, Show, Generic)
 
-foldMapM makeLenses [''GetItemParameters]
+foldMapM makeLenses [''GetItemOptions]
 
 foldMapM makeWrapped [''DynamoTableName, ''PutItemStatusCode, ''GetItemDecodingError, ''DynamoKey]

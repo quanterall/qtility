@@ -2,7 +2,7 @@
 module Network.AWS.QAWS.DynamoDB
   ( putItem,
     putItem',
-    defaultGetItemParameters,
+    defaultGetItemOptions,
     getItem,
     getItem',
   )
@@ -28,6 +28,22 @@ putItem tableName a = do
   awsEnv <- view AWS.environment
   putItem' awsEnv tableName a
 
+-- | Gets an item from Dynamo according to the projection expression (or just all keys if left
+-- empty) in the 'GetItemOptions' specified. The type that is fetched has to have an instance of
+-- 'FromAttributeValueMap' to be able to convert the result to the desired type, which means it has
+-- to be a type that can be converted to from a 'HashMap' of 'Text' and 'AttributeValue'. The
+-- utility class 'FromAttributeValue' can be used to define such an instance easily. This reads
+-- your AWS environment from your 'MonadReader' environment.
+getItem ::
+  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, FromAttributeValueMap a) =>
+  DynamoTableName ->
+  DynamoKey ->
+  GetItemOptions ->
+  m a
+getItem tableName key parameters = do
+  awsEnv <- view AWS.environment
+  getItem' awsEnv tableName key parameters
+
 -- | Puts any value with a valid 'ToAttributeValueMap' instance in a given DynamoDB table. Returns
 -- a 'PutItemStatusCode' but can also throw a 'AWS.Error' if there is an AWS operational error.
 putItem' ::
@@ -40,17 +56,17 @@ putItem' awsEnv tableName a = do
   let command = DynamoDB.putItem (tableName ^. unwrap) & DynamoDB.piItem .~ toAttributeValueMap a
   ((^. DynamoDB.pirsResponseStatus) >>> PutItemStatusCode) <$> runAWS' awsEnv command
 
--- | Default structure for 'getItem' parameters. Modify using lenses to set options to not be an
--- empty projection expression and consistent reads.
-defaultGetItemParameters :: GetItemParameters
-defaultGetItemParameters =
-  GetItemParameters
-    { _getItemParametersProjectionExpression = [],
-      _getItemParametersConsistentRead = True
+-- | Default structure for 'getItem' options. Modify using lenses to set options to not be an empty
+-- projection expression and consistent reads.
+defaultGetItemOptions :: GetItemOptions
+defaultGetItemOptions =
+  GetItemOptions
+    { _getItemOptionsProjectionExpression = [],
+      _getItemOptionsConsistentRead = True
     }
 
 -- | Gets an item from Dynamo according to the projection expression (or just all keys if left
--- empty) in the 'GetItemParameters' specified. The type that is fetched has to have an instance of
+-- empty) in the 'GetItemOptions' specified. The type that is fetched has to have an instance of
 -- 'FromAttributeValueMap' to be able to convert the result to the desired type, which means it has
 -- to be a type that can be converted to from a 'HashMap' of 'Text' and 'AttributeValue'. The
 -- utility class 'FromAttributeValue' can be used to define such an instance easily.
@@ -59,34 +75,18 @@ getItem' ::
   AWS.Env ->
   DynamoTableName ->
   DynamoKey ->
-  GetItemParameters ->
+  GetItemOptions ->
   m a
 getItem' awsEnv tableName key parameters = do
   let command =
         DynamoDB.getItem (tableName ^. unwrap)
           & DynamoDB.giKey .~ (key ^. unwrap)
           & DynamoDB.giProjectionExpression .~ projectionExpression
-          & DynamoDB.giConsistentRead ?~ parameters ^. getItemParametersConsistentRead
+          & DynamoDB.giConsistentRead ?~ parameters ^. getItemOptionsConsistentRead
       projectionExpression =
-        if not (null (parameters ^. getItemParametersProjectionExpression))
-          then parameters ^. getItemParametersProjectionExpression & Text.intercalate "," & Just
+        if not (null (parameters ^. getItemOptionsProjectionExpression))
+          then parameters ^. getItemOptionsProjectionExpression & Text.intercalate "," & Just
           else Nothing
   fromEitherM $
     ((^. DynamoDB.girsItem) >>> fromAttributeValueMap >>> mapLeft GetItemDecodingError)
       <$> runAWS' awsEnv command
-
--- | Gets an item from Dynamo according to the projection expression (or just all keys if left
--- empty) in the 'GetItemParameters' specified. The type that is fetched has to have an instance of
--- 'FromAttributeValueMap' to be able to convert the result to the desired type, which means it has
--- to be a type that can be converted to from a 'HashMap' of 'Text' and 'AttributeValue'. The
--- utility class 'FromAttributeValue' can be used to define such an instance easily. This reads
--- your AWS environment from your 'MonadReader' environment.
-getItem ::
-  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, FromAttributeValueMap a) =>
-  DynamoTableName ->
-  DynamoKey ->
-  GetItemParameters ->
-  m a
-getItem tableName key parameters = do
-  awsEnv <- view AWS.environment
-  getItem' awsEnv tableName key parameters
