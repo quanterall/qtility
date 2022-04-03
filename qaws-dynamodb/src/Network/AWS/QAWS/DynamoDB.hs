@@ -42,13 +42,10 @@ putItem' awsEnv tableName a = do
 
 -- | Default structure for 'getItem' parameters. Modify using lenses to set options to not be an
 -- empty projection expression and consistent reads.
-defaultGetItemParameters ::
-  DynamoTableName -> HashMap Text DynamoDB.AttributeValue -> GetItemParameters
-defaultGetItemParameters tableName key =
+defaultGetItemParameters :: GetItemParameters
+defaultGetItemParameters =
   GetItemParameters
-    { _getItemParametersTableName = tableName,
-      _getItemParametersKey = key,
-      _getItemParametersProjectionExpression = [],
+    { _getItemParametersProjectionExpression = [],
       _getItemParametersConsistentRead = True
     }
 
@@ -60,12 +57,14 @@ defaultGetItemParameters tableName key =
 getItem' ::
   (MonadUnliftIO m, MonadThrow m, FromAttributeValueMap a) =>
   AWS.Env ->
+  DynamoTableName ->
+  DynamoKey ->
   GetItemParameters ->
   m a
-getItem' awsEnv parameters = do
+getItem' awsEnv tableName key parameters = do
   let command =
-        DynamoDB.getItem (parameters ^. getItemParametersTableName . unwrap)
-          & DynamoDB.giKey .~ parameters ^. getItemParametersKey
+        DynamoDB.getItem (tableName ^. unwrap)
+          & DynamoDB.giKey .~ (key ^. unwrap)
           & DynamoDB.giProjectionExpression .~ projectionExpression
           & DynamoDB.giConsistentRead ?~ parameters ^. getItemParametersConsistentRead
       projectionExpression =
@@ -84,8 +83,10 @@ getItem' awsEnv parameters = do
 -- your AWS environment from your 'MonadReader' environment.
 getItem ::
   (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env, FromAttributeValueMap a) =>
+  DynamoTableName ->
+  DynamoKey ->
   GetItemParameters ->
   m a
-getItem parameters = do
+getItem tableName key parameters = do
   awsEnv <- view AWS.environment
-  getItem' awsEnv parameters
+  getItem' awsEnv tableName key parameters
