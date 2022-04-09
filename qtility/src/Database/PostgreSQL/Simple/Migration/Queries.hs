@@ -2,17 +2,46 @@
 
 module Database.PostgreSQL.Simple.Migration.Queries where
 
-import Database.PostgreSQL.Simple (Connection, executeMany)
+import Database.PostgreSQL.Simple (execute)
 import Database.PostgreSQL.Simple.Migration.Types
 import Database.PostgreSQL.Simple.SqlQQ (sql)
+import Database.PostgreSQL.Simple.Types
+import Database.PostgreSQL.Simple.Utilities (DB, HasPostgreSQLConnection (..))
+import Database.PostgreSQL.Simple.Utilities.Types
+import Qtility.Data (unwrap)
 import RIO
 
-insertMigrations :: [Migration] -> Connection -> IO Int64
-insertMigrations migrations conn =
-  executeMany
-    conn
-    [sql|
-      INSERT INTO migrations (name, up_statement, down_statement, filename, timestamp, is_applied)
-      VALUES (?, ?, ?, ?, ?, ?)
-     |]
-    migrations
+createMigrationTableIfNotExists :: Maybe DatabaseSchema -> DB ()
+createMigrationTableIfNotExists maybeSchema = do
+  connection <- view postgreSQLConnectionL
+  void $
+    liftIO $
+      execute
+        connection
+        [sql|
+          CREATE TABLE IF NOT EXISTS ? (
+            filename TEXT UNIQUE NOT NULL,
+            up_statement TEXT NOT NULL,
+            down_statement TEXT NOT NULL,
+            timestamp TIMESTAMPTZ NOT NULL,
+            is_applied BOOLEAN NOT NULL
+          );
+          |]
+        (Only $ migrationTableName maybeSchema)
+
+insertMigrations :: Maybe DatabaseSchema -> [Migration] -> DB ()
+insertMigrations maybeSchema migrations = do
+  connection <- view postgreSQLConnectionL
+  forM_ migrations $ \migration -> do
+    liftIO $
+      execute
+        connection
+        [sql|
+          INSERT INTO ? (filename, up_statement, down_statement, timestamp, is_applied)
+          VALUES (?, ?, ?, ?, ?)
+          ON CONFLICT (filename) DO NOTHING;
+       |]
+        (TableAndMigration (migrationTableName maybeSchema) migration)
+
+migrationTableName :: Maybe DatabaseSchema -> QualifiedIdentifier
+migrationTableName maybeSchema = QualifiedIdentifier (fmap (^. unwrap) maybeSchema) "migrations"

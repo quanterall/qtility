@@ -16,6 +16,7 @@ library
       Database.PostgreSQL.Simple.Migration.Queries
       Database.PostgreSQL.Simple.Migration.Types
       Database.PostgreSQL.Simple.Utilities
+      Database.PostgreSQL.Simple.Utilities.Queries
       Database.PostgreSQL.Simple.Utilities.Types
       Qtility
       Qtility.Aeson.Lenses

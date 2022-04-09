@@ -1,5 +1,3 @@
-{-# LANGUAGE QuasiQuotes #-}
-
 -- | Utilities for dealing with `postgresql-simple`. This includes support for running queries and
 -- statements if one has a 'Pool Connection' available in the current environment.
 module Database.PostgreSQL.Simple.Utilities where
@@ -8,13 +6,10 @@ import Data.Pool (Pool, createPool, withResource)
 import Database.PostgreSQL.Simple
   ( ConnectInfo (..),
     Connection,
-    Only (..),
     close,
     connect,
-    execute,
-    query,
+    withTransaction,
   )
-import Database.PostgreSQL.Simple.SqlQQ (sql)
 import Database.PostgreSQL.Simple.Utilities.Types
 import Qtility
 import qualified RIO.Text as Text
@@ -31,43 +26,46 @@ class HasPostgresqlMasterPool env where
 instance HasPostgresqlMasterPool (Pool Connection) where
   postgresqlMasterPoolL = id
 
+class HasPostgreSQLConnection env where
+  postgreSQLConnectionL :: Lens' env Connection
+
+instance HasPostgreSQLConnection Connection where
+  postgreSQLConnectionL = id
+
+-- | Action that can be run via 'runDB' or 'runMasterDB'. This has access to a 'Connection' and
+-- 'IO' only and is purposefully not just any environment.
+newtype DB a = DB {unDB :: RIO Connection a}
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader Connection)
+
 -- | Runs an action against the connection pool that has been chosen for the main pool of the
 -- application. This is different to 'runMasterDB', which (idiomatically) would run against the
 -- @postgres@ database.
 runDB ::
-  (MonadReader env m, MonadUnliftIO m, HasPostgresqlPool env) =>
-  (Connection -> IO a) ->
+  (MonadReader env m, MonadIO m, HasPostgresqlPool env) =>
+  DB a ->
   m a
 runDB action = do
   pool <- view postgresqlPoolL
-  liftIO $ withResource pool action
+  liftIO $ runInTransaction pool action
+
+runInTransaction ::
+  (MonadIO m) =>
+  Pool Connection ->
+  DB a ->
+  m a
+runInTransaction pool action = do
+  liftIO $
+    withResource pool $ \connection ->
+      withTransaction connection $ runRIO connection $ unDB action
 
 -- | Runs an action against the master database of PostgreSQL, i.e. the @postgres@ database.
 runMasterDB ::
   (MonadIO m, MonadReader env m, HasPostgresqlMasterPool env) =>
-  (Connection -> IO a) ->
+  DB a ->
   m a
 runMasterDB action = do
   pool <- view postgresqlMasterPoolL
-  liftIO $ withResource pool action
-
-createDatabaseIfNotExists ::
-  (MonadIO m, MonadReader env m, HasPostgresqlMasterPool env) =>
-  DatabaseName ->
-  DatabaseOwner ->
-  m ()
-createDatabaseIfNotExists name owner = do
-  runMasterDB $ \connection -> do
-    unlessM (doesDatabaseExist name connection) $ do
-      void $ execute connection [sql|CREATE DATABASE ? WITH OWNER ?|] (name, owner)
-
-doesDatabaseExist :: DatabaseName -> Connection -> IO Bool
-doesDatabaseExist (DatabaseName name) connection = do
-  (length @[] @[Text] >>> (> 0))
-    <$> query
-      connection
-      [sql|SELECT datname FROM pg_catalog.pg_database WHERE datname = ?|]
-      (Only name)
+  liftIO $ runInTransaction pool action
 
 -- | Creates a @'Pool' 'Connection'@ of 'DatabaseConnections' size for the given 'ConnectInfo'.
 createConnectionPool :: (MonadIO m) => DatabaseConnections -> ConnectInfo -> m (Pool Connection)

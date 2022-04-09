@@ -13,6 +13,12 @@ newtype DatabaseName = DatabaseName {unDatabaseName :: ByteString}
 instance ToField DatabaseName where
   toField = unDatabaseName >>> EscapeIdentifier
 
+newtype DatabaseSchema = DatabaseSchema {unDatabaseSchema :: Text}
+  deriving (Eq, Ord, Show, Read, IsString)
+
+instance ToField DatabaseSchema where
+  toField = unDatabaseSchema >>> encodeUtf8 >>> EscapeIdentifier
+
 newtype DatabaseOwner = DatabaseOwner {unDatabaseOwner :: ByteString}
   deriving (Eq, Ord, Show, Read, IsString)
 
@@ -44,6 +50,6 @@ instance FromJSON RDSSecret where
       <*> o .: "port"
       <*> o .: "username"
 
-foldMapM makeWrapped [''DatabaseName, ''DatabaseOwner, ''DatabaseConnections]
+foldMapM makeWrapped [''DatabaseName, ''DatabaseOwner, ''DatabaseConnections, ''DatabaseSchema]
 
 foldMapM makeLenses [''RDSSecret]
