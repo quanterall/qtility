@@ -4,9 +4,15 @@ module Network.AWS.QAWS.SecretsManager
     getSecretValueAs',
     getSecretValue,
     getSecretValue',
+    createConnectionPoolForSecretArn,
+    createConnectionPoolForSecretArn',
   )
 where
 
+import Data.Pool (Pool)
+import Database.PostgreSQL.Simple (Connection)
+import Database.PostgreSQL.Simple.Utilities (createRDSConnectionPool)
+import Database.PostgreSQL.Simple.Utilities.Types
 import qualified Network.AWS as AWS
 import Network.AWS.QAWS (runAWS')
 import Network.AWS.QAWS.SecretsManager.Types
@@ -62,3 +68,32 @@ getSecretValue' awsEnv secretArn = do
   let command = SecretsManager.getSecretValue (secretArn ^. unwrap)
   fromMaybeM (GetSecretNoSecretFound secretArn) $
     ((^. SecretsManager.gsvrsSecretString) >>> fmap SecretValue) <$> runAWS' awsEnv command
+
+-- | Create a @'Pool' 'Connection'@ for a given 'SecretARN'. The secret is automatically fetched and
+-- decoded into an 'RDSSecret', then a pool is created using that information. If the secret cannot
+-- be found, throws 'GetSecretNoSecretFound'. If the secret cannot be decoded a
+-- 'GetSecretDecodingError' is thrown. On AWS error, throws 'AWS.Error'. This reads your AWS
+-- environment from your reader environment.
+createConnectionPoolForSecretArn ::
+  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env) =>
+  DatabaseConnections ->
+  SecretARN ->
+  m (Pool Connection)
+createConnectionPoolForSecretArn connections secretArn = do
+  awsEnv <- view AWS.environment
+  createConnectionPoolForSecretArn' awsEnv connections secretArn
+
+-- | Create a @'Pool' 'Connection'@ for a given 'SecretARN'. The secret is automatically fetched and
+-- decoded into an 'RDSSecret', then a pool is created using that information. If the secret cannot
+-- be found, throws 'GetSecretNoSecretFound'. If the secret cannot be decoded a
+-- 'GetSecretDecodingError' is thrown. On AWS error, throws 'AWS.Error'. This is an a'la carte
+-- version that takes your AWS environment as an argument.
+createConnectionPoolForSecretArn' ::
+  (MonadUnliftIO m, MonadThrow m) =>
+  AWS.Env ->
+  DatabaseConnections ->
+  SecretARN ->
+  m (Pool Connection)
+createConnectionPoolForSecretArn' awsEnv connections secretArn = do
+  secret <- getSecretValueAs' awsEnv secretArn
+  createRDSConnectionPool connections secret

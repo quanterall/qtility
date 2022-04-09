@@ -4,11 +4,20 @@
 -- statements if one has a 'Pool Connection' available in the current environment.
 module Database.PostgreSQL.Simple.Utilities where
 
-import Data.Pool (Pool, withResource)
-import Database.PostgreSQL.Simple (Connection, Only (..), execute, query)
+import Data.Pool (Pool, createPool, withResource)
+import Database.PostgreSQL.Simple
+  ( ConnectInfo (..),
+    Connection,
+    Only (..),
+    close,
+    connect,
+    execute,
+    query,
+  )
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 import Database.PostgreSQL.Simple.Utilities.Types
 import Qtility
+import qualified RIO.Text as Text
 
 class HasPostgresqlPool env where
   postgresqlPoolL :: Lens' env (Pool Connection)
@@ -59,3 +68,24 @@ doesDatabaseExist (DatabaseName name) connection = do
       connection
       [sql|SELECT datname FROM pg_catalog.pg_database WHERE datname = ?|]
       (Only name)
+
+-- | Creates a @'Pool' 'Connection'@ of 'DatabaseConnections' size for the given 'ConnectInfo'.
+createConnectionPool :: (MonadIO m) => DatabaseConnections -> ConnectInfo -> m (Pool Connection)
+createConnectionPool connections connectInfo =
+  liftIO $ createPool (connect connectInfo) close 1 10 (connections ^. unwrap)
+
+-- | Creates a @'Pool' 'Connection'@ of 'DatabaseConnections' size for a given 'RDSSecret' value.
+createRDSConnectionPool :: (MonadIO m) => DatabaseConnections -> RDSSecret -> m (Pool Connection)
+createRDSConnectionPool connections secret = do
+  let connectionInfo = rdsSecretToConnectInfo secret
+  createConnectionPool connections connectionInfo
+
+rdsSecretToConnectInfo :: RDSSecret -> ConnectInfo
+rdsSecretToConnectInfo secret =
+  ConnectInfo
+    { connectHost = secret ^. rdsSecretHost & Text.unpack,
+      connectPort = secret ^. rdsSecretPort & fromIntegral,
+      connectUser = secret ^. rdsSecretUsername & Text.unpack,
+      connectPassword = secret ^. rdsSecretPassword & Text.unpack,
+      connectDatabase = secret ^. rdsSecretName & Text.unpack
+    }

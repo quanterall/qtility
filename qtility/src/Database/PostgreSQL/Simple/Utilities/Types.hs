@@ -2,7 +2,8 @@
 
 module Database.PostgreSQL.Simple.Utilities.Types where
 
-import Control.Lens.TH (makeWrapped)
+import Control.Lens.TH (makeLenses, makeWrapped)
+import Data.Aeson (FromJSON (..), withObject, (.:))
 import Database.PostgreSQL.Simple.ToField (Action (..), ToField (..))
 import RIO
 
@@ -18,4 +19,31 @@ newtype DatabaseOwner = DatabaseOwner {unDatabaseOwner :: ByteString}
 instance ToField DatabaseOwner where
   toField = unDatabaseOwner >>> EscapeIdentifier
 
-foldMapM makeWrapped [''DatabaseName, ''DatabaseOwner]
+newtype DatabaseConnections = DatabaseConnections {unDatabaseConnections :: Int}
+  deriving (Eq, Show, Read, Ord, Num)
+
+data RDSSecret = RDSSecret
+  { _rdsSecretClusterIdentifier :: !Text,
+    _rdsSecretName :: !Text,
+    _rdsSecretEngine :: !Text,
+    _rdsSecretHost :: !Text,
+    _rdsSecretPassword :: !Text,
+    _rdsSecretPort :: !Int,
+    _rdsSecretUsername :: !Text
+  }
+  deriving (Eq, Show, Generic)
+
+instance FromJSON RDSSecret where
+  parseJSON = withObject "RDSSecret" $ \o ->
+    RDSSecret
+      <$> o .: "dbClusterIdentifier"
+      <*> o .: "dbname"
+      <*> o .: "engine"
+      <*> o .: "host"
+      <*> o .: "password"
+      <*> o .: "port"
+      <*> o .: "username"
+
+foldMapM makeWrapped [''DatabaseName, ''DatabaseOwner, ''DatabaseConnections]
+
+foldMapM makeLenses [''RDSSecret]
