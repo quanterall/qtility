@@ -23,9 +23,12 @@ createTestState = do
             connectDatabase = "postgres"
           }
       )
-  runRIO masterPool $
-    runMasterDB' $
+  runRIO masterPool $ do
+    runMasterDB' $ do
       createDatabaseIfNotExists (DatabaseName "qtility-test") (DatabaseOwner "postgres")
+    runDB $ do
+      createMigrationTableIfNotExists Nothing
+      removeAllMigrations Nothing
   pool <-
     createConnectionPool
       (DatabaseConnections 1)

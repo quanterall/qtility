@@ -56,5 +56,17 @@ getMigrations maybeSchema = do
       |]
       (Only $ migrationTableName maybeSchema)
 
+removeAllMigrations :: Maybe DatabaseSchema -> DB ()
+removeAllMigrations maybeSchema = do
+  connection <- view postgreSQLConnectionL
+  void $
+    liftIO $
+      execute
+        connection
+        [sql|
+          TRUNCATE TABLE ? RESTART IDENTITY;
+        |]
+        (Only $ migrationTableName maybeSchema)
+
 migrationTableName :: Maybe DatabaseSchema -> QualifiedIdentifier
 migrationTableName maybeSchema = QualifiedIdentifier (fmap (^. unwrap) maybeSchema) "migrations"
