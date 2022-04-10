@@ -19,6 +19,7 @@ createMigrationTableIfNotExists maybeSchema = do
       execute
         connection
         [sql|
+          SET LOCAL client_min_messages = warning;
           CREATE TABLE IF NOT EXISTS ? (
             filename TEXT UNIQUE NOT NULL,
             up_statement TEXT NOT NULL,
