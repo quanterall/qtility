@@ -2,7 +2,7 @@
 
 module Database.PostgreSQL.Simple.Migration.Queries where
 
-import Database.PostgreSQL.Simple (execute, query)
+import Database.PostgreSQL.Simple (execute, execute_, query)
 import Database.PostgreSQL.Simple.Migration.Types
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 import Database.PostgreSQL.Simple.Types
@@ -10,6 +10,7 @@ import Database.PostgreSQL.Simple.Utilities (DB, HasPostgreSQLConnection (..))
 import Database.PostgreSQL.Simple.Utilities.Types
 import Qtility.Data (unwrap)
 import RIO
+import qualified RIO.Text as Text
 
 createMigrationTableIfNotExists :: Maybe DatabaseSchema -> DB ()
 createMigrationTableIfNotExists maybeSchema = do
@@ -68,6 +69,21 @@ removeAllMigrations maybeSchema = do
           TRUNCATE TABLE ? RESTART IDENTITY;
         |]
         (Only $ migrationTableName maybeSchema)
+
+applyMigrations :: Maybe DatabaseSchema -> [Migration] -> DB ()
+applyMigrations maybeSchema migrations = do
+  connection <- view postgreSQLConnectionL
+  forM_ migrations $ \migration -> do
+    unless (migration ^. migrationIsApplied) $ do
+      void $
+        liftIO $ do
+          _ <- execute_ connection (migration ^. migrationUpStatement & Text.unpack & fromString)
+          execute
+            connection
+            [sql|
+            UPDATE ? SET is_applied = true WHERE filename = ?;
+          |]
+            (migrationTableName maybeSchema, migration ^. migrationFilename)
 
 migrationTableName :: Maybe DatabaseSchema -> QualifiedIdentifier
 migrationTableName maybeSchema = QualifiedIdentifier (fmap (^. unwrap) maybeSchema) "migrations"

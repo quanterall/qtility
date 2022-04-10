@@ -7,7 +7,11 @@ import Database.PostgreSQL.Simple.Migration.Queries
 import Database.PostgreSQL.Simple.Migration.Types
 import Database.PostgreSQL.Simple.MigrationSpec.Types
 import Database.PostgreSQL.Simple.Utilities
-import Database.PostgreSQL.Simple.Utilities.Queries (createDatabaseIfNotExists)
+import Database.PostgreSQL.Simple.Utilities.Queries
+  ( createDatabaseIfNotExists,
+    doesTableExist,
+    dropDatabase,
+  )
 import Database.PostgreSQL.Simple.Utilities.Types
 import Qtility
 import Test.Hspec
@@ -26,11 +30,9 @@ createTestState = do
           }
       )
   runRIO masterPool $ do
-    runMasterDB' $ do
+    runMasterDB' $ dropDatabase (DatabaseName "qtility-test")
+    runMasterDB' $
       createDatabaseIfNotExists (DatabaseName "qtility-test") (DatabaseOwner "postgres")
-    runDB $ do
-      createMigrationTableIfNotExists Nothing
-      removeAllMigrations Nothing
   pool <-
     createConnectionPool
       (DatabaseConnections 1)
@@ -42,6 +44,10 @@ createTestState = do
             connectDatabase = "qtility-test"
           }
       )
+  runRIO pool $ do
+    runDB $ do
+      createMigrationTableIfNotExists Nothing
+      removeAllMigrations Nothing
   pure TestState {_testStatePool = pool, _testStateMasterPool = masterPool}
 
 destroyPools :: TestState -> IO ()
@@ -54,7 +60,7 @@ withScaffolding = afterAll destroyPools >>> beforeAll createTestState
 
 spec :: Spec
 spec = do
-  withScaffolding $
+  withScaffolding $ do
     describe "`createMigrationTable`" $ do
       it "creates a migration table that contains all files in given folder" $ \state -> do
         migrations <-
@@ -65,3 +71,15 @@ spec = do
         forM_ migrations $ \migration -> do
           (migration ^. migrationFilename, migration ^. migrationIsApplied)
             `shouldBe` (migration ^. migrationFilename, False)
+
+    describe "`applyMigrations`" $ do
+      it "applies all the passed in migrations if possible, none on errors" $ \state -> do
+        _ <-
+          runTestMonad state $
+            createMigrationTable Nothing "test/test-data/migrations"
+        migrations <- runTestMonad state $ runDB $ getMigrations Nothing
+        doesExampleTableExist <- runTestMonad state $
+          runDB $ do
+            applyMigrations Nothing migrations
+            doesTableExist "that_thing"
+        doesExampleTableExist `shouldBe` True

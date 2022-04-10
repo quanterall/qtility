@@ -1,5 +1,11 @@
-SELECT 1 + 1;
+CREATE TABLE that_thing (
+  id bigserial PRIMARY KEY,
+  name text NOT NULL,
+  extra_field text,
+  created_at timestamptz NOT NULL,
+  updated_at timestamptz NOT NULL
+);
 
 -- DOWN
 
-SELECT 1 + 1;
+DROP TABLE that_thing CASCADE;
