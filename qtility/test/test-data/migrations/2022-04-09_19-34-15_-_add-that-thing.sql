@@ -1,0 +1,5 @@
+SELECT 1 + 1;
+
+-- DOWN
+
+SELECT 1 + 1;

@@ -48,6 +48,14 @@ runDB action = do
   pool <- view postgresqlPoolL
   liftIO $ runInTransaction pool action
 
+runDB' ::
+  (MonadReader env m, MonadIO m, HasPostgresqlPool env) =>
+  DB a ->
+  m a
+runDB' action = do
+  pool <- view postgresqlPoolL
+  liftIO $ withResource pool $ \connection -> runRIO connection $ unDB action
+
 runInTransaction ::
   (MonadIO m) =>
   Pool Connection ->
@@ -66,6 +74,14 @@ runMasterDB ::
 runMasterDB action = do
   pool <- view postgresqlMasterPoolL
   liftIO $ runInTransaction pool action
+
+runMasterDB' ::
+  (MonadIO m, MonadReader env m, HasPostgresqlMasterPool env) =>
+  DB a ->
+  m a
+runMasterDB' action = do
+  pool <- view postgresqlMasterPoolL
+  liftIO $ withResource pool $ \connection -> runRIO connection $ unDB action
 
 -- | Creates a @'Pool' 'Connection'@ of 'DatabaseConnections' size for the given 'ConnectInfo'.
 createConnectionPool :: (MonadIO m) => DatabaseConnections -> ConnectInfo -> m (Pool Connection)

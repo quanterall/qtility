@@ -2,7 +2,7 @@
 
 module Database.PostgreSQL.Simple.Migration.Queries where
 
-import Database.PostgreSQL.Simple (execute)
+import Database.PostgreSQL.Simple (execute, query)
 import Database.PostgreSQL.Simple.Migration.Types
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 import Database.PostgreSQL.Simple.Types
@@ -42,6 +42,19 @@ insertMigrations maybeSchema migrations = do
           ON CONFLICT (filename) DO NOTHING;
        |]
         (TableAndMigration (migrationTableName maybeSchema) migration)
+
+getMigrations :: Maybe DatabaseSchema -> DB [Migration]
+getMigrations maybeSchema = do
+  connection <- view postgreSQLConnectionL
+  liftIO $
+    query
+      connection
+      [sql|
+        SELECT filename, up_statement, down_statement, timestamp, is_applied
+        FROM ?
+        ORDER BY filename ASC;
+      |]
+      (Only $ migrationTableName maybeSchema)
 
 migrationTableName :: Maybe DatabaseSchema -> QualifiedIdentifier
 migrationTableName maybeSchema = QualifiedIdentifier (fmap (^. unwrap) maybeSchema) "migrations"

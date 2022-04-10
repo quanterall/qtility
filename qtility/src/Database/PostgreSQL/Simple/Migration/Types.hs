@@ -3,6 +3,7 @@
 module Database.PostgreSQL.Simple.Migration.Types where
 
 import Control.Lens.TH (makeLenses)
+import Database.PostgreSQL.Simple.FromRow (FromRow (..), field)
 import Database.PostgreSQL.Simple.ToField (toField)
 import Database.PostgreSQL.Simple.ToRow (ToRow (..))
 import Database.PostgreSQL.Simple.Types (QualifiedIdentifier)
@@ -31,6 +32,9 @@ data Migration = Migration
 instance ToRow Migration where
   toRow (Migration filename up down timestamp isApplied) =
     [toField filename, toField up, toField down, toField timestamp, toField isApplied]
+
+instance FromRow Migration where
+  fromRow = Migration <$> field <*> field <*> field <*> field <*> field
 
 data MigrationFileError
   = MigrationIncorrectFormat FilePath
