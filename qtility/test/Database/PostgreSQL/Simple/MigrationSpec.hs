@@ -4,6 +4,7 @@ import Data.Pool (destroyAllResources)
 import Database.PostgreSQL.Simple (ConnectInfo (..))
 import Database.PostgreSQL.Simple.Migration
 import Database.PostgreSQL.Simple.Migration.Queries
+import Database.PostgreSQL.Simple.Migration.Types
 import Database.PostgreSQL.Simple.MigrationSpec.Types
 import Database.PostgreSQL.Simple.Utilities
 import Database.PostgreSQL.Simple.Utilities.Queries (createDatabaseIfNotExists)
@@ -61,3 +62,6 @@ spec = do
             createMigrationTable Nothing "test/test-data/migrations"
         length migrations `shouldBe` 1
         runTestMonad state (runDB $ getMigrations Nothing) `shouldReturn` migrations
+        forM_ migrations $ \migration -> do
+          (migration ^. migrationFilename, migration ^. migrationIsApplied)
+            `shouldBe` (migration ^. migrationFilename, False)
