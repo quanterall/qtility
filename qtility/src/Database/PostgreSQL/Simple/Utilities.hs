@@ -39,7 +39,8 @@ newtype DB a = DB {unDB :: RIO Connection a}
 
 -- | Runs an action against the connection pool that has been chosen for the main pool of the
 -- application. This is different to 'runMasterDB', which (idiomatically) would run against the
--- @postgres@ database.
+-- @postgres@ database. Automatically runs the entire 'DB' action inside of a transaction. For a
+-- version that does not run in transactions, see 'runDB''.
 runDB ::
   (MonadReader env m, MonadIO m, HasPostgresqlPool env) =>
   DB a ->
@@ -48,6 +49,8 @@ runDB action = do
   pool <- view postgresqlPoolL
   liftIO $ runInTransaction pool action
 
+-- | Variant of 'runDB' that runs outside of any transactions. This is helpful when you need  to
+-- run queries that cannot run in transactions.
 runDB' ::
   (MonadReader env m, MonadIO m, HasPostgresqlPool env) =>
   DB a ->
@@ -67,6 +70,8 @@ runInTransaction pool action = do
       withTransaction connection $ runRIO connection $ unDB action
 
 -- | Runs an action against the master database of PostgreSQL, i.e. the @postgres@ database.
+-- Automatically runs the entire 'DB' action inside of a transaction. For a version that does not
+-- run in transactions, see 'runMasterDB''.
 runMasterDB ::
   (MonadIO m, MonadReader env m, HasPostgresqlMasterPool env) =>
   DB a ->
@@ -75,6 +80,8 @@ runMasterDB action = do
   pool <- view postgresqlMasterPoolL
   liftIO $ runInTransaction pool action
 
+-- | Variant of 'runMasterDB' that runs outside of any transactions. This is helpful when you need
+-- to run queries that cannot run in transactions.
 runMasterDB' ::
   (MonadIO m, MonadReader env m, HasPostgresqlMasterPool env) =>
   DB a ->
