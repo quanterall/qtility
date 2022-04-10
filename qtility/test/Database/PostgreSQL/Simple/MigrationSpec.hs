@@ -1,5 +1,6 @@
 module Database.PostgreSQL.Simple.MigrationSpec where
 
+import Data.Pool (destroyAllResources)
 import Database.PostgreSQL.Simple (ConnectInfo (..))
 import Database.PostgreSQL.Simple.Migration
 import Database.PostgreSQL.Simple.Migration.Queries
@@ -42,9 +43,17 @@ createTestState = do
       )
   pure TestState {_testStatePool = pool, _testStateMasterPool = masterPool}
 
+destroyPools :: TestState -> IO ()
+destroyPools state = do
+  state ^. testStateMasterPool & destroyAllResources
+  state ^. testStatePool & destroyAllResources
+
+withScaffolding :: SpecWith TestState -> Spec
+withScaffolding = afterAll destroyPools >>> beforeAll createTestState
+
 spec :: Spec
 spec = do
-  beforeAll createTestState $
+  withScaffolding $
     describe "`createMigrationTable`" $ do
       it "creates a migration table that contains all files in given folder" $ \state -> do
         migrations <-
