@@ -1,5 +1,6 @@
 module Database.PostgreSQL.Simple.MigrationSpec where
 
+import Control.Lens.Combinators (_head, _last)
 import Data.Pool (destroyAllResources)
 import Database.PostgreSQL.Simple (ConnectInfo (..))
 import Database.PostgreSQL.Simple.Migration
@@ -63,9 +64,7 @@ spec = do
   withScaffolding $ do
     describe "`createMigrationTable`" $ do
       it "creates a migration table that contains all files in given folder" $ \state -> do
-        migrations <-
-          runTestMonad state $
-            createMigrationTable Nothing "test/test-data/migrations"
+        migrations <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
         length migrations `shouldBe` 1
         runTestMonad state (runDB $ getMigrations Nothing) `shouldReturn` migrations
         forM_ migrations $ \migration -> do
@@ -74,12 +73,32 @@ spec = do
 
     describe "`applyMigrations`" $ do
       it "applies all the passed in migrations if possible, none on errors" $ \state -> do
-        _ <-
-          runTestMonad state $
-            createMigrationTable Nothing "test/test-data/migrations"
+        _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
         migrations <- runTestMonad state $ runDB $ getMigrations Nothing
         doesExampleTableExist <- runTestMonad state $
           runDB $ do
             applyMigrations Nothing migrations
             doesTableExist "that_thing"
         doesExampleTableExist `shouldBe` True
+
+      it "works when you run one initial file, then another" $ \state -> do
+        _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
+        migrations <- runTestMonad state $ runDB $ getMigrations Nothing
+        doesExampleTableExist <- runTestMonad state $
+          runDB $ do
+            applyMigrations Nothing migrations
+            doesTableExist "that_thing"
+        doesExampleTableExist `shouldBe` True
+
+        _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations2"
+        newMigrations <- runTestMonad state $ runDB $ getMigrations Nothing
+        newMigrations `shouldNotBe` migrations
+        length migrations `shouldBe` 1
+        length newMigrations `shouldBe` 2
+        migrations ^? _head `shouldBe` newMigrations ^? _head
+        newMigrations ^? _last . migrationIsApplied `shouldBe` Just False
+        doesOtherThingExist <- runTestMonad state $
+          runDB $ do
+            applyMigrations Nothing newMigrations
+            doesTableExist "other_thing"
+        doesOtherThingExist `shouldBe` True
