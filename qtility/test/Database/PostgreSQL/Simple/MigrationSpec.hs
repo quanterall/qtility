@@ -84,11 +84,14 @@ spec = do
       it "works when you run one initial file, then another" $ \state -> do
         _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
         migrations <- runTestMonad state $ runDB $ getMigrations Nothing
-        doesExampleTableExist <- runTestMonad state $
+        (doesExampleTableExist, doesOtherExampleTableExist) <- runTestMonad state $
           runDB $ do
             applyMigrations Nothing migrations
-            doesTableExist "that_thing"
+            e1 <- doesTableExist "that_thing"
+            e2 <- doesTableExist "other_thing"
+            pure (e1, e2)
         doesExampleTableExist `shouldBe` True
+        doesOtherExampleTableExist `shouldBe` False
 
         _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations2"
         newMigrations <- runTestMonad state $ runDB $ getMigrations Nothing
@@ -97,8 +100,11 @@ spec = do
         length newMigrations `shouldBe` 2
         migrations ^? _head `shouldBe` newMigrations ^? _head
         newMigrations ^? _last . migrationIsApplied `shouldBe` Just False
-        doesOtherThingExist <- runTestMonad state $
+        (doesThingExist, doesOtherThingExist) <- runTestMonad state $
           runDB $ do
             applyMigrations Nothing newMigrations
-            doesTableExist "other_thing"
+            e1 <- doesTableExist "that_thing"
+            e2 <- doesTableExist "other_thing"
+            pure (e1, e2)
+        doesThingExist `shouldBe` True
         doesOtherThingExist `shouldBe` True
