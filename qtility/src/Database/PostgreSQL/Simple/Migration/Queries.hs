@@ -9,6 +9,7 @@ import Database.PostgreSQL.Simple.Types
 import Database.PostgreSQL.Simple.Utilities (DB, HasPostgreSQLConnection (..))
 import Database.PostgreSQL.Simple.Utilities.Types
 import Qtility.Data (unwrap)
+import Qtility.Types (PositiveInteger)
 import RIO
 import qualified RIO.Text as Text
 
@@ -112,6 +113,34 @@ getUnappliedMigrations maybeSchema = do
         ORDER BY filename ASC;
       |]
       (Only $ migrationTableName maybeSchema)
+
+rollbackLastNMigrations :: Maybe DatabaseSchema -> PositiveInteger -> DB ()
+rollbackLastNMigrations maybeSchema n = do
+  connection <- view postgreSQLConnectionL
+  appliedMigrations <-
+    liftIO $
+      query
+        connection
+        [sql|
+        SELECT filename, up_statement, down_statement, timestamp, is_applied
+        FROM ?
+        WHERE is_applied = true
+        ORDER BY filename DESC LIMIT ?;
+        |]
+        (migrationTableName maybeSchema, n)
+  case appliedMigrations of
+    [] -> return ()
+    migrations -> do
+      forM_ migrations $ \migration -> do
+        void $
+          liftIO $
+            execute_ connection (migration ^. migrationDownStatement & Text.unpack & fromString)
+        void $
+          liftIO $
+            execute
+              connection
+              [sql|UPDATE ? SET is_applied = false WHERE filename = ?;|]
+              (migrationTableName maybeSchema, migration ^. migrationFilename)
 
 migrationTableName :: Maybe DatabaseSchema -> QualifiedIdentifier
 migrationTableName maybeSchema = QualifiedIdentifier (fmap (^. unwrap) maybeSchema) "migrations"

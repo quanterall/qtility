@@ -117,3 +117,13 @@ spec = do
               pure (e1, e2)
           )
           `shouldReturn` (True, True)
+
+        runTestMonad
+          state
+          ( runDB $ do
+              rollbackLastNMigrations Nothing 1
+              e1 <- doesTableExist "that_thing"
+              e2 <- doesTableExist "other_thing"
+              pure (e1, e2)
+          )
+          `shouldReturn` (True, False)
