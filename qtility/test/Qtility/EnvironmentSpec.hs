@@ -98,21 +98,10 @@ spec = do
       it "Parses a correctly written `.env` file" $ do
         parseDotEnvProp
 
-  describe "`loadDotEnvFile`" $ do
-    modifyMaxSuccess (const 150) $
-      it "Loads a correctly written `.env` file" $ do
-        loadDotEnvProp
-
 parseDotEnvProp :: PropertyT IO ()
 parseDotEnvProp = hedgehog $ do
   (envMap, parsed) <- liftIO $ withTemporaryDotEnvFile parseDotEnvFile
   parsed === Map.toList envMap
-
-loadDotEnvProp :: PropertyT IO ()
-loadDotEnvProp = hedgehog $ do
-  (envMap, ()) <- liftIO $ withTemporaryDotEnvFile loadDotEnvFile
-  forM_ (Map.toList envMap) $ \(key, value) -> do
-    liftIO $ readEnvironmentVariable key `shouldReturn` value
 
 anyTextProp :: EnvironmentKey -> PropertyT IO ()
 anyTextProp key = hedgehog $ do
