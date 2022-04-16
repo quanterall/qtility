@@ -92,3 +92,4 @@ tests:
     - hedgehog
     - hspec-hedgehog
     - QuickCheck
+    - uuid

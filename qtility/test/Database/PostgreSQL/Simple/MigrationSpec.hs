@@ -2,23 +2,23 @@ module Database.PostgreSQL.Simple.MigrationSpec where
 
 import Control.Lens.Combinators (_head, _last)
 import Data.Pool (destroyAllResources)
+import Data.UUID.V4 (nextRandom)
 import Database.PostgreSQL.Simple (ConnectInfo (..))
 import Database.PostgreSQL.Simple.Migration
 import Database.PostgreSQL.Simple.Migration.Queries
 import Database.PostgreSQL.Simple.Migration.Types
 import Database.PostgreSQL.Simple.MigrationSpec.Types
+import Database.PostgreSQL.Simple.Types (QualifiedIdentifier (..))
 import Database.PostgreSQL.Simple.Utilities
-import Database.PostgreSQL.Simple.Utilities.Queries
-  ( createDatabaseIfNotExists,
-    doesTableExist,
-    dropDatabase,
-  )
+import Database.PostgreSQL.Simple.Utilities.Queries (createDatabase, doesTableExist, dropDatabase)
 import Database.PostgreSQL.Simple.Utilities.Types
 import Qtility
+import qualified RIO.Text as Text
 import Test.Hspec
 
 createTestState :: IO TestState
 createTestState = do
+  randomDBSuffix <- nextRandom
   masterPool <-
     createConnectionPool
       (DatabaseConnections 1)
@@ -30,10 +30,8 @@ createTestState = do
             connectDatabase = "postgres"
           }
       )
-  runRIO masterPool $ do
-    runMasterDB' $ dropDatabase (DatabaseName "qtility-test")
-    runMasterDB' $
-      createDatabaseIfNotExists (DatabaseName "qtility-test") (DatabaseOwner "postgres")
+  let dbName = DatabaseName $ "qtility-test-" <> (randomDBSuffix & show & fromString)
+  runRIO masterPool $ runMasterDB' $ createDatabase dbName (DatabaseOwner "postgres")
   pool <-
     createConnectionPool
       (DatabaseConnections 1)
@@ -42,22 +40,29 @@ createTestState = do
             connectPort = 5432,
             connectUser = "postgres",
             connectPassword = "postgres",
-            connectDatabase = "qtility-test"
+            connectDatabase = dbName & unDatabaseName & decodeUtf8Lenient & Text.unpack
           }
       )
   runRIO pool $ do
     runDB $ do
       createMigrationTableIfNotExists Nothing
       removeAllMigrations Nothing
-  pure TestState {_testStatePool = pool, _testStateMasterPool = masterPool}
+  pure
+    TestState
+      { _testStatePool = pool,
+        _testStateMasterPool = masterPool,
+        _testStateDatabaseName = dbName
+      }
 
-destroyPools :: TestState -> IO ()
-destroyPools state = do
-  state ^. testStateMasterPool & destroyAllResources
+destroyState :: TestState -> IO ()
+destroyState state = do
   state ^. testStatePool & destroyAllResources
+  runRIO state $ do
+    runMasterDB' $ dropDatabase (state ^. testStateDatabaseName)
+  state ^. testStateMasterPool & destroyAllResources
 
 withScaffolding :: SpecWith TestState -> Spec
-withScaffolding = afterAll destroyPools >>> beforeAll createTestState
+withScaffolding = after destroyState >>> before createTestState
 
 spec :: Spec
 spec = do

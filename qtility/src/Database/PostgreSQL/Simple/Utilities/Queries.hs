@@ -14,6 +14,11 @@ createDatabaseIfNotExists name owner = do
   unlessM (doesDatabaseExist name) $ do
     void $ liftIO $ execute connection [sql|CREATE DATABASE ? WITH OWNER ?|] (name, owner)
 
+createDatabase :: DatabaseName -> DatabaseOwner -> DB ()
+createDatabase name owner = do
+  connection <- view postgreSQLConnectionL
+  void $ liftIO $ execute connection [sql|CREATE DATABASE ? WITH OWNER ?|] (name, owner)
+
 dropDatabase :: DatabaseName -> DB ()
 dropDatabase name = do
   connection <- view postgreSQLConnectionL
