@@ -96,7 +96,7 @@ getAppliedMigrations maybeSchema = do
         SELECT filename, up_statement, down_statement, timestamp, is_applied
         FROM ?
         WHERE is_applied = true
-        ORDER BY filename ASC;
+        ORDER BY filename ASC
       |]
       (Only $ migrationTableName maybeSchema)
 
@@ -110,7 +110,7 @@ getUnappliedMigrations maybeSchema = do
         SELECT filename, up_statement, down_statement, timestamp, is_applied
         FROM ?
         WHERE is_applied = false
-        ORDER BY filename ASC;
+        ORDER BY filename ASC
       |]
       (Only $ migrationTableName maybeSchema)
 
@@ -125,11 +125,11 @@ rollbackLastNMigrations maybeSchema n = do
         SELECT filename, up_statement, down_statement, timestamp, is_applied
         FROM ?
         WHERE is_applied = true
-        ORDER BY filename DESC LIMIT ?;
+        ORDER BY filename DESC LIMIT ?
         |]
         (migrationTableName maybeSchema, n)
   case appliedMigrations of
-    [] -> return ()
+    [] -> throwM $ NoMigrationsFound $ migrationTableName maybeSchema
     migrations -> do
       forM_ migrations $ \migration -> do
         void $
@@ -139,7 +139,7 @@ rollbackLastNMigrations maybeSchema n = do
           liftIO $
             execute
               connection
-              [sql|UPDATE ? SET is_applied = false WHERE filename = ?;|]
+              [sql|UPDATE ? SET is_applied = false WHERE filename = ?|]
               (migrationTableName maybeSchema, migration ^. migrationFilename)
 
 migrationTableName :: Maybe DatabaseSchema -> QualifiedIdentifier
