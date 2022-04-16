@@ -75,23 +75,26 @@ spec = do
       it "applies all the passed in migrations if possible, none on errors" $ \state -> do
         _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
         migrations <- runTestMonad state $ runDB $ getMigrations Nothing
-        doesExampleTableExist <- runTestMonad state $
-          runDB $ do
-            applyMigrations Nothing migrations
-            doesTableExist "that_thing"
-        doesExampleTableExist `shouldBe` True
+        runTestMonad
+          state
+          ( runDB $ do
+              applyMigrations Nothing migrations
+              doesTableExist "that_thing"
+          )
+          `shouldReturn` True
 
       it "works when you run one initial file, then another" $ \state -> do
         _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
         migrations <- runTestMonad state $ runDB $ getMigrations Nothing
-        (doesExampleTableExist, doesOtherExampleTableExist) <- runTestMonad state $
-          runDB $ do
-            applyMigrations Nothing migrations
-            e1 <- doesTableExist "that_thing"
-            e2 <- doesTableExist "other_thing"
-            pure (e1, e2)
-        doesExampleTableExist `shouldBe` True
-        doesOtherExampleTableExist `shouldBe` False
+        runTestMonad
+          state
+          ( runDB $ do
+              applyMigrations Nothing migrations
+              e1 <- doesTableExist "that_thing"
+              e2 <- doesTableExist "other_thing"
+              pure (e1, e2)
+          )
+          `shouldReturn` (True, False)
 
         _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations2"
         newMigrations <- runTestMonad state $ runDB $ getMigrations Nothing
@@ -100,11 +103,17 @@ spec = do
         length newMigrations `shouldBe` 2
         migrations ^? _head `shouldBe` newMigrations ^? _head
         newMigrations ^? _last . migrationIsApplied `shouldBe` Just False
-        (doesThingExist, doesOtherThingExist) <- runTestMonad state $
-          runDB $ do
-            applyMigrations Nothing newMigrations
-            e1 <- doesTableExist "that_thing"
-            e2 <- doesTableExist "other_thing"
-            pure (e1, e2)
-        doesThingExist `shouldBe` True
-        doesOtherThingExist `shouldBe` True
+
+        runTestMonad state (runDB $ getAppliedMigrations Nothing) `shouldReturn` migrations
+        runTestMonad state (runDB $ getUnappliedMigrations Nothing)
+          `shouldReturn` newMigrations ^.. _last
+
+        runTestMonad
+          state
+          ( runDB $ do
+              applyMigrations Nothing newMigrations
+              e1 <- doesTableExist "that_thing"
+              e2 <- doesTableExist "other_thing"
+              pure (e1, e2)
+          )
+          `shouldReturn` (True, True)

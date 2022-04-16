@@ -85,5 +85,33 @@ applyMigrations maybeSchema migrations = do
           |]
             (migrationTableName maybeSchema, migration ^. migrationFilename)
 
+getAppliedMigrations :: Maybe DatabaseSchema -> DB [Migration]
+getAppliedMigrations maybeSchema = do
+  connection <- view postgreSQLConnectionL
+  liftIO $
+    query
+      connection
+      [sql|
+        SELECT filename, up_statement, down_statement, timestamp, is_applied
+        FROM ?
+        WHERE is_applied = true
+        ORDER BY filename ASC;
+      |]
+      (Only $ migrationTableName maybeSchema)
+
+getUnappliedMigrations :: Maybe DatabaseSchema -> DB [Migration]
+getUnappliedMigrations maybeSchema = do
+  connection <- view postgreSQLConnectionL
+  liftIO $
+    query
+      connection
+      [sql|
+        SELECT filename, up_statement, down_statement, timestamp, is_applied
+        FROM ?
+        WHERE is_applied = false
+        ORDER BY filename ASC;
+      |]
+      (Only $ migrationTableName maybeSchema)
+
 migrationTableName :: Maybe DatabaseSchema -> QualifiedIdentifier
 migrationTableName maybeSchema = QualifiedIdentifier (fmap (^. unwrap) maybeSchema) "migrations"
