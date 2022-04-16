@@ -35,7 +35,7 @@ instance HasPostgreSQLConnection Connection where
 -- | Action that can be run via 'runDB' or 'runMasterDB'. This has access to a 'Connection' and
 -- 'IO' only and is purposefully not just any environment.
 newtype DB a = DB {unDB :: RIO Connection a}
-  deriving (Functor, Applicative, Monad, MonadIO, MonadReader Connection)
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader Connection, MonadThrow)
 
 -- | Runs an action against the connection pool that has been chosen for the main pool of the
 -- application. This is different to 'runMasterDB', which (idiomatically) would run against the

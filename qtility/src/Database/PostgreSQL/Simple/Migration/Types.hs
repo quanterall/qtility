@@ -2,7 +2,7 @@
 
 module Database.PostgreSQL.Simple.Migration.Types where
 
-import Control.Lens.TH (makeLenses)
+import Control.Lens.TH (makeLenses, makeWrapped)
 import Database.PostgreSQL.Simple.FromRow (FromRow (..), field)
 import Database.PostgreSQL.Simple.ToField (toField)
 import Database.PostgreSQL.Simple.ToRow (ToRow (..))
@@ -10,6 +10,11 @@ import Database.PostgreSQL.Simple.Types (QualifiedIdentifier)
 import Qtility.TH.Optics (makeClassyException)
 import RIO
 import RIO.Time (UTCTime)
+
+newtype NoMigrationsFound = NoMigrationsFound {unNoMigrationsFound :: QualifiedIdentifier}
+  deriving (Eq, Show, Generic)
+
+instance Exception NoMigrationsFound
 
 data TableAndMigration = TableAndMigration
   { _tableAndMigrationTableName :: !QualifiedIdentifier,
@@ -44,3 +49,5 @@ data MigrationFileError
 foldMapM makeClassyException [''MigrationFileError]
 
 foldMapM makeLenses [''Migration]
+
+foldMapM makeWrapped [''NoMigrationsFound]

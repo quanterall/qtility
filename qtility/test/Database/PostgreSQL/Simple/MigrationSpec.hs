@@ -132,3 +132,9 @@ spec = do
               pure (e1, e2)
           )
           `shouldReturn` (True, False)
+
+    describe "`rollbackLastNMigrations`" $ do
+      it "Throws an error when there are no applied migrations" $ \state -> do
+        _ <- runTestMonad state $ runDB $ getMigrations Nothing
+        runTestMonad state (runDB $ rollbackLastNMigrations Nothing 1)
+          `shouldThrow` (== NoMigrationsFound (QualifiedIdentifier Nothing "migrations"))
