@@ -90,6 +90,7 @@ spec = do
 
       it "works when you run one initial file, then another" $ \state -> do
         _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
+        runTestMonad state (runDB $ doesTableExist "that_thing") `shouldReturn` False
         migrations <- runTestMonad state $ runDB $ getMigrations Nothing
         runTestMonad
           state
@@ -106,10 +107,11 @@ spec = do
         newMigrations `shouldNotBe` migrations
         length migrations `shouldBe` 1
         length newMigrations `shouldBe` 2
-        migrations ^? _head `shouldBe` newMigrations ^? _head
+        newMigrations ^? _head . migrationIsApplied `shouldBe` Just True
         newMigrations ^? _last . migrationIsApplied `shouldBe` Just False
 
-        runTestMonad state (runDB $ getAppliedMigrations Nothing) `shouldReturn` migrations
+        runTestMonad state (runDB $ getAppliedMigrations Nothing)
+          `shouldReturn` (migrations & _head . migrationIsApplied .~ True)
         runTestMonad state (runDB $ getUnappliedMigrations Nothing)
           `shouldReturn` newMigrations ^.. _last
 
