@@ -16,6 +16,11 @@ newtype NoMigrationsFound = NoMigrationsFound {unNoMigrationsFound :: QualifiedI
 
 instance Exception NoMigrationsFound
 
+newtype MigrationNotFound = MigrationNotFound {unMigrationNotFound :: String}
+  deriving (Eq, Show, Generic)
+
+instance Exception MigrationNotFound
+
 data TableAndMigration = TableAndMigration
   { _tableAndMigrationTableName :: !QualifiedIdentifier,
     _tableAndMigrationMigration :: !Migration
@@ -50,4 +55,4 @@ foldMapM makeClassyException [''MigrationFileError]
 
 foldMapM makeLenses [''Migration]
 
-foldMapM makeWrapped [''NoMigrationsFound]
+foldMapM makeWrapped [''NoMigrationsFound, ''MigrationNotFound]

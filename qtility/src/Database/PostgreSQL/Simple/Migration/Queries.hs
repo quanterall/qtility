@@ -142,5 +142,26 @@ rollbackLastNMigrations maybeSchema n = do
               [sql|UPDATE ? SET is_applied = false WHERE filename = ?|]
               (migrationTableName maybeSchema, migration ^. migrationFilename)
 
+updateMigration :: Maybe DatabaseSchema -> Migration -> DB ()
+updateMigration maybeSchema migration = do
+  connection <- view postgreSQLConnectionL
+  affectedRows <-
+    liftIO $
+      execute
+        connection
+        [sql|
+          UPDATE ? SET up_statement = ?, down_statement = ?, timestamp = ?, is_applied = ?
+          WHERE filename = ?;
+        |]
+        ( migrationTableName maybeSchema,
+          migration ^. migrationUpStatement,
+          migration ^. migrationDownStatement,
+          migration ^. migrationTimestamp,
+          migration ^. migrationIsApplied,
+          migration ^. migrationFilename
+        )
+  when (affectedRows == 0) $
+    throwM $ MigrationNotFound $ migration ^. migrationFilename
+
 migrationTableName :: Maybe DatabaseSchema -> QualifiedIdentifier
 migrationTableName maybeSchema = QualifiedIdentifier (fmap (^. unwrap) maybeSchema) "migrations"

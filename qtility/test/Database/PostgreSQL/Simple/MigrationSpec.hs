@@ -140,3 +140,25 @@ spec = do
         _ <- runTestMonad state $ runDB $ getMigrations Nothing
         runTestMonad state (runDB $ rollbackLastNMigrations Nothing 1)
           `shouldThrow` (== NoMigrationsFound (QualifiedIdentifier Nothing "migrations"))
+
+    describe "`updateMigration`" $ do
+      it "Updates the given migration" $ \state -> do
+        _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
+        (m : _) <- runTestMonad state $ runDB $ getMigrations Nothing
+        runTestMonad
+          state
+          ( runDB $ do
+              updateMigration Nothing (m & migrationIsApplied .~ True)
+              getMigrations Nothing
+          )
+          `shouldReturn` [m & migrationIsApplied .~ True]
+
+      it "Throws an error when the migration doesn't exist" $ \state -> do
+        _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
+        (m : _) <- runTestMonad state $ runDB $ getMigrations Nothing
+        runTestMonad
+          state
+          ( runDB $ do
+              updateMigration Nothing (m & migrationFilename .~ "not-a-migration-we-can-find")
+          )
+          `shouldThrow` (== MigrationNotFound "not-a-migration-we-can-find")
