@@ -160,8 +160,20 @@ updateMigration maybeSchema migration = do
           migration ^. migrationIsApplied,
           migration ^. migrationFilename
         )
-  when (affectedRows == 0) $
-    throwM $ MigrationNotFound $ migration ^. migrationFilename
+  when (affectedRows == 0) $ throwM $ MigrationNotFound $ migration ^. migrationFilename
+
+removeMigration :: Maybe DatabaseSchema -> FilePath -> DB ()
+removeMigration maybeSchema filename = do
+  connection <- view postgreSQLConnectionL
+  affectedRows <-
+    liftIO $
+      execute
+        connection
+        [sql|
+          DELETE FROM ? WHERE filename = ?;
+        |]
+        (migrationTableName maybeSchema, filename)
+  when (affectedRows == 0) $ throwM $ MigrationNotFound filename
 
 migrationTableName :: Maybe DatabaseSchema -> QualifiedIdentifier
 migrationTableName maybeSchema = QualifiedIdentifier (fmap (^. unwrap) maybeSchema) "migrations"

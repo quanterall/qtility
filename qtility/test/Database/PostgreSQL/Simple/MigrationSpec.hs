@@ -162,3 +162,20 @@ spec = do
               updateMigration Nothing (m & migrationFilename .~ "not-a-migration-we-can-find")
           )
           `shouldThrow` (== MigrationNotFound "not-a-migration-we-can-find")
+
+    describe "`removeMigration`" $ do
+      it "Removes the given migration" $ \state -> do
+        _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
+        (m : _) <- runTestMonad state $ runDB $ getMigrations Nothing
+        runTestMonad
+          state
+          ( runDB $ do
+              removeMigration Nothing (m ^. migrationFilename)
+              getMigrations Nothing
+          )
+          `shouldReturn` []
+
+      it "Should give an error when trying to remove non-existent migration" $ \state -> do
+        _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
+        runTestMonad state (runDB $ removeMigration Nothing "not-a-migration-we-can-find")
+          `shouldThrow` (== MigrationNotFound "not-a-migration-we-can-find")
