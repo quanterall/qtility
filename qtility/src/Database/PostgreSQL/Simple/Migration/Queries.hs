@@ -1,5 +1,8 @@
 {-# LANGUAGE QuasiQuotes #-}
 
+-- | A module for 'DB' queries that manipulate migrations. Most of them take a
+-- 'Maybe DatabaseSchema' which will determine whether or not we prefix the migration table with a
+-- schema or not.
 module Database.PostgreSQL.Simple.Migration.Queries where
 
 import Database.PostgreSQL.Simple (execute, execute_, query)
