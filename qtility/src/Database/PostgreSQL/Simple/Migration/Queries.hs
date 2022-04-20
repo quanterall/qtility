@@ -70,7 +70,7 @@ removeAllMigrations maybeSchema = do
       execute
         connection
         [sql|
-          TRUNCATE TABLE ? RESTART IDENTITY;
+          TRUNCATE TABLE ? RESTART IDENTITY CASCADE;
         |]
         (Only $ migrationTableName maybeSchema)
 
