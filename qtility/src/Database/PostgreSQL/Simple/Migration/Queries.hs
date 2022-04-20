@@ -16,6 +16,8 @@ import Qtility.Types (PositiveInteger)
 import RIO
 import qualified RIO.Text as Text
 
+-- | Creates a migration table to hold applied and unapplied migrations. As the name suggests, this
+-- function is safe to call multiple times as it will do nothing if the table already exists.
 createMigrationTableIfNotExists :: Maybe DatabaseSchema -> DB ()
 createMigrationTableIfNotExists maybeSchema = do
   connection <- view postgreSQLConnectionL
@@ -35,6 +37,8 @@ createMigrationTableIfNotExists maybeSchema = do
           |]
         (Only $ migrationTableName maybeSchema)
 
+-- | Inserts the given migration in the migration table. Migrations are keyed on their filename and
+-- when one already exists it won't be updated.
 insertMigrations :: Maybe DatabaseSchema -> [Migration] -> DB ()
 insertMigrations maybeSchema migrations = do
   connection <- view postgreSQLConnectionL
@@ -62,6 +66,7 @@ getMigrations maybeSchema = do
       |]
       (Only $ migrationTableName maybeSchema)
 
+-- Removes all migrations from the migration table.
 removeAllMigrations :: Maybe DatabaseSchema -> DB ()
 removeAllMigrations maybeSchema = do
   connection <- view postgreSQLConnectionL
@@ -85,8 +90,8 @@ applyMigrations maybeSchema migrations = do
           execute
             connection
             [sql|
-            UPDATE ? SET is_applied = true WHERE filename = ?;
-          |]
+              UPDATE ? SET is_applied = true WHERE filename = ?;
+            |]
             (migrationTableName maybeSchema, migration ^. migrationFilename)
 
 getAppliedMigrations :: Maybe DatabaseSchema -> DB [Migration]
@@ -117,6 +122,8 @@ getUnappliedMigrations maybeSchema = do
       |]
       (Only $ migrationTableName maybeSchema)
 
+-- | Updates the information of a migration, keyed on the filename. If there are no applied
+-- migrations this throws a 'NoMigrationsFound' exception.
 rollbackLastNMigrations :: Maybe DatabaseSchema -> PositiveInteger -> DB ()
 rollbackLastNMigrations maybeSchema n = do
   connection <- view postgreSQLConnectionL
@@ -125,10 +132,10 @@ rollbackLastNMigrations maybeSchema n = do
       query
         connection
         [sql|
-        SELECT filename, up_statement, down_statement, timestamp, is_applied
-        FROM ?
-        WHERE is_applied = true
-        ORDER BY filename DESC LIMIT ?
+          SELECT filename, up_statement, down_statement, timestamp, is_applied
+          FROM ?
+          WHERE is_applied = true
+          ORDER BY filename DESC LIMIT ?
         |]
         (migrationTableName maybeSchema, n)
   case appliedMigrations of
@@ -145,6 +152,8 @@ rollbackLastNMigrations maybeSchema n = do
               [sql|UPDATE ? SET is_applied = false WHERE filename = ?|]
               (migrationTableName maybeSchema, migration ^. migrationFilename)
 
+-- | Updates the information of a migration, keyed on the filename. If the migration cannot be found
+-- this throws a 'MigrationNotFound' exception.
 updateMigration :: Maybe DatabaseSchema -> Migration -> DB ()
 updateMigration maybeSchema migration = do
   connection <- view postgreSQLConnectionL
@@ -165,6 +174,8 @@ updateMigration maybeSchema migration = do
         )
   when (affectedRows == 0) $ throwM $ MigrationNotFound $ migration ^. migrationFilename
 
+-- | Removes a migration from the migration table (not disk). If the migration cannot be found this
+-- throws a 'MigrationNotFound' exception.
 removeMigration :: Maybe DatabaseSchema -> FilePath -> DB ()
 removeMigration maybeSchema filename = do
   connection <- view postgreSQLConnectionL
