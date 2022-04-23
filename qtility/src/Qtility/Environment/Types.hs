@@ -8,7 +8,7 @@ import Qtility.TH.Optics (makeClassyException)
 import RIO
 
 newtype EnvironmentKey = EnvironmentKey {_unEnvironmentKey :: String}
-  deriving (Eq, Ord, Show, Generic, FromJSON, ToJSON)
+  deriving (Eq, Ord, Show, IsString, Generic, FromJSON, ToJSON)
 
 newtype EnvironmentValue = EnvironmentValue {_unEnvironmentValue :: String}
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
@@ -19,7 +19,7 @@ data ReadEnvironmentVariableError
   deriving (Eq, Show)
 
 newtype EnvironmentFile = EnvironmentFile {_unEnvironmentFile :: FilePath}
-  deriving (Eq, Show, Generic, FromJSON, ToJSON)
+  deriving (Eq, Show, Generic, IsString, FromJSON, ToJSON)
 
 newtype EnvironmentFileNotFound = EnvironmentFileNotFound
   {_unEnvironmentFileNotFound :: EnvironmentFile}
