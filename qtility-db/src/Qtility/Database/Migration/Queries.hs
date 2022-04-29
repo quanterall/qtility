@@ -11,7 +11,6 @@ import Database.PostgreSQL.Simple.Types
 import Qtility.Data (unwrap)
 import Qtility.Database (DB, HasPostgreSQLConnection (..))
 import Qtility.Database.Types
-import Qtility.Types (PositiveInteger)
 import RIO
 import qualified RIO.Text as Text
 

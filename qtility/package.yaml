@@ -14,9 +14,7 @@ dependencies:
 - template-haskell
 - safe-exceptions
 - openapi3
-- postgresql-simple
 - time
-- resource-pool
 
 default-extensions:
 - ApplicativeDo

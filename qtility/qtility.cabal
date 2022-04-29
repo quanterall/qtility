@@ -27,7 +27,6 @@ library
       Qtility.Time
       Qtility.Time.Class
       Qtility.Time.Types
-      Qtility.Types
   other-modules:
       Paths_qtility
   hs-source-dirs:
@@ -83,8 +82,6 @@ library
     , lens
     , lens-aeson
     , openapi3
-    , postgresql-simple
-    , resource-pool
     , rio
     , safe-exceptions
     , stm-chans
@@ -159,9 +156,7 @@ test-suite qtility-test
     , lens
     , lens-aeson
     , openapi3
-    , postgresql-simple
     , qtility
-    , resource-pool
     , rio
     , safe-exceptions
     , stm-chans

@@ -101,6 +101,14 @@ data MigrationFileError
   | MigrationIncorrectFilename FilePath
   deriving (Eq, Show, Generic)
 
+newtype PositiveInteger = PositiveInteger {unPositiveInteger :: Natural}
+  deriving (Eq, Ord, Show, Read, Num, Enum, Integral, Real, Generic)
+
+instance ToField PositiveInteger where
+  toField (PositiveInteger n) = n & toInteger & toField
+
+foldMapM makeWrapped [''PositiveInteger]
+
 foldMapM makeClassyException [''MigrationFileError]
 
 foldMapM makeLenses [''Migration]
