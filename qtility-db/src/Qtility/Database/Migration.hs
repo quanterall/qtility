@@ -1,10 +1,9 @@
-module Database.PostgreSQL.Simple.Migration where
+module Qtility.Database.Migration where
 
-import Database.PostgreSQL.Simple.Migration.Queries
-import Database.PostgreSQL.Simple.Migration.Types
-import Database.PostgreSQL.Simple.Utilities
-import Database.PostgreSQL.Simple.Utilities.Types
 import Qtility
+import Qtility.Database
+import Qtility.Database.Migration.Queries
+import Qtility.Database.Types
 import RIO.Directory (listDirectory)
 import RIO.FilePath (takeBaseName, takeExtension, (</>))
 import qualified RIO.List.Partial as PartialList

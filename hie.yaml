@@ -72,6 +72,12 @@ cradle:
     - path: "./qtility-code/test"
       component: "qtility-code:test:qtility-code-test"
 
+    - path: "./qtility-db/src"
+      component: "qtility-db:lib"
+
+    - path: "./qtility-db/test"
+      component: "qtility-db:test:qtility-db-test"
+
     - path: "./qtility-metrics/src"
       component: "qtility-metrics:lib"
 

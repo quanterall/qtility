@@ -1,11 +1,11 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Database.PostgreSQL.Simple.Utilities.Queries where
+module Qtility.Database.Queries where
 
 import Database.PostgreSQL.Simple (Only (..), execute, query)
 import Database.PostgreSQL.Simple.SqlQQ (sql)
-import Database.PostgreSQL.Simple.Utilities
-import Database.PostgreSQL.Simple.Utilities.Types
+import Qtility.Database
+import Qtility.Database.Types
 import RIO
 
 createDatabaseIfNotExists :: DatabaseName -> DatabaseOwner -> DB ()

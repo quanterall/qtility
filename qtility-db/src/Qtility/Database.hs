@@ -1,6 +1,6 @@
 -- | Utilities for dealing with `postgresql-simple`. This includes support for running queries and
 -- statements if one has a 'Pool Connection' available in the current environment.
-module Database.PostgreSQL.Simple.Utilities where
+module Qtility.Database where
 
 import Data.Pool (Pool, createPool, withResource)
 import Database.PostgreSQL.Simple
@@ -10,8 +10,8 @@ import Database.PostgreSQL.Simple
     connect,
     withTransaction,
   )
-import Database.PostgreSQL.Simple.Utilities.Types
 import Qtility
+import Qtility.Database.Types
 import qualified RIO.Text as Text
 
 class HasPostgresqlPool env where

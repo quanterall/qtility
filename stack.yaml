@@ -12,6 +12,7 @@ packages:
 - ./qtility-brick
 - ./qtility-metrics
 - ./qtility-code
+- ./qtility-db
 - ./mortred
 
 allow-different-user: true

@@ -1,22 +1,15 @@
-name:    qaws-secretsmanager
+name:    qtility-db
 version: "0.0.0"
-license: MIT
-license-file: LICENSE
 
 dependencies:
 
 - base >=4.9.1.0 && <5
-- qaws
 - rio
-- amazonka
-- amazonka-secretsmanager
-- amazonka-core
-- lens
-- aeson
 - qtility
-- resource-pool
+- aeson
 - postgresql-simple
-- qtility-db
+- lens
+- resource-pool
 
 default-extensions:
 - ApplicativeDo
@@ -81,10 +74,10 @@ library:
 
 # Test suite
 tests:
-  qaws-secretsmanager-test:
+  qtility-db-test:
     main: Spec.hs
     source-dirs: test
     ghc-options: -Wall
     dependencies:
-    - qaws-secretsmanager
+    - qtility-db
     - hspec >=2.0.0

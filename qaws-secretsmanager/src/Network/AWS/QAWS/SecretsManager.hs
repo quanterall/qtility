@@ -11,13 +11,13 @@ where
 
 import Data.Pool (Pool)
 import Database.PostgreSQL.Simple (Connection)
-import Database.PostgreSQL.Simple.Utilities (createRDSConnectionPool)
-import Database.PostgreSQL.Simple.Utilities.Types
 import qualified Network.AWS as AWS
 import Network.AWS.QAWS (runAWS')
 import Network.AWS.QAWS.SecretsManager.Types
 import qualified Network.AWS.SecretsManager as SecretsManager
 import Qtility
+import Qtility.Database (createRDSConnectionPool)
+import Qtility.Database.Types
 
 -- | Gets the secret value belonging to a 'SecretARN' and decodes it as an @a@. If the secret cannot
 -- be found throws 'GetSecretNoSecretFound', if the value cannot be decoded correctly throws a

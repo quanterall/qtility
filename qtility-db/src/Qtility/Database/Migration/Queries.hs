@@ -3,15 +3,14 @@
 -- | A module for 'DB' queries that manipulate migrations. Most of them take a
 -- 'Maybe DatabaseSchema' which will determine whether or not we prefix the migration table with a
 -- schema or not.
-module Database.PostgreSQL.Simple.Migration.Queries where
+module Qtility.Database.Migration.Queries where
 
 import Database.PostgreSQL.Simple (execute, execute_, query)
-import Database.PostgreSQL.Simple.Migration.Types
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 import Database.PostgreSQL.Simple.Types
-import Database.PostgreSQL.Simple.Utilities (DB, HasPostgreSQLConnection (..))
-import Database.PostgreSQL.Simple.Utilities.Types
 import Qtility.Data (unwrap)
+import Qtility.Database (DB, HasPostgreSQLConnection (..))
+import Qtility.Database.Types
 import Qtility.Types (PositiveInteger)
 import RIO
 import qualified RIO.Text as Text

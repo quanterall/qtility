@@ -4,32 +4,19 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           qtility
+name:           qtility-db
 version:        0.0.0
-license:        MIT
-license-file:   LICENSE
 build-type:     Simple
 
 library
   exposed-modules:
-      Qtility
-      Qtility.Aeson.Lenses
-      Qtility.Aliases
-      Qtility.Aliases.IOErrorLens
-      Qtility.Data
-      Qtility.Environment
-      Qtility.Environment.Types
-      Qtility.Exceptions
-      Qtility.TH
-      Qtility.TH.JSON
-      Qtility.TH.OpenApi
-      Qtility.TH.Optics
-      Qtility.Time
-      Qtility.Time.Class
-      Qtility.Time.Types
-      Qtility.Types
+      Qtility.Database
+      Qtility.Database.Migration
+      Qtility.Database.Migration.Queries
+      Qtility.Database.Queries
+      Qtility.Database.Types
   other-modules:
-      Paths_qtility
+      Paths_qtility_db
   hs-source-dirs:
       src
   default-extensions:
@@ -81,27 +68,17 @@ library
       aeson
     , base >=4.9.1.0 && <5
     , lens
-    , lens-aeson
-    , openapi3
     , postgresql-simple
+    , qtility
     , resource-pool
     , rio
-    , safe-exceptions
-    , stm-chans
-    , template-haskell
-    , time
   default-language: Haskell2010
 
-test-suite qtility-test
+test-suite qtility-db-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Database.PostgreSQL.Simple.MigrationSpec
-      Database.PostgreSQL.Simple.MigrationSpec.Types
-      Qtility.DataSpec
-      Qtility.EnvironmentSpec
-      Qtility.TimeSpec
-      Paths_qtility
+      Paths_qtility_db
   hs-source-dirs:
       test
   default-extensions:
@@ -150,22 +127,13 @@ test-suite qtility-test
       TypeApplications
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints -Wwarn=deprecations -Werror=incomplete-patterns -Wall
   build-depends:
-      QuickCheck
-    , aeson
+      aeson
     , base >=4.9.1.0 && <5
-    , hedgehog
     , hspec >=2.0.0
-    , hspec-hedgehog
     , lens
-    , lens-aeson
-    , openapi3
     , postgresql-simple
     , qtility
+    , qtility-db
     , resource-pool
     , rio
-    , safe-exceptions
-    , stm-chans
-    , template-haskell
-    , time
-    , uuid
   default-language: Haskell2010
