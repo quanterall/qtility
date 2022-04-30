@@ -1,18 +1,17 @@
-module Database.PostgreSQL.Simple.MigrationSpec where
+module MigrationSpec where
 
 import Control.Lens.Combinators (_head, _last)
 import Data.Pool (destroyAllResources)
 import Data.UUID.V4 (nextRandom)
 import Database.PostgreSQL.Simple (ConnectInfo (..))
-import Database.PostgreSQL.Simple.Migration
-import Database.PostgreSQL.Simple.Migration.Queries
-import Database.PostgreSQL.Simple.Migration.Types
-import Database.PostgreSQL.Simple.MigrationSpec.Types
 import Database.PostgreSQL.Simple.Types (QualifiedIdentifier (..))
-import Database.PostgreSQL.Simple.Utilities
-import Database.PostgreSQL.Simple.Utilities.Queries (createDatabase, doesTableExist, dropDatabase)
-import Database.PostgreSQL.Simple.Utilities.Types
+import MigrationSpec.Types
 import Qtility
+import Qtility.Database
+import Qtility.Database.Migration
+import Qtility.Database.Migration.Queries
+import Qtility.Database.Queries (createDatabase, doesTableExist, dropDatabase)
+import Qtility.Database.Types
 import qualified RIO.Text as Text
 import Test.Hspec
 

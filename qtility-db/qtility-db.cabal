@@ -78,6 +78,8 @@ test-suite qtility-db-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      MigrationSpec
+      MigrationSpec.Types
       Paths_qtility_db
   hs-source-dirs:
       test
@@ -136,4 +138,5 @@ test-suite qtility-db-test
     , qtility-db
     , resource-pool
     , rio
+    , uuid
   default-language: Haskell2010

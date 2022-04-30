@@ -93,8 +93,6 @@ test-suite qtility-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Database.PostgreSQL.Simple.MigrationSpec
-      Database.PostgreSQL.Simple.MigrationSpec.Types
       Qtility.DataSpec
       Qtility.EnvironmentSpec
       Qtility.TimeSpec
@@ -162,5 +160,4 @@ test-suite qtility-test
     , stm-chans
     , template-haskell
     , time
-    , uuid
   default-language: Haskell2010

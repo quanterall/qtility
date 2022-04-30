@@ -1,12 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.PostgreSQL.Simple.MigrationSpec.Types where
+module MigrationSpec.Types where
 
 import Data.Pool (Pool)
 import Database.PostgreSQL.Simple (Connection)
-import Database.PostgreSQL.Simple.Utilities (HasPostgresqlMasterPool (..), HasPostgresqlPool (..))
-import Database.PostgreSQL.Simple.Utilities.Types (DatabaseName)
 import Qtility
+import Qtility.Database (HasPostgresqlMasterPool (..), HasPostgresqlPool (..))
+import Qtility.Database.Types (DatabaseName)
 
 runTestMonad :: TestState -> TestMonad a -> IO a
 runTestMonad state action = action & unTestMonad & runRIO state
