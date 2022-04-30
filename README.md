@@ -28,8 +28,14 @@ This includes:
 - `qaws`: Utilities for common general AWS tasks via `amazonka`
 - `qaws-sqs`: Utilities for common usage of AWS Simple Queue Service (SQS).
 - `qaws-s3`: Utilities for common usage of AWS Simple Storage Service (S3).
+- `qaws-sns`: Utilities for common usage of AWS Simple Notification Service (SNS).
+- `qaws-dynamodb`: Utilities for common usage of AWS DynamoDB.
+- `qaws-cloudwatch-logs`: Utilities for common usage of AWS CloudWatch Logs.
+- `qaws-secretsmanager`: Utilities for common usage of AWS Secrets Manager.
+- `qtility-db`: Utilities for database interaction via `postgresql-simple`
 - `qtility-brick`: Utilities for writing `brick` applications.
 - `qtility-code`: Utilities for executing/interpreting Haskell code.
+- `qtility-metrics`: Utilities for collecting/sending metrics via Prometheus & EKG.
 - `mortred`: Utilities for web scraping/frontend testing via `hs-webdriver` & Selenium.
 
 ## Depending on this repo
@@ -39,9 +45,10 @@ If you want to use this repository and its packages, add the following to your `
 ```yaml
 extra-deps:
 - github: quanterall/qtility
-  commit: b3648dd7a6cef282a956bd01cce6428d0ba58bc9
+  commit: aac174d0d953a5bd04dc75c80977dc5b0e0939bf
   subdirs:
   - qtility
+  - qtility-db
   - qtility-brick
   - qaws
   - qaws-s3
