@@ -2,15 +2,25 @@
 
 module Qtility.Database.Types where
 
-import Control.Lens.TH (makeLenses, makeWrapped)
+import Control.Lens.TH (makeClassyPrisms, makeLenses, makeWrapped)
 import Data.Aeson (FromJSON (..), withObject, (.:))
 import Database.PostgreSQL.Simple.FromRow (FromRow (..), field)
 import Database.PostgreSQL.Simple.ToField (Action (..), ToField (..), toField)
 import Database.PostgreSQL.Simple.ToRow (ToRow (..))
-import Database.PostgreSQL.Simple.Types (QualifiedIdentifier)
+import Database.PostgreSQL.Simple.Types (QualifiedIdentifier, Query)
 import Qtility.TH.Optics (makeClassyException)
 import RIO
 import RIO.Time (UTCTime)
+
+-- | Represents errors that happen when getting results from the database.
+data DBResultError q
+  = -- | The database returned too many results for the given query.
+    DBTooManyResults !Query !q
+  | -- | The database returned no results when results were expected.
+    DBNoResults !Query !q
+  deriving (Eq, Show, Generic)
+
+instance (Typeable q, Show q) => Exception (DBResultError q)
 
 newtype DatabaseName = DatabaseName {unDatabaseName :: ByteString}
   deriving (Eq, Ord, Show, Read, IsString)
@@ -110,6 +120,8 @@ instance ToField PositiveInteger where
 foldMapM makeWrapped [''PositiveInteger]
 
 foldMapM makeClassyException [''MigrationFileError]
+
+foldMapM makeClassyPrisms [''DBResultError]
 
 foldMapM makeLenses [''Migration]
 

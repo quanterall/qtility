@@ -2,11 +2,51 @@
 
 module Qtility.Database.Queries where
 
-import Database.PostgreSQL.Simple (Only (..), execute, query)
+import Database.PostgreSQL.Simple (Only (..), Query, execute, query, query_)
+import Database.PostgreSQL.Simple.FromRow (FromRow (..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
+import Database.PostgreSQL.Simple.ToRow (ToRow (..))
 import Qtility.Database
 import Qtility.Database.Types
 import RIO
+import RIO.List.Partial as PartialList
+
+-- | Executes a query and expects exactly one returned result.
+queryOne :: (ToRow q, Typeable q, Show q, FromRow r) => Query -> q -> DB r
+queryOne query' queryData = do
+  connection <- view postgreSQLConnectionL
+  results <- liftIO $ query connection query' queryData
+
+  when (null results) $ throwM $ DBNoResults query' queryData
+  when (length results > 1) $ throwM $ DBTooManyResults query' queryData
+
+  pure $ PartialList.head results
+
+queryOne_ :: (FromRow r) => Query -> DB r
+queryOne_ query' = do
+  connection <- view postgreSQLConnectionL
+  results <- liftIO $ query_ connection query'
+
+  when (null results) $ throwM $ DBNoResults query' ()
+  when (length results > 1) $ throwM $ DBTooManyResults query' ()
+
+  pure $ PartialList.head results
+
+-- | Executes a query and expects at least one result, possibly more.
+querySome :: (ToRow q, Typeable q, Show q, FromRow r) => Query -> q -> DB [r]
+querySome query' queryData = do
+  connection <- view postgreSQLConnectionL
+  results <- liftIO $ query connection query' queryData
+
+  when (null results) $ throwM $ DBNoResults query' queryData
+
+  pure results
+
+-- | Executes a query and expects zero or more results.
+queryMany :: (ToRow q, FromRow r) => Query -> q -> DB [r]
+queryMany query' queryData = do
+  connection <- view postgreSQLConnectionL
+  liftIO $ query connection query' queryData
 
 createDatabaseIfNotExists :: DatabaseName -> DatabaseOwner -> DB ()
 createDatabaseIfNotExists name owner = do
