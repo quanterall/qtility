@@ -2,7 +2,7 @@ module Qtility.TH where
 
 import Control.Lens.TH (makeClassy, makeLenses)
 import Language.Haskell.TH
-import Qtility.TH.JSON (deriveJSON)
+import Qtility.TH.JSON (deriveJSON, deriveJSON')
 import RIO
 
 -- | Derives both lens definitions as well as both 'ToJSON' and 'FromJSON'. The type is assumed to
@@ -19,6 +19,13 @@ deriveLensAndJSON :: Name -> Q [Dec]
 deriveLensAndJSON name = do
   lenses <- makeLenses name
   (lenses <>) <$> deriveJSON name
+
+-- | Like 'deriveLensAndJSON' but takes the name of an 'Data.Aeson.Options' object for how to
+-- decode/encode JSON.
+deriveLensAndJSON' :: Name -> Name -> Q [Dec]
+deriveLensAndJSON' optionsName name = do
+  lenses <- makeLenses name
+  (lenses <>) <$> deriveJSON' optionsName name
 
 -- | Derives both classy lens definitions as well as both 'ToJSON' and 'FromJSON'. The type is
 -- assumed to follow the format that 'deriveJSON' requires, where all fields are prefixed with an
