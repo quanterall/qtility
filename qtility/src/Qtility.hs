@@ -20,6 +20,7 @@ module Qtility
     module Control.Lens.Operators,
     module Control.Lens.TH,
     module Data.Aeson,
+    module Data.Aeson.Lens,
   )
 where
 
@@ -51,6 +52,7 @@ import Data.Aeson
     (.:?),
     (.=),
   )
+import Data.Aeson.Lens
 import Qtility.Aeson.Lenses
 import Qtility.Aliases
 import Qtility.Aliases.IOErrorLens
