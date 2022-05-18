@@ -4,6 +4,7 @@ module Qtility.DataSpec where
 
 import Qtility.Data
 import RIO
+import RIO.List.Partial (head)
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
@@ -68,3 +69,10 @@ spec = do
 
       quickCheck $ \(xs :: [Int]) -> do
         findM ((== 3) >>> pure) (filter (/= 3) xs) `shouldReturn` Nothing
+
+  describe "`firstRight`" $ do
+    prop "Should return the first Right" $ do
+      quickCheck $ \(xs :: [Either String Int]) -> do
+        let rs = rights xs
+            expectedResult = if null rs then Left "NoValue" else Right (head rs)
+        firstRight "NoValue" xs `shouldBe` expectedResult

@@ -51,3 +51,11 @@ unwrap = _Wrapped'
 
 wrap :: (Wrapped a) => Lens' (Unwrapped a) a
 wrap = _Unwrapped'
+
+-- | Takes a default left value and a list of @'Either' l r@ values and returns either the first
+-- @'Right' a@ value or the default left value if no 'Right' can be found.
+firstRight :: l -> [Either l r] -> Either l r
+firstRight l = foldr f (Left l)
+  where
+    f (Right r) _ = Right r
+    f _ eithers = eithers
