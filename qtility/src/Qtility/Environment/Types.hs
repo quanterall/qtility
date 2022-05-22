@@ -13,9 +13,12 @@ newtype EnvironmentKey = EnvironmentKey {_unEnvironmentKey :: String}
 newtype EnvironmentValue = EnvironmentValue {_unEnvironmentValue :: String}
   deriving (Eq, Show, Generic, FromJSON, ToJSON)
 
+-- | Represents a failure to read the current value of an environment variable.
 data ReadEnvironmentVariableError
-  = ReadEnvironmentInvalidValue !EnvironmentKey !EnvironmentValue !String
-  | ReadEnvironmentMissingValue !EnvironmentKey
+  = -- | We were unable to read the value into the desired type, though a value existed.
+    ReadEnvironmentInvalidValue !EnvironmentKey !EnvironmentValue !String
+  | -- | The environment variable was not found/set.
+    ReadEnvironmentMissingValue !EnvironmentKey
   deriving (Eq, Show)
 
 newtype EnvironmentFile = EnvironmentFile {_unEnvironmentFile :: FilePath}
