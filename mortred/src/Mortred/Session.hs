@@ -128,11 +128,8 @@ waitRunSession milliseconds@(Milliseconds ms) configuration@WDConfig {wdPort, wd
   fromMaybeM (SessionRunTimedOut wdPort wdHost milliseconds) timeoutRun
   where
     timeoutRun = timeout (ms * 1000) runSession'
-    runSession' = do
-      result <- try $ liftIO $ runSession configuration action
-      either handleHttpException pure result
-    handleHttpException :: HttpException -> m a
-    handleHttpException _e = runSession'
+    runSession' =
+      liftIO (runSession configuration action) `catch` \(_ :: HttpException) -> runSession'
 
 webdriverConfig :: SeleniumPort -> WDConfig
 webdriverConfig (SeleniumPort port) =
