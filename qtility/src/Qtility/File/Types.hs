@@ -11,4 +11,6 @@ data JsonFileDecodingError = JsonFileDecodingError
   }
   deriving (Show, Eq)
 
+instance Exception JsonFileDecodingError
+
 foldMapM makeLenses [''JsonFileDecodingError]

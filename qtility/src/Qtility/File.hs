@@ -2,16 +2,13 @@
 module Qtility.File where
 
 import Data.Aeson (Value, eitherDecodeStrict')
--- import Qtility.Exceptions (fromEitherM)
+import Qtility.Exceptions (fromEither)
 import Qtility.File.Types
-import RIO
+import RIO hiding (fromEither)
 import qualified RIO.ByteString as ByteString
 
 withJsonFile :: (MonadIO m, MonadThrow m) => FilePath -> (Value -> m a) -> m a
 withJsonFile path f = do
-  v <-
-    fromEitherM $
-      mapLeft
-        (JsonFileDecodingError path)
-        (eitherDecodeStrict' <$> ByteString.readFile path)
+  fileContents <- liftIO $ ByteString.readFile path
+  v <- fromEither $ mapLeft (JsonFileDecodingError path) (eitherDecodeStrict' fileContents)
   f v
