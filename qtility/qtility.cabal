@@ -20,6 +20,8 @@ library
       Qtility.Environment
       Qtility.Environment.Types
       Qtility.Exceptions
+      Qtility.File
+      Qtility.File.Types
       Qtility.TH
       Qtility.TH.JSON
       Qtility.TH.OpenApi
