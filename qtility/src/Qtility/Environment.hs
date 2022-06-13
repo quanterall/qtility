@@ -61,6 +61,10 @@ instance FromEnvironmentValue Text where
   fromEnvironmentValue "" = Left "empty value"
   fromEnvironmentValue v = Right $ fromString v
 
+instance FromEnvironmentValue ByteString where
+  fromEnvironmentValue "" = Left "empty value"
+  fromEnvironmentValue v = Right $ fromString v
+
 instance FromEnvironmentValue Int where
   fromEnvironmentValue "" = Left "empty value"
   fromEnvironmentValue v = note ("Unable to read value as `Int`: " <> v) $ readMaybe v
