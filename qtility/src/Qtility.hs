@@ -21,6 +21,7 @@ module Qtility
     module Control.Lens.TH,
     module Data.Aeson,
     module Data.Aeson.Lens,
+    module Qtility.UUID,
   )
 where
 
@@ -62,6 +63,7 @@ import Qtility.Environment.Types
 import Qtility.Exceptions
 import Qtility.TH
 import Qtility.TH.JSON
+import Qtility.UUID
 import RIO hiding (Handler, catches, catchesDeep, fromEither, fromEitherM)
 import System.IO.Error.Lens hiding
   ( description,

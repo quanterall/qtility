@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           qtility
-version:        1.2.0
+version:        1.3.0
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
@@ -89,6 +89,7 @@ library
     , stm-chans
     , template-haskell
     , time
+    , uuid
   default-language: Haskell2010
 
 test-suite qtility-test
@@ -162,4 +163,5 @@ test-suite qtility-test
     , stm-chans
     , template-haskell
     , time
+    , uuid
   default-language: Haskell2010
