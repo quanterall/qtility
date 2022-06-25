@@ -29,6 +29,7 @@ library
       Qtility.Time
       Qtility.Time.Class
       Qtility.Time.Types
+      Qtility.UUID
   other-modules:
       Paths_qtility
   hs-source-dirs:
