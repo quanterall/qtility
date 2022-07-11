@@ -160,14 +160,13 @@ updateMigration maybeSchema migration = do
       execute
         connection
         [sql|
-          UPDATE ? SET up_statement = ?, down_statement = ?, timestamp = ?, is_applied = ?
+          UPDATE ? SET up_statement = ?, down_statement = ?, timestamp = ?,
           WHERE filename = ?;
         |]
         ( migrationTableName maybeSchema,
           migration ^. migrationUpStatement,
           migration ^. migrationDownStatement,
           migration ^. migrationTimestamp,
-          migration ^. migrationIsApplied,
           migration ^. migrationFilename
         )
   when (affectedRows == 0) $ throwM $ MigrationNotFound $ migration ^. migrationFilename
