@@ -187,5 +187,10 @@ removeMigration maybeSchema filename = do
         (migrationTableName maybeSchema, filename)
   when (affectedRows == 0) $ throwM $ MigrationNotFound filename
 
+createSchemaIfNotExists :: DatabaseSchema -> DB ()
+createSchemaIfNotExists schemaName = do
+  connection <- view postgreSQLConnectionL
+  void $ liftIO $ execute connection [sql|CREATE SCHEMA IF NOT EXISTS ?|] (Only schemaName)
+
 migrationTableName :: Maybe DatabaseSchema -> QualifiedIdentifier
 migrationTableName maybeSchema = QualifiedIdentifier (fmap (^. unwrap) maybeSchema) "migrations"

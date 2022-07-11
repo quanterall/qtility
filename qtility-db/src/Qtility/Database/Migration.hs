@@ -18,6 +18,7 @@ createMigrationTable ::
   FilePath ->
   m [Migration]
 createMigrationTable maybeSchema migrationsPath = do
+  maybe (pure ()) (createSchemaIfNotExists >>> runDB) maybeSchema
   migrations <- migrationsInDirectory migrationsPath
   runDB $ do
     createMigrationTableIfNotExists maybeSchema
