@@ -160,7 +160,7 @@ updateMigration maybeSchema migration = do
       execute
         connection
         [sql|
-          UPDATE ? SET up_statement = ?, down_statement = ?, timestamp = ?,
+          UPDATE ? SET up_statement = ?, down_statement = ?, timestamp = ?
           WHERE filename = ?;
         |]
         ( migrationTableName maybeSchema,
