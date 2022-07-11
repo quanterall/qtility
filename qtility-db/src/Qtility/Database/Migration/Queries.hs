@@ -197,7 +197,7 @@ createSchemaIfNotExists schemaName = do
         [sql|
           SELECT schema_name FROM information_schema.schemata WHERE schema_name = ?;
         |]
-        (Only schemaName)
+        (schemaName & unDatabaseSchema & Only)
   let doesNotExist = null @[] @(Only Text) existing
   when doesNotExist $
     void $
