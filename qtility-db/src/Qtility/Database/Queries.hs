@@ -12,13 +12,13 @@ import RIO
 import RIO.List.Partial as PartialList
 
 -- | Executes a query and expects exactly one returned result.
-queryOne :: (ToRow q, Typeable q, Show q, FromRow r) => Query -> q -> DB r
+queryOne :: (ToRow q, FromRow r) => Query -> q -> DB r
 queryOne query' queryData = do
   connection <- view postgreSQLConnectionL
   results <- liftIO $ query connection query' queryData
 
-  when (null results) $ throwM $ DBNoResults query' queryData
-  when (length results > 1) $ throwM $ DBTooManyResults query' queryData
+  when (null results) $ throwM $ DBNoResults query'
+  when (length results > 1) $ throwM $ DBTooManyResults query'
 
   pure $ PartialList.head results
 
@@ -27,18 +27,18 @@ queryOne_ query' = do
   connection <- view postgreSQLConnectionL
   results <- liftIO $ query_ connection query'
 
-  when (null results) $ throwM $ DBNoResults query' ()
-  when (length results > 1) $ throwM $ DBTooManyResults query' ()
+  when (null results) $ throwM $ DBNoResults query'
+  when (length results > 1) $ throwM $ DBTooManyResults query'
 
   pure $ PartialList.head results
 
 -- | Executes a query and expects at least one result, possibly more.
-querySome :: (ToRow q, Typeable q, Show q, FromRow r) => Query -> q -> DB [r]
+querySome :: (ToRow q, FromRow r) => Query -> q -> DB [r]
 querySome query' queryData = do
   connection <- view postgreSQLConnectionL
   results <- liftIO $ query connection query' queryData
 
-  when (null results) $ throwM $ DBNoResults query' queryData
+  when (null results) $ throwM $ DBNoResults query'
 
   pure results
 

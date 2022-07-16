@@ -141,7 +141,7 @@ spec = do
           `shouldThrow` (== NoMigrationsFound (QualifiedIdentifier Nothing "migrations"))
 
     describe "`updateMigration`" $ do
-      it "Updates the given migration" $ \state -> do
+      it "Does not update the application state of the migration" $ \state -> do
         _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
         (m : _) <- runTestMonad state $ runDB $ getMigrations Nothing
         runTestMonad
@@ -150,7 +150,7 @@ spec = do
               updateMigration Nothing (m & migrationIsApplied .~ True)
               getMigrations Nothing
           )
-          `shouldReturn` [m & migrationIsApplied .~ True]
+          `shouldReturn` [m & migrationIsApplied .~ False]
 
       it "Throws an error when the migration doesn't exist" $ \state -> do
         _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"

@@ -85,13 +85,13 @@ spec = do
         runTestMonad
           state
           (runDB (queryOne @(Only Text) @(Only Text) query' (Only ("test2" :: Text))))
-          `shouldThrow` (== DBNoResults query' (Only ("test2" :: Text)))
+          `shouldThrow` (== DBNoResults query')
       it "Throws when we have too many results" $ \state -> do
         let query' = [sql| SELECT name FROM test_has_many WHERE name ILIKE ?|]
         runTestMonad
           state
           (runDB (queryOne @(Only Text) @(Only Text) query' (Only ("test%" :: Text))))
-          `shouldThrow` (== DBTooManyResults query' (Only ("test%" :: Text)))
+          `shouldThrow` (== DBTooManyResults query')
 
     describe "`querySome`" $ do
       it "Works with one result" $ \state -> do
@@ -119,7 +119,7 @@ spec = do
         runTestMonad
           state
           (runDB (querySome @(Only Text) @(Only Text) query' (Only ("test2" :: Text))))
-          `shouldThrow` (== DBNoResults query' (Only ("test2" :: Text)))
+          `shouldThrow` (== DBNoResults query')
 
     describe "`queryMany`" $ do
       it "Works with one result" $ \state -> do

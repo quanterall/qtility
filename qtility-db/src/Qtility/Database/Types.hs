@@ -12,15 +12,17 @@ import Qtility.TH.Optics (makeClassyException)
 import RIO
 import RIO.Time (UTCTime)
 
--- | Represents errors that happen when getting results from the database.
-data DBResultError q
-  = -- | The database returned too many results for the given query.
-    DBTooManyResults !Query !q
-  | -- | The database returned no results when results were expected.
-    DBNoResults !Query !q
-  deriving (Eq, Show, Generic)
+-- | The database returned too many results for the given query.
+newtype DBTooManyResults = DBTooManyResults {unDBTooManyResults :: Query}
+  deriving (Eq, Show)
 
-instance (Typeable q, Show q) => Exception (DBResultError q)
+instance Exception DBTooManyResults
+
+-- | The database returned no results when results were expected.
+newtype DBNoResults = DBNoResults {unDBNoResults :: Query}
+  deriving (Eq, Show)
+
+instance Exception DBNoResults
 
 newtype DatabaseName = DatabaseName {unDatabaseName :: ByteString}
   deriving (Eq, Ord, Show, Read, IsString)
@@ -121,11 +123,17 @@ foldMapM makeWrapped [''PositiveInteger]
 
 foldMapM makeClassyException [''MigrationFileError]
 
-foldMapM makeClassyPrisms [''DBResultError]
+foldMapM
+  makeClassyPrisms
+  [ ''DBTooManyResults,
+    ''DBNoResults,
+    ''NoMigrationsFound,
+    ''MigrationNotFound
+  ]
 
 foldMapM makeLenses [''Migration]
 
-foldMapM makeWrapped [''NoMigrationsFound, ''MigrationNotFound]
+foldMapM makeWrapped [''DBTooManyResults, ''DBNoResults, ''NoMigrationsFound, ''MigrationNotFound]
 
 foldMapM
   makeWrapped
