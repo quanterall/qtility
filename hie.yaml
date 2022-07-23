@@ -83,3 +83,9 @@ cradle:
 
     - path: "./qtility-metrics/test"
       component: "qtility-metrics:test:qtility-metrics-test"
+
+    - path: "./qtility-testing-web/src"
+      component: "qtility-testing-web:lib"
+
+    - path: "./qtility-testing-web/test"
+      component: "qtility-testing-web:test:qtility-testing-web-test"

@@ -13,6 +13,7 @@ packages:
 - ./qtility-metrics
 - ./qtility-code
 - ./qtility-db
+- ./qtility-testing-web
 - ./mortred
 
 allow-different-user: true

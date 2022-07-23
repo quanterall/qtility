@@ -1,0 +1,84 @@
+name:    qtility-testing-web
+version: "0.0.0"
+license: MIT
+license-file: LICENSE
+
+dependencies:
+
+- base >=4.9.1.0 && <5
+- qtility
+- hspec-wai
+- wai-extra
+- http-types
+
+default-extensions:
+- ApplicativeDo
+- BangPatterns
+- BinaryLiterals
+- ConstraintKinds
+- DataKinds
+- DefaultSignatures
+- DeriveDataTypeable
+- DeriveFoldable
+- DeriveFunctor
+- DeriveGeneric
+- DeriveTraversable
+- DeriveLift
+- DerivingStrategies
+- DoAndIfThenElse
+- DuplicateRecordFields
+- EmptyDataDecls
+- EmptyCase
+- ExistentialQuantification
+- FlexibleContexts
+- FlexibleInstances
+- FunctionalDependencies
+- GADTs
+- GeneralizedNewtypeDeriving
+- InstanceSigs
+- KindSignatures
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- NoImplicitPrelude
+- NumericUnderscores
+- OverloadedStrings
+- PartialTypeSignatures
+- PatternGuards
+- PolyKinds
+- RankNTypes
+- RecordWildCards
+- ScopedTypeVariables
+- StandaloneDeriving
+- TupleSections
+- TypeFamilies
+- TypeSynonymInstances
+- ViewPatterns
+- TypeApplications
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wpartial-fields
+- -Wredundant-constraints
+- -Wwarn=deprecations
+- -Werror=incomplete-patterns
+
+# The library contains all of our application code. The executable
+# defined below is just a thin wrapper.
+library:
+  source-dirs: src
+
+# Test suite
+tests:
+  qtility-testing-web-test:
+    main: Spec.hs
+    source-dirs: test
+    ghc-options: -Wall
+    dependencies:
+    - qtility-testing-web
+    - hspec >=2.0.0
