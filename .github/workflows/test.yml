@@ -28,6 +28,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-stack-work-
       - name: Run tests
-        run: stack build --test qtility mortred qaws qaws-cloudwatch-logs qaws-dynamodb qaws-s3 qaws-secretsmanager qaws-sns qaws-sqs qtility-brick qtility-code qtility-metrics qtility-testing-web
+        run: stack build --test qtility #mortred qaws qaws-cloudwatch-logs qaws-dynamodb qaws-s3 qaws-secretsmanager qaws-sns qaws-sqs qtility-brick qtility-code qtility-metrics qtility-testing-web
       - name: Build untested
         run: stack build qtility-db
