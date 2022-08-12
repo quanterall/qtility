@@ -1,0 +1,33 @@
+name: Run tests
+
+on:
+  push:
+    branches:
+      - main 
+  pull_request:
+    branches:
+      - main
+  
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v3
+        name: Cache ~/.stack
+        with:
+          path: ~/.stack
+          key: ${{ runner.os }}-stack-global-${{ hashFiles('stack.yaml') }}-${{ hashFiles('*/package.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-stack-global-
+      - uses: actions/cache@v3
+        name: Cache .stack-work
+        with:
+          path: .stack-work
+          key: ${{ runner.os }}-stack-work-${{ hashFiles('stack.yaml') }}-${{ hashFiles('*/package.yaml') }}-${{ hashFiles('**/*.hs') }}
+          restore-keys: |
+            ${{ runner.os }}-stack-work-
+      - name: Run tests
+        run: stack build --test qtility mortred qaws qaws-cloudwatch-logs qaws-dynamodb qaws-s3 qaws-secretsmanager qaws-sns qaws-sqs qtility-brick qtility-code qtility-metrics qtility-testing-web
+      - name: Build untested
+        run: stack build qtility-db

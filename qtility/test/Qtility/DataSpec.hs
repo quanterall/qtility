@@ -4,10 +4,24 @@ module Qtility.DataSpec where
 
 import Qtility.Data
 import RIO
+import qualified RIO.Char as Char
 import RIO.List.Partial (head)
+import qualified RIO.Text as Text
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
+
+newtype UpperCaseCharacter = UpperCaseCharacter {unUpperCaseCharacter :: Char}
+  deriving (Eq, Show)
+
+instance Arbitrary UpperCaseCharacter where
+  arbitrary = UpperCaseCharacter <$> elements ['A' .. 'Z']
+
+newtype LowerCaseCharacter = LowerCaseCharacter {unLowerCaseCharacter :: Char}
+  deriving (Eq, Show)
+
+instance Arbitrary LowerCaseCharacter where
+  arbitrary = LowerCaseCharacter <$> elements ['a' .. 'z']
 
 spec :: Spec
 spec = do
@@ -76,3 +90,42 @@ spec = do
         let rs = rights xs
             expectedResult = if null rs then Left "NoValue" else Right (head rs)
         firstRight "NoValue" xs `shouldBe` expectedResult
+
+  describe "`{upper,lower}CaseFirst`" $ do
+    it "Should uppercase the first letter in a given example" $ do
+      upperCaseFirst @Text "hello" `shouldBe` "Hello"
+      upperCaseFirst @Text "Hello" `shouldBe` "Hello"
+      upperCaseFirst @Text "HELLO" `shouldBe` "HELLO"
+      upperCaseFirst @Text "hELLO" `shouldBe` "HELLO"
+      upperCaseFirst @Text "h" `shouldBe` "H"
+      upperCaseFirst @Text "" `shouldBe` ""
+
+    it "Should lowercase the first letter in a given example" $ do
+      lowerCaseFirst @Text "hello" `shouldBe` "hello"
+      lowerCaseFirst @Text "Hello" `shouldBe` "hello"
+      lowerCaseFirst @Text "HELLO" `shouldBe` "hELLO"
+      lowerCaseFirst @Text "hELLO" `shouldBe` "hELLO"
+      lowerCaseFirst @Text "h" `shouldBe` "h"
+      lowerCaseFirst @Text "" `shouldBe` ""
+
+    prop "Should uppercase the first letter of a `String`" $ do
+      quickCheck $ \(LowerCaseCharacter c) (list :: String) -> do
+        let string = c : list
+        upperCaseFirst string `shouldBe` (Char.toUpper c : list)
+
+    prop "Should lowercase the first letter of a `String`" $ do
+      quickCheck $ \(UpperCaseCharacter c) (list :: String) -> do
+        let string = c : list
+        lowerCaseFirst string `shouldBe` (Char.toLower c : list)
+
+    prop "Should uppercase the first letter of a `Text`" $ do
+      quickCheck $ \(LowerCaseCharacter c) list -> do
+        let string = c : list
+        (string & Text.pack & upperCaseFirst)
+          `shouldBe` (Text.singleton (Char.toUpper c) <> Text.pack list)
+
+    prop "Should lowercase the first letter of a `Text`" $ do
+      quickCheck $ \(UpperCaseCharacter c) list -> do
+        let string = c : list
+        (string & Text.pack & lowerCaseFirst)
+          `shouldBe` (Text.singleton (Char.toLower c) <> Text.pack list)
