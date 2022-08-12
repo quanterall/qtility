@@ -93,16 +93,6 @@ spec = do
       let key = EnvironmentKey "ANY_TEXT"
       anyTextProp key
 
-  describe "`parseDotEnvFile`" $ do
-    modifyMaxSuccess (const 150) $
-      it "Parses a correctly written `.env` file" $ do
-        parseDotEnvProp
-
-parseDotEnvProp :: PropertyT IO ()
-parseDotEnvProp = hedgehog $ do
-  (envMap, parsed) <- liftIO $ withTemporaryDotEnvFile parseDotEnvFile
-  parsed === Map.toList envMap
-
 anyTextProp :: EnvironmentKey -> PropertyT IO ()
 anyTextProp key = hedgehog $ do
   value <-
@@ -111,31 +101,6 @@ anyTextProp key = hedgehog $ do
   liftIO $ setEnv (_unEnvironmentKey key) value
   result <- liftIO $ readEnvironmentVariable key
   result === value
-
-withTemporaryDotEnvFile ::
-  (MonadUnliftIO m) =>
-  (EnvironmentFile -> m a) ->
-  m (Map EnvironmentKey String, a)
-withTemporaryDotEnvFile action = do
-  envMap <- Gen.sample genEnvMap
-  result <- withTemporaryDotEnvFile' envMap action
-  pure (envMap, result)
-
-withTemporaryDotEnvFile' ::
-  (MonadUnliftIO m) =>
-  Map EnvironmentKey String ->
-  (EnvironmentFile -> m a) ->
-  m a
-withTemporaryDotEnvFile' envMap action = do
-  withSystemTempDirectory "envMap" $ \directory -> do
-    let filePath = EnvironmentFile $ directory </> "envFile.env"
-    liftIO $
-      withFile (_unEnvironmentFile filePath) WriteMode $ \h -> do
-        forM_ (Map.toList envMap) $ \(key, value) -> do
-          hPutStrLn h (_unEnvironmentKey key <> "=\"" <> value <> "\"")
-    a <- action filePath
-    removeFile $ _unEnvironmentFile filePath
-    pure a
 
 genEnvMap :: Gen (Map EnvironmentKey String)
 genEnvMap = do
