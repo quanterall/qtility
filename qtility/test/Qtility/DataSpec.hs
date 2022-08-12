@@ -4,7 +4,9 @@ module Qtility.DataSpec where
 
 import Qtility.Data
 import RIO
-import RIO.List.Partial (head)
+import qualified RIO.Char as Char
+import RIO.List.Partial (head, tail)
+import qualified RIO.Text as Text
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
@@ -76,3 +78,42 @@ spec = do
         let rs = rights xs
             expectedResult = if null rs then Left "NoValue" else Right (head rs)
         firstRight "NoValue" xs `shouldBe` expectedResult
+
+  describe "`{upper,lower}CaseFirst`" $ do
+    it "Should uppercase the first letter in a given example" $ do
+      upperCaseFirst @Text "hello" `shouldBe` "Hello"
+      upperCaseFirst @Text "Hello" `shouldBe` "Hello"
+      upperCaseFirst @Text "HELLO" `shouldBe` "HELLO"
+      upperCaseFirst @Text "hELLO" `shouldBe` "HELLO"
+      upperCaseFirst @Text "h" `shouldBe` "H"
+      upperCaseFirst @Text "" `shouldBe` ""
+
+    it "Should lowercase the first letter in a given example" $ do
+      lowerCaseFirst @Text "hello" `shouldBe` "hello"
+      lowerCaseFirst @Text "Hello" `shouldBe` "hello"
+      lowerCaseFirst @Text "HELLO" `shouldBe` "hELLO"
+      lowerCaseFirst @Text "hELLO" `shouldBe` "hELLO"
+      lowerCaseFirst @Text "h" `shouldBe` "h"
+      lowerCaseFirst @Text "" `shouldBe` ""
+
+    prop "Should uppercase the first letter of a `String`" $ do
+      quickCheck $ \(x :: String) -> do
+        let firstLetter = head x
+        upperCaseFirst x `shouldBe` (Char.toUpper firstLetter : tail x)
+
+    prop "Should lowercase the first letter of a `String`" $ do
+      quickCheck $ \(x :: String) -> do
+        let firstLetter = head x
+        lowerCaseFirst x `shouldBe` (Char.toLower firstLetter : tail x)
+
+    prop "Should uppercase the first letter of a `Text`" $ do
+      quickCheck $ \x -> do
+        let firstLetter = head x
+        (x & Text.pack & upperCaseFirst)
+          `shouldBe` (Text.singleton (Char.toUpper firstLetter) <> (x & tail & Text.pack))
+
+    prop "Should lowercase the first letter of a `Text`" $ do
+      quickCheck $ \x -> do
+        let firstLetter = head x
+        (x & Text.pack & lowerCaseFirst)
+          `shouldBe` (Text.singleton (Char.toLower firstLetter) <> (x & tail & Text.pack))

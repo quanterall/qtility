@@ -1,8 +1,10 @@
 module Qtility.Data where
 
+import Control.Lens.Combinators (Cons, cons, uncons)
 import Control.Lens.Prism (Prism', prism')
 import Control.Lens.Wrapped (Unwrapped, Wrapped, _Unwrapped', _Wrapped')
 import RIO hiding (fromEither, fromEitherM)
+import qualified RIO.Char as Char
 import qualified RIO.Text as Text
 
 -- | Annotates what would be a 'Nothing' with an error, taking it into the domain of 'Either'.
@@ -59,3 +61,17 @@ firstRight l = foldr f (Left l)
   where
     f (Right r) _ = Right r
     f _ eithers = eithers
+
+-- | Uppercases the first character in a collection of characters.
+upperCaseFirst :: (Cons s s Char Char) => s -> s
+upperCaseFirst t =
+  case uncons t of
+    Just (c, rest) -> cons (Char.toUpper c) rest
+    Nothing -> t
+
+-- | Lowercases the first character in a collection of characters.
+lowerCaseFirst :: (Cons s s Char Char) => s -> s
+lowerCaseFirst t =
+  case uncons t of
+    Just (c, rest) -> cons (Char.toLower c) rest
+    Nothing -> t
