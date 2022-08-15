@@ -5,7 +5,7 @@ module Network.AWS.QAWS.SQS.Types where
 import Control.Lens.TH (makeLenses)
 import Data.Aeson (FromJSON (..), ToJSON (..))
 import qualified Network.AWS as AWS
-import Network.AWS.QAWS.Types (ARN)
+import Network.AWS.QAWS.Types (Arn)
 import Qtility.Environment (FromEnvironmentValue (..))
 import Qtility.TH.Optics (makeClassyException)
 import RIO
@@ -55,7 +55,7 @@ data ReceivePayloadError
   deriving (Show)
 
 data QueueAttributes = QueueAttributes
-  { _qaArn :: !(Maybe ARN),
+  { _qaArn :: !(Maybe Arn),
     _qaUrl :: !QueueUrl,
     _qaMessages :: !(Maybe MessageCount),
     _qaDelayedMessages :: !(Maybe DelayedMessageCount),

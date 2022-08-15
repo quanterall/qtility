@@ -200,7 +200,7 @@ purgeQueue' awsEnv (QueueUrl queueUrl) = do
 createQueueAttributes :: QueueUrl -> AWSSQS.GetQueueAttributesResponse -> QueueAttributes
 createQueueAttributes queueUrl response =
   let m = response ^. AWSSQS.gqarsAttributes
-      _qaArn = ARN <$> HashMap.lookup AWSSQS.QANQueueARN m
+      _qaArn = Arn <$> HashMap.lookup AWSSQS.QANQueueARN m
       _qaMessages =
         MessageCount <$> (HashMap.lookup AWSSQS.QANApproximateNumberOfMessages m ^? _Just . fromText)
       -- MessageCount <$> (HashMap.lookup AWSSQS.QANApproximateNumberOfMessages m >>= tReadMaybe)

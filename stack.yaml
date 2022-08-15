@@ -8,6 +8,7 @@ packages:
 - ./qaws-cloudwatch-logs
 - ./qaws-secretsmanager
 - ./qaws-sns
+- ./qaws-sts
 - ./qaws-dynamodb
 - ./qtility-brick
 - ./qtility-metrics

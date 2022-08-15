@@ -30,6 +30,12 @@ cradle:
     - path: "./qaws-sqs/test"
       component: "qaws-sqs:test:qaws-sqs-test"
 
+    - path: "./qaws-sts/src"
+      component: "qaws-sts:lib"
+
+    - path: "./qaws-sts/test"
+      component: "qaws-sts:test:qaws-sts-test"
+
     - path: "./qaws-cloudwatch-logs/src"
       component: "qaws-cloudwatch-logs:lib"
 
