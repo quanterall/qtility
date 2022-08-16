@@ -20,7 +20,7 @@ assumeRoleWithWebIdentity ::
   WebIdentityToken ->
   SessionName ->
   CredentialsDuration ->
-  m (AWS.Env, ThreadId)
+  m (AWS.Env, Async ())
 assumeRoleWithWebIdentity
   awsEnv
   (IamRoleArn (Arn roleArn))
@@ -30,21 +30,33 @@ assumeRoleWithWebIdentity
     let command =
           AWSSTS.assumeRoleWithWebIdentity roleArn token sessionName
             & AWSSTS.arwwiDurationSeconds ?~ duration
-    authEnvRef <- newIORef undefined
-    waitVar <- newMVar ()
-    threadId <- asyncThreadId <$> async (authenticationLoop True waitVar authEnvRef command)
-    readMVar waitVar
-    pure (awsEnv & AWS.envAuth .~ AWS.Ref threadId authEnvRef, threadId)
+    -- This holds the `IORef AuthEnv` we are waiting to use, which will be filled in by the thread
+    -- we are starting here.
+    ioRefVar <- newMVar undefined
+    asyncThread <- async (initialNegotiation ioRefVar command)
+    authEnvRef <- readMVar ioRefVar
+    pure (awsEnv & AWS.envAuth .~ AWS.Ref (asyncThreadId asyncThread) authEnvRef, asyncThread)
     where
-      authenticationLoop firstRun waitVar ref command' = do
+      initialNegotiation ioRefVar command' = do
         response' <- runAWS' awsEnv command'
         let maybeAuthEnv' = response' ^. AWSSTS.arwwirsCredentials
         case maybeAuthEnv' of
           Nothing -> do
             threadDelay 100_000
-            authenticationLoop firstRun waitVar ref command'
+            initialNegotiation ioRefVar command'
+          Just authEnv -> do
+            ref <- newIORef authEnv
+            putMVar ioRefVar ref
+            threadDelay $ (fromIntegral duration - 10) * 1_000_000
+            refreshLoop ref command'
+      refreshLoop ref command' = do
+        response' <- runAWS' awsEnv command'
+        let maybeAuthEnv' = response' ^. AWSSTS.arwwirsCredentials
+        case maybeAuthEnv' of
+          Nothing -> do
+            threadDelay 100_000
+            refreshLoop ref command'
           Just authEnv -> do
             atomicWriteIORef ref authEnv
-            when firstRun $ putMVar waitVar ()
             threadDelay $ (fromIntegral duration - 10) * 1_000_000
-            authenticationLoop False waitVar ref command'
+            refreshLoop ref command'
