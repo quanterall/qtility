@@ -37,26 +37,26 @@ assumeRoleWithWebIdentity
     authEnvRef <- readMVar ioRefVar
     pure (awsEnv & AWS.envAuth .~ AWS.Ref (asyncThreadId asyncThread) authEnvRef, asyncThread)
     where
-      initialNegotiation ioRefVar command' = do
-        response' <- runAWS' awsEnv command'
-        let maybeAuthEnv' = response' ^. AWSSTS.arwwirsCredentials
-        case maybeAuthEnv' of
+      initialNegotiation ioRefVar command = do
+        response' <- runAWS' awsEnv command
+        let maybeAuthEnv = response' ^. AWSSTS.arwwirsCredentials
+        case maybeAuthEnv of
           Nothing -> do
             threadDelay 100_000
-            initialNegotiation ioRefVar command'
+            initialNegotiation ioRefVar command
           Just authEnv -> do
             ref <- newIORef authEnv
             putMVar ioRefVar ref
             threadDelay $ (fromIntegral duration - 10) * 1_000_000
-            refreshLoop ref command'
-      refreshLoop ref command' = do
-        response' <- runAWS' awsEnv command'
-        let maybeAuthEnv' = response' ^. AWSSTS.arwwirsCredentials
-        case maybeAuthEnv' of
+            refreshLoop ref command
+      refreshLoop ref command = do
+        response' <- runAWS' awsEnv command
+        let maybeAuthEnv = response' ^. AWSSTS.arwwirsCredentials
+        case maybeAuthEnv of
           Nothing -> do
             threadDelay 100_000
-            refreshLoop ref command'
+            refreshLoop ref command
           Just authEnv -> do
             atomicWriteIORef ref authEnv
             threadDelay $ (fromIntegral duration - 10) * 1_000_000
-            refreshLoop ref command'
+            refreshLoop ref command
