@@ -8,6 +8,7 @@ where
 
 import Qtility.Data (note)
 import Qtility.Environment.Types
+import Qtility.Time.Types (Seconds (..))
 import RIO
 import qualified RIO.Char as Char
 import qualified RIO.Directory as Directory
@@ -87,6 +88,14 @@ instance FromEnvironmentValue Bool where
     | map Char.toLower s `elem` ["yes", "true", "on"] = Right True
     | map Char.toLower s `elem` ["no", "false", "off"] = Right False
     | otherwise = note ("Unable to read value as `Bool`: " <> s) $ readMaybe s
+
+instance FromEnvironmentValue Natural where
+  fromEnvironmentValue s = do
+    i <- note ("Unable to read value as `Natural`: " <> s) $ readMaybe @Integer s
+    if i >= 0 then i & fromIntegral & Right else Left "Value is not a natural number"
+
+instance FromEnvironmentValue a => FromEnvironmentValue (Seconds a) where
+  fromEnvironmentValue = fromEnvironmentValue >>> fmap Seconds
 
 getEnvironmentValue :: (MonadIO m) => EnvironmentKey -> m (Either EnvironmentKey String)
 getEnvironmentValue key = do
