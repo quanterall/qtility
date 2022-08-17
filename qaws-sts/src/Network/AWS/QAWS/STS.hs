@@ -32,8 +32,8 @@ assumeRoleWithWebIdentity
             & AWSSTS.arwwiDurationSeconds ?~ duration
     -- This holds the `IORef AuthEnv` we are waiting to use, which will be filled in by the thread
     -- we are starting here.
-    ioRefVar <- newMVar undefined
-    asyncThread <- async (initialNegotiation ioRefVar command)
+    ioRefVar <- newEmptyMVar
+    asyncThread <- async $ initialNegotiation ioRefVar command
     authEnvRef <- readMVar ioRefVar
     pure (awsEnv & AWS.envAuth .~ AWS.Ref (asyncThreadId asyncThread) authEnvRef, asyncThread)
     where
