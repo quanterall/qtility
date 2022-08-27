@@ -14,7 +14,7 @@ import Qtility.Time.Types (Seconds (..))
 -- | Assumes a given role, useful for contexts where the role credentials are passed in to the
 -- environment, like EKS.
 assumeRoleWithWebIdentity ::
-  (MonadUnliftIO m) =>
+  (MonadUnliftIO m, MonadReader env m, HasLogFunc env) =>
   AWS.Env ->
   IamRoleArn ->
   WebIdentityToken ->
@@ -38,8 +38,11 @@ assumeRoleWithWebIdentity
     pure (awsEnv & AWS.envAuth .~ AWS.Ref (asyncThreadId asyncThread) authEnvRef, asyncThread)
     where
       initialNegotiation ioRefVar command = do
-        response' <- runAWS' awsEnv command
-        let maybeAuthEnv = response' ^. AWSSTS.arwwirsCredentials
+        maybeAuthEnv <-
+          ((^. AWSSTS.arwwirsCredentials) <$> runAWS' awsEnv command)
+            `catchAny` \e -> do
+              logErrorS "assumeRoleWithWebIdentity" $ "Error while trying to assume role: " <> displayShow e
+              pure Nothing
         case maybeAuthEnv of
           Nothing -> do
             threadDelay 100_000
