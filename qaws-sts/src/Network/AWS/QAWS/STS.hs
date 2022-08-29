@@ -28,7 +28,7 @@ assumeRoleWithWebIdentity
   (SessionName sessionName)
   (CredentialsDuration (Seconds duration)) = do
     let command =
-          AWSSTS.assumeRoleWithWebIdentity roleArn token sessionName
+          AWSSTS.assumeRoleWithWebIdentity roleArn sessionName token
             & AWSSTS.arwwiDurationSeconds ?~ duration
     -- This holds the `IORef AuthEnv` we are waiting to use, which will be filled in by the thread
     -- we are starting here.
