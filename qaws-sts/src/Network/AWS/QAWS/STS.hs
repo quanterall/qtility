@@ -48,6 +48,16 @@ assumeRoleWithWebIdentity
             threadDelay 100_000
             initialNegotiation ioRefVar command
           Just authEnv -> do
+            logInfoS "assumeRoleWithWebIdentity" $
+              mconcat
+                [ "Successfully assumed role ",
+                  displayShow roleArn,
+                  " for ",
+                  displayShow duration,
+                  " seconds with the session name '",
+                  displayShow sessionName,
+                  "'"
+                ]
             ref <- newIORef authEnv
             putMVar ioRefVar ref
             threadDelay $ (fromIntegral duration - 10) * 1_000_000
