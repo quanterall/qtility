@@ -2,7 +2,7 @@ module Qtility.TH where
 
 import Control.Lens.TH (makeClassy, makeLenses)
 import Language.Haskell.TH
-import Qtility.TH.JSON (deriveJSON, deriveJSON')
+import Qtility.TH.JSON (deriveAbbreviatedJSON, deriveJSON, deriveJSON')
 import RIO
 
 -- | Derives both lens definitions as well as both 'ToJSON' and 'FromJSON'. The type is assumed to
@@ -26,6 +26,22 @@ deriveLensAndJSON' :: Name -> Name -> Q [Dec]
 deriveLensAndJSON' optionsName name = do
   lenses <- makeLenses name
   (lenses <>) <$> deriveJSON' optionsName name
+
+-- | Like 'deriveLensAndJSON' but specialized for types with abbreviated lens prefixes. For example:
+--
+-- @
+--    data SetOfPossibleValues = SetOfPossibleValues
+--      { _sopvName :: Text,
+--        _sopvValues :: [Text]
+--      }
+--      deriving (Eq, Show, Generic)
+--
+--    deriveAbbreviatedLensAndJSON ''SetOfPossibleValues
+-- @
+deriveLensAndAbbreviatedJSON :: Name -> Q [Dec]
+deriveLensAndAbbreviatedJSON name = do
+  lenses <- makeLenses name
+  (lenses <>) <$> deriveAbbreviatedJSON name
 
 -- | Derives both classy lens definitions as well as both 'ToJSON' and 'FromJSON'. The type is
 -- assumed to follow the format that 'deriveJSON' requires, where all fields are prefixed with an
