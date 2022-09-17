@@ -38,6 +38,9 @@ deriveLensAndJSON' optionsName name = do
 --
 --    deriveAbbreviatedLensAndJSON ''SetOfPossibleValues
 -- @
+--
+-- This will generate the appropriate lenses and also make sure that your 'ToJSON' and 'FromJSON'
+-- instances are correctly created with field label modifiers that remove the `_sopv` prefix.
 deriveLensAndAbbreviatedJSON :: Name -> Q [Dec]
 deriveLensAndAbbreviatedJSON name = do
   lenses <- makeLenses name

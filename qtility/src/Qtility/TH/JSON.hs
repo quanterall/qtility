@@ -76,6 +76,9 @@ deriveJSON' optionsName name = do
 --   data SetOfPossibleValues = SetOfPossibleValues {_sopvName :: String, _sopvValues :: [String]}
 --     deriving (Eq, Show, Generic)
 -- @
+--
+-- This will make sure that your 'ToJSON' and 'FromJSON' instances are correctly created with
+-- field label modifiers that remove only the abbreviation, i.e. `_sopv` in this example.
 deriveAbbreviatedJSON :: Name -> Q [Dec]
 deriveAbbreviatedJSON name = do
   [d|
