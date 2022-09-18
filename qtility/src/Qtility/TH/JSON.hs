@@ -8,7 +8,6 @@ module Qtility.TH.JSON
     deriveJSONs',
     prefixedLensOptions,
     camelToSnake,
-    lowerCaseFirstCharacter,
     prefixedAbbreviatedLensOptions,
     deriveAbbreviatedJSON,
   )
@@ -24,6 +23,7 @@ import Data.Aeson
   )
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax (lift)
+import Qtility.Data (lowerCaseFirst)
 import RIO hiding (lift)
 import qualified RIO.Char as Char
 
@@ -31,13 +31,13 @@ import qualified RIO.Char as Char
 -- fields are prefixed with an underscore as well as the name of the type.
 prefixedLensOptions :: String -> (String -> String) -> Options
 prefixedLensOptions name f =
-  let fieldLabelModifier = drop (length name + 1) >>> lowerCaseFirstCharacter >>> f
+  let fieldLabelModifier = drop (length name + 1) >>> lowerCaseFirst >>> f
    in defaultOptions {fieldLabelModifier}
 
 prefixedAbbreviatedLensOptions :: String -> (String -> String) -> Options
 prefixedAbbreviatedLensOptions name f =
   let nameAbbreviationLength = name & filter Char.isUpper & length
-      fieldLabelModifier = drop (nameAbbreviationLength + 1) >>> lowerCaseFirstCharacter >>> f
+      fieldLabelModifier = drop (nameAbbreviationLength + 1) >>> lowerCaseFirst >>> f
    in defaultOptions {fieldLabelModifier}
 
 -- | Generates standard 'ToJSON' and 'FromJSON' instances based on the format that the fields in a
@@ -104,8 +104,3 @@ camelToSnake [] = []
 camelToSnake (c : cs)
   | Char.isUpper c = '_' : Char.toLower c : camelToSnake cs
   | otherwise = c : camelToSnake cs
-
--- | Lowercases the first character of a string.
-lowerCaseFirstCharacter :: String -> String
-lowerCaseFirstCharacter [] = []
-lowerCaseFirstCharacter (x : xs) = Char.toLower x : xs

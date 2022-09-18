@@ -1,4 +1,10 @@
-module Qtility.TH where
+module Qtility.TH
+  ( deriveLensAndJSON,
+    deriveLensAndAbbreviatedJSON,
+    deriveLensAndJSON',
+    deriveClassyLensAndJSON,
+  )
+where
 
 import Control.Lens.TH (makeClassy, makeLenses)
 import Language.Haskell.TH
