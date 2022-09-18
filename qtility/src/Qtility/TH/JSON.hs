@@ -9,6 +9,8 @@ module Qtility.TH.JSON
     prefixedLensOptions,
     camelToSnake,
     lowerCaseFirstCharacter,
+    prefixedAbbreviatedLensOptions,
+    deriveAbbreviatedJSON,
   )
 where
 
@@ -30,6 +32,12 @@ import qualified RIO.Char as Char
 prefixedLensOptions :: String -> (String -> String) -> Options
 prefixedLensOptions name f =
   let fieldLabelModifier = drop (length name + 1) >>> lowerCaseFirstCharacter >>> f
+   in defaultOptions {fieldLabelModifier}
+
+prefixedAbbreviatedLensOptions :: String -> (String -> String) -> Options
+prefixedAbbreviatedLensOptions name f =
+  let nameAbbreviationLength = name & filter Char.isUpper & length
+      fieldLabelModifier = drop (nameAbbreviationLength + 1) >>> lowerCaseFirstCharacter >>> f
    in defaultOptions {fieldLabelModifier}
 
 -- | Generates standard 'ToJSON' and 'FromJSON' instances based on the format that the fields in a
@@ -59,6 +67,26 @@ deriveJSON' optionsName name = do
 
     instance ToJSON $(conT name) where
       toJSON = genericToJSON $ $(varE optionsName) $(lift $ nameBase name)
+    |]
+
+-- | Generates standard 'ToJSON' and 'FromJSON' instances for fields that are using lensed prefixes
+-- with abbreviation for the type name. An example would be a type called @SetOfPossibleValues@:
+--
+-- @
+--   data SetOfPossibleValues = SetOfPossibleValues {_sopvName :: String, _sopvValues :: [String]}
+--     deriving (Eq, Show, Generic)
+-- @
+--
+-- This will make sure that your 'ToJSON' and 'FromJSON' instances are correctly created with
+-- field label modifiers that remove only the abbreviation, i.e. `_sopv` in this example.
+deriveAbbreviatedJSON :: Name -> Q [Dec]
+deriveAbbreviatedJSON name = do
+  [d|
+    instance FromJSON $(conT name) where
+      parseJSON = genericParseJSON $ prefixedAbbreviatedLensOptions $(lift $ nameBase name) id
+
+    instance ToJSON $(conT name) where
+      toJSON = genericToJSON $ prefixedAbbreviatedLensOptions $(lift $ nameBase name) id
     |]
 
 -- | Takes several names and generates standard 'ToJSON' and 'FromJSON' instances for each of them.
