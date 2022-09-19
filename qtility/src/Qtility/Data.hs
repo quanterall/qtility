@@ -20,15 +20,16 @@ where
 import Control.Lens.Combinators (Cons, cons, makeWrapped, uncons)
 import Control.Lens.Prism (Prism', prism')
 import Control.Lens.Wrapped (Unwrapped, Wrapped, _Unwrapped', _Wrapped')
+import Data.OpenApi (ToSchema)
 import RIO hiding (fromEither, fromEitherM)
 import qualified RIO.Char as Char
 import qualified RIO.Text as Text
 
 newtype PortNumber = PortNumber {unPortNumber :: Int}
-  deriving (Eq, Show, Ord, Generic)
+  deriving (Eq, Show, Ord, Generic, NFData, ToSchema)
 
 newtype Url = Url {unUrl :: String}
-  deriving (Eq, Show, Generic)
+  deriving (Eq, Show, Generic, NFData, ToSchema)
 
 -- | Annotates what would be a 'Nothing' with an error, taking it into the domain of 'Either'.
 note :: e -> Maybe a -> Either e a

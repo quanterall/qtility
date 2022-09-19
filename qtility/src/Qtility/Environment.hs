@@ -6,7 +6,7 @@ module Qtility.Environment
   )
 where
 
-import Qtility.Data (note)
+import Qtility.Data (PortNumber (..), Url (..), note)
 import Qtility.Environment.Types
 import Qtility.Time.Types (Seconds (..))
 import RIO
@@ -93,6 +93,15 @@ instance FromEnvironmentValue Natural where
   fromEnvironmentValue s = do
     i <- note ("Unable to read value as `Natural`: " <> s) $ readMaybe @Integer s
     if i >= 0 then i & fromIntegral & Right else Left "Value is not a natural number"
+
+instance FromEnvironmentValue PortNumber where
+  fromEnvironmentValue s = do
+    i <- note ("Unable to read value as `PortNumber`: " <> s) $ readMaybe @Int s
+    if i >= 0 && i <= 65535 then i & PortNumber & Right else Left "Value is not a valid port number"
+
+instance FromEnvironmentValue Url where
+  fromEnvironmentValue "" = Left "empty value"
+  fromEnvironmentValue v = v & Url & Right
 
 instance FromEnvironmentValue a => FromEnvironmentValue (Seconds a) where
   fromEnvironmentValue = fromEnvironmentValue >>> fmap Seconds
