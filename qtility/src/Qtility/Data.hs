@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Qtility.Data
   ( note,
     hush,
@@ -10,15 +12,23 @@ module Qtility.Data
     upperCaseFirst,
     lowerCaseFirst,
     camelToSnake,
+    PortNumber (..),
+    Url (..),
   )
 where
 
-import Control.Lens.Combinators (Cons, cons, uncons)
+import Control.Lens.Combinators (Cons, cons, makeWrapped, uncons)
 import Control.Lens.Prism (Prism', prism')
 import Control.Lens.Wrapped (Unwrapped, Wrapped, _Unwrapped', _Wrapped')
 import RIO hiding (fromEither, fromEitherM)
 import qualified RIO.Char as Char
 import qualified RIO.Text as Text
+
+newtype PortNumber = PortNumber {unPortNumber :: Int}
+  deriving (Eq, Show, Ord, Generic)
+
+newtype Url = Url {unUrl :: String}
+  deriving (Eq, Show, Generic)
 
 -- | Annotates what would be a 'Nothing' with an error, taking it into the domain of 'Either'.
 note :: e -> Maybe a -> Either e a
@@ -58,9 +68,10 @@ findM p (a : as) = do
 -- With the above defined and assuming @p@ wraps a numeric, the following will automatically apply
 -- @+ 1@ to the value inside the structure, and automatically keep it wrapped:
 --
--- @
---     p & unwrap %~ (+ 1)
--- @
+-- >>> PortNumber 8080 & unwrap %~ (+ 1)
+-- PortNumber {_unPortNumber = 8081}
+-- >>> Url "http://localhost:8080" & unwrap %~ (<> "/sub-route")
+-- Url {_unUrl = "http://localhost:8080/sub-route"}
 unwrap :: (Wrapped a) => Lens' a (Unwrapped a)
 unwrap = _Wrapped'
 
@@ -95,3 +106,5 @@ camelToSnake [] = []
 camelToSnake (c : cs)
   | Char.isUpper c = '_' : Char.toLower c : camelToSnake cs
   | otherwise = c : camelToSnake cs
+
+foldMapM makeWrapped [''PortNumber, ''Url]
