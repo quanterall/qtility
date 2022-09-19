@@ -7,7 +7,6 @@ module Qtility.TH.JSON
     deriveJSONs,
     deriveJSONs',
     prefixedLensOptions,
-    camelToSnake,
     prefixedAbbreviatedLensOptions,
     deriveAbbreviatedJSON,
   )
@@ -97,10 +96,3 @@ deriveJSONs = foldMapM deriveJSON
 -- Also allows one to pass the name of a function that will decide what 'Options' object to use.
 deriveJSONs' :: Name -> [Name] -> Q [Dec]
 deriveJSONs' optionsName = foldMapM (deriveJSON' optionsName)
-
--- | Modifies a string to go from camel case to snake case.
-camelToSnake :: String -> String
-camelToSnake [] = []
-camelToSnake (c : cs)
-  | Char.isUpper c = '_' : Char.toLower c : camelToSnake cs
-  | otherwise = c : camelToSnake cs

@@ -1,4 +1,17 @@
-module Qtility.Data where
+module Qtility.Data
+  ( note,
+    hush,
+    tReadMaybe,
+    fromText,
+    findM,
+    unwrap,
+    wrap,
+    firstRight,
+    upperCaseFirst,
+    lowerCaseFirst,
+    camelToSnake,
+  )
+where
 
 import Control.Lens.Combinators (Cons, cons, uncons)
 import Control.Lens.Prism (Prism', prism')
@@ -75,3 +88,10 @@ lowerCaseFirst t =
   case uncons t of
     Just (c, rest) -> cons (Char.toLower c) rest
     Nothing -> t
+
+-- | Modifies a string to go from camelCase to snake_case.
+camelToSnake :: String -> String
+camelToSnake [] = []
+camelToSnake (c : cs)
+  | Char.isUpper c = '_' : Char.toLower c : camelToSnake cs
+  | otherwise = c : camelToSnake cs
