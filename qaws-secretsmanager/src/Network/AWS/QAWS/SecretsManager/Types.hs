@@ -6,10 +6,10 @@ import Qtility
 import Qtility.TH.Optics (makeClassyException)
 
 newtype SecretARN = SecretARN {unSecretARN :: Text}
-  deriving (Eq, Show, Read, Generic)
+  deriving (Eq, Show, Read, Generic, Ord, IsString, FromJSON, ToJSON)
 
 newtype SecretValue = SecretValue {unSecretValue :: Text}
-  deriving (Eq, Show, Read, Generic)
+  deriving (Eq, Show, Read, Generic, Ord, IsString, FromJSON, ToJSON)
 
 data GetSecretError
   = GetSecretNoSecretFound !SecretARN
