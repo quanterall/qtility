@@ -133,7 +133,7 @@ waitRunSession milliseconds@(Milliseconds ms) configuration@WDConfig {wdPort, wd
 
 webdriverConfig :: SeleniumPort -> WDConfig
 webdriverConfig (SeleniumPort port) =
-  defaultConfig {wdPort = _unPortNumber port} & useBrowser chromeNoSandbox
+  defaultConfig {wdPort = port ^. unwrap} & useBrowser chromeNoSandbox
 
 chromeNoSandbox :: Browser
 chromeNoSandbox =

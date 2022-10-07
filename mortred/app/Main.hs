@@ -7,6 +7,7 @@ import Qtility.Time.Types (Seconds (..))
 import RIO hiding (link)
 import System.IO (print)
 import Test.WebDriver (Selector (..), WD, closeSession, maximize, openPage, screenshot)
+import Qtility.Data (PortNumber(..))
 
 main :: IO ()
 main = do
