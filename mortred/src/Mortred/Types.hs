@@ -4,6 +4,7 @@
 module Mortred.Types where
 
 import Control.Lens.TH (makeLenses, makeWrapped)
+import Qtility.Data (PortNumber)
 import Qtility.Time.Types (Milliseconds)
 import RIO
 import System.Process.Typed (Process)
@@ -17,12 +18,6 @@ newtype SeleniumPath = SeleniumPath {_unSeleniumPath :: FilePath}
   deriving (Eq, Show, Generic)
 
 newtype SeleniumPort = SeleniumPort {_unSeleniumPort :: PortNumber}
-  deriving (Eq, Show, Generic)
-
-newtype PortNumber = PortNumber {_unPortNumber :: Int}
-  deriving (Eq, Show, Generic)
-
-newtype Url = Url {_unUrl :: String}
   deriving (Eq, Show, Generic)
 
 newtype MajorVersion = MajorVersion {_unMajorVersion :: Int}
@@ -62,8 +57,6 @@ foldMapM
     ''DisplayNumber,
     ''SeleniumPath,
     ''SeleniumPort,
-    ''PortNumber,
-    ''Url,
     ''MajorVersion,
     ''Milliseconds,
     ''ChromeVersion,
@@ -75,8 +68,6 @@ foldMapM
   [ ''DisplayNumber,
     ''SeleniumPath,
     ''SeleniumPort,
-    ''PortNumber,
-    ''Url,
     ''MajorVersion,
     ''ChromeVersion,
     ''ChromeDriverVersion
