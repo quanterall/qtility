@@ -152,24 +152,43 @@ rollbackLastNMigrations maybeSchema n = do
 
 -- | Updates the information of a migration, keyed on the filename. If the migration cannot be found
 -- this throws a 'MigrationNotFound' exception.
-updateMigration :: Maybe DatabaseSchema -> Migration -> DB ()
+updateMigration :: Maybe DatabaseSchema -> Migration -> DB Migration
 updateMigration maybeSchema migration = do
   connection <- view postgreSQLConnectionL
-  affectedRows <-
+  results <-
     liftIO $
-      execute
+      query
         connection
         [sql|
-          UPDATE ? SET up_statement = ?, down_statement = ?, timestamp = ?
-          WHERE filename = ?;
+          UPDATE ? new
+          SET up_statement = ?, down_statement = ?, timestamp = ?
+          FROM ? old
+          WHERE new.filename = ?
+            AND new.filename = old.filename
+          RETURNING
+            old.filename,
+            old.up_statement,
+            old.down_statement,
+            old.timestamp,
+            old.is_applied
+          ;
         |]
         ( migrationTableName maybeSchema,
           migration ^. migrationUpStatement,
           migration ^. migrationDownStatement,
           migration ^. migrationTimestamp,
+          migrationTableName maybeSchema,
           migration ^. migrationFilename
         )
-  when (affectedRows == 0) $ throwM $ MigrationNotFound $ migration ^. migrationFilename
+  case results of
+    [oldMigration] ->
+      pure oldMigration
+    [] ->
+      throwM $ MigrationNotFound (migration ^. migrationFilename)
+    _ ->
+      throwM $ TooManyMigrations (migration ^. migrationFilename)
+
+-- when (affectedRows == 0) $ throwM $ MigrationNotFound $ migration ^. migrationFilename
 
 -- | Removes a migration from the migration table (not disk). If the migration cannot be found this
 -- throws a 'MigrationNotFound' exception.

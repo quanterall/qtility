@@ -147,10 +147,19 @@ spec = do
         runTestMonad
           state
           ( runDB $ do
-              updateMigration Nothing (m & migrationIsApplied .~ True)
-              getMigrations Nothing
+              oldMigration <-
+                updateMigration Nothing $
+                  m
+                    & migrationIsApplied .~ True
+                    & migrationUpStatement .~ "SELECT 'Alan Turing';"
+              currentMigrations <- getMigrations Nothing
+              pure (oldMigration, currentMigrations)
           )
-          `shouldReturn` [m & migrationIsApplied .~ False]
+          `shouldReturn` ( m,
+                           [ m & migrationIsApplied .~ False
+                               & migrationUpStatement .~ "SELECT 'Alan Turing';"
+                           ]
+                         )
 
       it "Throws an error when the migration doesn't exist" $ \state -> do
         _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations1"
