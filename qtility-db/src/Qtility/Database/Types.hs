@@ -83,6 +83,11 @@ newtype MigrationNotFound = MigrationNotFound {unMigrationNotFound :: String}
 
 instance Exception MigrationNotFound
 
+newtype TooManyMigrations = TooManyMigrations {unTooManyMigrations :: String}
+  deriving (Eq, Show, Generic)
+
+instance Exception TooManyMigrations
+
 data TableAndMigration = TableAndMigration
   { _tableAndMigrationTableName :: !QualifiedIdentifier,
     _tableAndMigrationMigration :: !Migration
@@ -128,7 +133,8 @@ foldMapM
   [ ''DBTooManyResults,
     ''DBNoResults,
     ''NoMigrationsFound,
-    ''MigrationNotFound
+    ''MigrationNotFound,
+    ''TooManyMigrations
   ]
 
 foldMapM makeLenses [''Migration]
