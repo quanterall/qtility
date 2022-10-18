@@ -188,8 +188,6 @@ updateMigration maybeSchema migration = do
     _ ->
       throwM $ TooManyMigrations (migration ^. migrationFilename)
 
--- when (affectedRows == 0) $ throwM $ MigrationNotFound $ migration ^. migrationFilename
-
 -- | Removes a migration from the migration table (not disk). If the migration cannot be found this
 -- throws a 'MigrationNotFound' exception.
 removeMigration :: Maybe DatabaseSchema -> FilePath -> DB ()
