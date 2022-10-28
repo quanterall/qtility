@@ -22,6 +22,7 @@ library
       Qtility.Exceptions
       Qtility.File
       Qtility.File.Types
+      Qtility.FileSystem
       Qtility.TH
       Qtility.TH.JSON
       Qtility.TH.OpenApi
