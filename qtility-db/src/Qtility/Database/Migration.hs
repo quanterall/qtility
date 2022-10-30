@@ -4,7 +4,7 @@ import Qtility
 import Qtility.Database
 import Qtility.Database.Migration.Queries
 import Qtility.Database.Types
-import RIO.Directory (listDirectory)
+import Qtility.FileSystem (ReadFileSystem (..))
 import RIO.FilePath (takeBaseName, takeExtension, (</>))
 import qualified RIO.List.Partial as PartialList
 import qualified RIO.Text as Text
@@ -13,7 +13,7 @@ import RIO.Time (UTCTime)
 import qualified RIO.Time as Time
 
 createMigrationTable ::
-  (MonadIO m, MonadThrow m, MonadReader env m, HasPostgresqlPool env) =>
+  (MonadIO m, MonadThrow m, MonadReader env m, ReadFileSystem m, HasPostgresqlPool env) =>
   Maybe DatabaseSchema ->
   FilePath ->
   m [Migration]
@@ -26,15 +26,12 @@ createMigrationTable maybeSchema migrationsPath = do
 
   pure migrations
 
-migrationsInDirectory ::
-  (MonadIO m, MonadThrow m) =>
-  FilePath ->
-  m [Migration]
+migrationsInDirectory :: (ReadFileSystem m, MonadThrow m) => FilePath -> m [Migration]
 migrationsInDirectory path = do
-  migrationFilenames <- filter (takeExtension >>> (== ".sql")) <$> liftIO (listDirectory path)
+  migrationFilenames <- filter (takeExtension >>> (== ".sql")) <$> listDirectoryM path
   forM migrationFilenames $ \filename -> do
     timestamp <- parseMigrationTimestamp filename
-    migrationText <- liftIO $ readFileUtf8 $ path </> filename
+    migrationText <- readFileM $ path </> filename
     (up, down) <- parseMigrationText filename migrationText
 
     pure $
