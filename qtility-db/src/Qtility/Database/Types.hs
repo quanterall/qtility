@@ -65,7 +65,7 @@ data RDSSecret = RDSSecret
 instance FromJSON RDSSecret where
   parseJSON = withObject "RDSSecret" $ \o ->
     RDSSecret
-      <$> o .: "dbClusterIdentifier"
+      <$> (o .: "dbClusterIdentifier" <|> o .: "dbInstanceIdentifier")
       <*> o .: "dbname"
       <*> o .: "engine"
       <*> o .: "host"
