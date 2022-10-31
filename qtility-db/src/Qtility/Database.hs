@@ -98,15 +98,33 @@ createConnectionPool connections connectInfo =
 -- | Creates a @'Pool' 'Connection'@ of 'DatabaseConnections' size for a given 'RDSSecret' value.
 createRDSConnectionPool :: (MonadIO m) => DatabaseConnections -> RDSSecret -> m (Pool Connection)
 createRDSConnectionPool connections secret = do
-  let connectionInfo = rdsSecretToConnectInfo secret
+  let connectionInfo = rdsSecretToConnectInfo "" secret
   createConnectionPool connections connectionInfo
 
-rdsSecretToConnectInfo :: RDSSecret -> ConnectInfo
-rdsSecretToConnectInfo secret =
+createRDSConnectionPool' ::
+  (MonadIO m) =>
+  DatabaseName ->
+  DatabaseConnections ->
+  RDSSecret ->
+  m (Pool Connection)
+createRDSConnectionPool' databaseName connections secret = do
+  let connectionInfo = rdsSecretToConnectInfo databaseName secret
+  createConnectionPool connections connectionInfo
+
+rdsSecretToConnectInfo :: DatabaseName -> RDSSecret -> ConnectInfo
+rdsSecretToConnectInfo _databaseName (RDSClusterInfo cii) =
   ConnectInfo
-    { connectHost = secret ^. rdsSecretHost & Text.unpack,
-      connectPort = secret ^. rdsSecretPort & fromIntegral,
-      connectUser = secret ^. rdsSecretUsername & Text.unpack,
-      connectPassword = secret ^. rdsSecretPassword & Text.unpack,
-      connectDatabase = secret ^. rdsSecretName & Text.unpack
+    { connectHost = cii ^. ciiHost & Text.unpack,
+      connectPort = cii ^. ciiPort & fromIntegral,
+      connectUser = cii ^. ciiUsername & Text.unpack,
+      connectPassword = cii ^. ciiPassword & Text.unpack,
+      connectDatabase = cii ^. ciiName & Text.unpack
+    }
+rdsSecretToConnectInfo databaseName (RDSInstanceInfo dii) =
+  ConnectInfo
+    { connectHost = dii ^. diiHost & Text.unpack,
+      connectPort = dii ^. diiPort & fromIntegral,
+      connectUser = dii ^. diiUsername & Text.unpack,
+      connectPassword = dii ^. diiPassword & Text.unpack,
+      connectDatabase = databaseName ^. unwrap & decodeUtf8Lenient & Text.unpack
     }
