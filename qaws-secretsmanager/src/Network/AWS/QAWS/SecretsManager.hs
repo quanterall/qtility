@@ -6,6 +6,8 @@ module Network.AWS.QAWS.SecretsManager
     getSecretValue',
     createConnectionPoolForSecretArn,
     createConnectionPoolForSecretArn',
+    createConnectionPoolForSecretArnWithDbName,
+    createConnectionPoolForSecretArnWithDbName',
   )
 where
 
@@ -16,7 +18,7 @@ import Network.AWS.QAWS (runAWS')
 import Network.AWS.QAWS.SecretsManager.Types
 import qualified Network.AWS.SecretsManager as SecretsManager
 import Qtility
-import Qtility.Database (createRDSConnectionPool)
+import Qtility.Database (createRDSConnectionPool, createRDSConnectionPool')
 import Qtility.Database.Types
 
 -- | Gets the secret value belonging to a 'SecretARN' and decodes it as an @a@. If the secret cannot
@@ -97,3 +99,37 @@ createConnectionPoolForSecretArn' ::
 createConnectionPoolForSecretArn' awsEnv connections secretArn = do
   secret <- getSecretValueAs' awsEnv secretArn
   createRDSConnectionPool connections secret
+
+-- | Create a @'Pool' 'Connection'@ for a given 'SecretARN' but provide a database name as a
+-- fallback when the secret is an instance identifier object, which does not have a database name
+-- in it. The secret is automatically fetched and decoded into an 'RDSSecret', then a pool is
+-- created using that information. If the secret cannot be found, throws 'GetSecretNoSecretFound'.
+-- If the secret cannot be decoded a 'GetSecretDecodingError' is thrown. On AWS error, throws
+-- 'AWS.Error'. This reads your AWS environment from your reader environment.
+createConnectionPoolForSecretArnWithDbName ::
+  (MonadUnliftIO m, MonadThrow m, MonadReader env m, AWS.HasEnv env) =>
+  DatabaseName ->
+  DatabaseConnections ->
+  SecretARN ->
+  m (Pool Connection)
+createConnectionPoolForSecretArnWithDbName dbName connections secretArn = do
+  awsEnv <- view AWS.environment
+  createConnectionPoolForSecretArnWithDbName' awsEnv dbName connections secretArn
+
+-- | Create a @'Pool' 'Connection'@ for a given 'SecretARN' but provide a database name as a
+-- fallback when the secret is an instance identifier object, which does not have a database name
+-- in it. The secret is automatically fetched and decoded into an 'RDSSecret', then a pool is
+-- created using that information. If the secret cannot be found, throws 'GetSecretNoSecretFound'.
+-- If the secret cannot be decoded a 'GetSecretDecodingError' is thrown. On AWS error, throws
+-- 'AWS.Error'. This reads your AWS environment from your reader environment. This is an a'la carte
+-- version that takes your AWS environment as an argument.
+createConnectionPoolForSecretArnWithDbName' ::
+  (MonadUnliftIO m, MonadThrow m) =>
+  AWS.Env ->
+  DatabaseName ->
+  DatabaseConnections ->
+  SecretARN ->
+  m (Pool Connection)
+createConnectionPoolForSecretArnWithDbName' awsEnv dbName connections secretArn = do
+  secret <- getSecretValueAs' awsEnv secretArn
+  createRDSConnectionPool' dbName connections secret

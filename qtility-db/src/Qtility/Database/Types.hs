@@ -8,6 +8,7 @@ import Database.PostgreSQL.Simple.FromRow (FromRow (..), field)
 import Database.PostgreSQL.Simple.ToField (Action (..), ToField (..), toField)
 import Database.PostgreSQL.Simple.ToRow (ToRow (..))
 import Database.PostgreSQL.Simple.Types (QualifiedIdentifier, Query)
+import Qtility.TH (deriveLensAndAbbreviatedJSON)
 import Qtility.TH.Optics (makeClassyException)
 import RIO
 import RIO.Time (UTCTime)
@@ -51,20 +52,28 @@ instance ToField DatabaseTable where
 newtype DatabaseConnections = DatabaseConnections {unDatabaseConnections :: Int}
   deriving (Eq, Show, Read, Ord, Num)
 
-data RDSSecret = RDSSecret
-  { _rdsSecretClusterIdentifier :: !Text,
-    _rdsSecretName :: !Text,
-    _rdsSecretEngine :: !Text,
-    _rdsSecretHost :: !Text,
-    _rdsSecretPassword :: !Text,
-    _rdsSecretPort :: !Int,
-    _rdsSecretUsername :: !Text
-  }
+data RDSSecret
+  = RDSClusterInfo ClusterInstanceInfo
+  | RDSInstanceInfo DatabaseInstanceInfo
   deriving (Eq, Show, Generic)
 
 instance FromJSON RDSSecret where
+  parseJSON v = RDSClusterInfo <$> parseJSON v <|> RDSInstanceInfo <$> parseJSON v
+
+data ClusterInstanceInfo = ClusterInstanceInfo
+  { _ciiClusterIdentifier :: !Text,
+    _ciiName :: !Text,
+    _ciiEngine :: !Text,
+    _ciiHost :: !Text,
+    _ciiPassword :: !Text,
+    _ciiPort :: !Int,
+    _ciiUsername :: !Text
+  }
+  deriving (Eq, Show, Generic)
+
+instance FromJSON ClusterInstanceInfo where
   parseJSON = withObject "RDSSecret" $ \o ->
-    RDSSecret
+    ClusterInstanceInfo
       <$> o .: "dbClusterIdentifier"
       <*> o .: "dbname"
       <*> o .: "engine"
@@ -72,6 +81,17 @@ instance FromJSON RDSSecret where
       <*> o .: "password"
       <*> o .: "port"
       <*> o .: "username"
+
+data DatabaseInstanceInfo = DatabaseInstanceInfo
+  { _diidbInstanceIdentifier :: !Text,
+    _diiEngine :: !Text,
+    _diiHost :: !Text,
+    _diiPort :: !Int,
+    _diiResourceId :: !Text,
+    _diiUsername :: !Text,
+    _diiPassword :: !Text
+  }
+  deriving (Eq, Show, Generic)
 
 newtype NoMigrationsFound = NoMigrationsFound {unNoMigrationsFound :: QualifiedIdentifier}
   deriving (Eq, Show, Generic)
@@ -150,4 +170,6 @@ foldMapM
     ''DatabaseTable
   ]
 
-foldMapM makeLenses [''RDSSecret]
+foldMapM makeLenses [''ClusterInstanceInfo]
+
+foldMapM deriveLensAndAbbreviatedJSON [''DatabaseInstanceInfo]
