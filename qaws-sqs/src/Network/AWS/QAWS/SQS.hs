@@ -8,8 +8,12 @@ module Network.AWS.QAWS.SQS
     deleteMessage',
     sendJSONMessage,
     sendJSONMessage',
+    sendJSONMessages,
+    sendJSONMessages',
     sendMessage,
     sendMessage',
+    sendMessages,
+    sendMessages',
     getQueueAttributes,
     getQueueAttributes',
     purgeQueue,
@@ -26,8 +30,10 @@ import Network.AWS.QAWS.SQS.Types
 import Network.AWS.QAWS.Types
 import qualified Network.AWS.SQS as AWSSQS
 import Qtility.Data (fromText, note)
+import Qtility.UUID (randomUuidV4)
 import RIO
 import qualified RIO.HashMap as HashMap
+import qualified RIO.Map as Map
 
 -- | Receives messages from a queue with the given 'QueueUrl', waiting for up to 'WaitTime' seconds,
 -- for a response and returns a maximum number of 'MessageLimit' messages. This looks for the needed
@@ -143,6 +149,35 @@ sendJSONMessage' :: (MonadUnliftIO m, ToJSON a) => AWS.Env -> QueueUrl -> a -> m
 sendJSONMessage' awsEnv queueUrl a = do
   a & encode & toStrictBytes & decodeUtf8Lenient & sendMessage' awsEnv queueUrl
 
+-- | Sends any @a@s with 'ToJSON' instances to the queue with the given 'QueueUrl'. Uses batching
+-- under the hood and returns the successful as well as the failed messages. This looks for the
+-- needed AWS environment in your current environment via 'MonadReader', which makes it ideal for
+-- usage in a 'MonadReader' based stack (like 'RIO') that implements 'AWS.HasEnv'. Throws
+-- 'AWS.Error'.
+sendJSONMessages ::
+  ( MonadUnliftIO m,
+    MonadReader env m,
+    AWS.HasEnv env,
+    ToJSON a
+  ) =>
+  QueueUrl ->
+  [a] ->
+  m ([Text], [Text])
+sendJSONMessages queueUrl as = do
+  awsEnv <- view AWS.environment
+  sendJSONMessages' awsEnv queueUrl as
+
+-- | A'la carte version of 'sendJSONMessages' that takes an environment instead of looking for one
+-- in your environment. Throws 'AWS.Error'.
+sendJSONMessages' ::
+  (MonadUnliftIO m, ToJSON a) =>
+  AWS.Env ->
+  QueueUrl ->
+  [a] ->
+  m ([Text], [Text])
+sendJSONMessages' awsEnv queueUrl as = do
+  as & fmap (encode >>> toStrictBytes >>> decodeUtf8Lenient) & sendMessages' awsEnv queueUrl
+
 -- | Sends 'Text' to the queue with the given 'QueueUrl'. This looks for the needed AWS environment
 -- in your current environment via 'MonadReader', which makes it ideal for usage in a 'MonadReader'
 -- based stack (like 'RIO') that implements 'AWS.HasEnv'. Throws 'AWS.Error'.
@@ -160,6 +195,43 @@ sendMessage queueUrl message = do
 sendMessage' :: (MonadUnliftIO m) => AWS.Env -> QueueUrl -> Text -> m (Maybe Text)
 sendMessage' awsEnv (QueueUrl queueUrl) message = do
   (^. AWSSQS.smrsMessageId) <$> runAWS' awsEnv (AWSSQS.sendMessage queueUrl message)
+
+-- | Sends a list of 'Text' to the queue with the given 'QueueUrl'. Returns the successful as well
+-- as the unsuccessful messages that were sent. This looks for the needed AWS environment in your
+-- current environment via 'MonadReader', which makes it ideal for usage in a 'MonadReader' based
+-- stack (like 'RIO') that implements 'AWS.HasEnv'. Throws 'AWS.Error'.
+sendMessages ::
+  (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env) =>
+  QueueUrl ->
+  [Text] ->
+  m ([Text], [Text])
+sendMessages queueUrl messages = do
+  awsEnv <- view AWS.environment
+  sendMessages' awsEnv queueUrl messages
+
+-- | A'la carte version of 'sendMessages' that takes an environment instead of looking for one in
+-- your environment. Throws 'AWS.Error'.
+sendMessages' :: (MonadUnliftIO m) => AWS.Env -> QueueUrl -> [Text] -> m ([Text], [Text])
+sendMessages' awsEnv (QueueUrl queueUrl) messages = do
+  withIds <- forM messages $ \m -> do
+    uuid <- liftIO randomUuidV4
+    pure (tshow uuid, m)
+  let entries = map (uncurry AWSSQS.sendMessageBatchRequestEntry) withIds
+  result <- runAWS' awsEnv (queueUrl & AWSSQS.sendMessageBatch & AWSSQS.smbEntries .~ entries)
+  let successful =
+        result
+          ^.. AWSSQS.smbrsSuccessful
+            . traverse
+            . AWSSQS.smbreId
+          & mapMaybe (`Map.lookup` entryMap)
+      failed =
+        result
+          ^.. AWSSQS.smbrsFailed
+            . traverse
+            . AWSSQS.breeId
+          & mapMaybe (`Map.lookup` entryMap)
+      entryMap = Map.fromList withIds
+  pure (successful, failed)
 
 -- | Gets the queue attributes of the queue associated with 'QueueUrl'. This looks for the needed
 -- AWS environment in your current environment via 'MonadReader', which makes it ideal for usage in
