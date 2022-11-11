@@ -1,8 +1,8 @@
 -- | Has utility functions for dealing with Amazon's Simple Storage Service (S3).
 module Network.AWS.QAWS.S3
   ( getFileStream,
-    runWithFileStream,
-    runWithFileStream',
+    withS3FileStream,
+    withS3FileStream',
     objectExists,
     objectExists',
     putObject,
@@ -50,24 +50,24 @@ getFileStream bucket key = do
   let command = AWSS3.getObject bucket key
   ((^. AWSS3.gorsBody) >>> AWS._streamBody) <$> AWS.send command
 
-runWithFileStream ::
+withS3FileStream ::
   (MonadUnliftIO m, MonadReader env m, AWS.HasEnv env) =>
   AWSS3.BucketName ->
   AWSS3.ObjectKey ->
   ConduitT ByteString Void (ResourceT IO) a ->
   m a
-runWithFileStream bucket key downstream = do
+withS3FileStream bucket key downstream = do
   awsEnv <- view AWS.environment
-  runWithFileStream' awsEnv bucket key downstream
+  withS3FileStream' awsEnv bucket key downstream
 
-runWithFileStream' ::
+withS3FileStream' ::
   (MonadUnliftIO m) =>
   AWS.Env ->
   AWSS3.BucketName ->
   AWSS3.ObjectKey ->
   ConduitT ByteString Void (ResourceT IO) a ->
   m a
-runWithFileStream' awsEnv bucket key downstream = do
+withS3FileStream' awsEnv bucket key downstream = do
   AWS.runResourceT $
     AWS.runAWS awsEnv $ do
       fileStream <- getFileStream bucket key
