@@ -10,6 +10,7 @@ dependencies:
 - postgresql-simple
 - lens
 - resource-pool
+- tmp-postgres
 
 default-extensions:
 - ApplicativeDo
