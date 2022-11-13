@@ -19,9 +19,9 @@ data TestState = TestState
   { _testStatePool :: Pool Connection,
     _testStateMasterPool :: Pool Connection,
     _testStateDatabaseName :: DatabaseName,
-    _testStateFiles :: Map FilePath (Map FilePath Text)
+    _testStateFiles :: IORef (Map FilePath (Map FilePath Text))
   }
-  deriving (Show)
+  deriving (Generic)
 
 newtype TestMonad a = TestMonad {unTestMonad :: RIO TestState a}
   deriving (Functor, Applicative, Monad, MonadIO, MonadReader TestState, MonadThrow)
@@ -36,10 +36,10 @@ instance HasPostgresqlMasterPool TestState where
 
 instance ReadFileSystem (RIO TestState) where
   listDirectoryM path = do
-    files <- view testStateFiles
+    files <- view testStateFiles >>= readIORef
     files & Map.lookup path & maybe (error $ "No files in: " <> path) Map.keys & pure
   readFileM path = do
-    files <- view testStateFiles
+    files <- view testStateFiles >>= readIORef
     let fileContents = do
           let (dir, file) = splitFileName path
           directoryContents <- Map.lookup dir files
@@ -47,10 +47,10 @@ instance ReadFileSystem (RIO TestState) where
     fileContents & maybe (error $ "No file: " <> path) pure
   readByteStringFileM = readFileM >>> fmap encodeUtf8
   doesDirectoryExistM path = do
-    files <- view testStateFiles
+    files <- view testStateFiles >>= readIORef
     files & Map.member path & pure
   doesFileExistM path = do
-    files <- view testStateFiles
+    files <- view testStateFiles >>= readIORef
     let (dir, file) = splitFileName path
         directoryContents = Map.lookup dir files
     directoryContents & maybe False (Map.member file) & pure

@@ -13,6 +13,7 @@ import Qtility.Database.Migration
 import Qtility.Database.Migration.Queries
 import Qtility.Database.Queries
 import Qtility.Database.Types
+import qualified RIO.Map as Map
 import qualified RIO.Text as Text
 import Test.Hspec
 
@@ -32,6 +33,45 @@ createTestState = do
       )
   let dbName = DatabaseName $ "qtility-database-spec-" <> (randomDBSuffix & show & fromString)
   runRIO masterPool $ runMasterDB' $ createDatabase dbName (DatabaseOwner "postgres")
+  let migration1 =
+        Text.unlines
+          [ "CREATE TABLE \"test_has_one\" (",
+            "  \"id\" bigserial PRIMARY KEY,",
+            "  \"name\" text NOT NULL,",
+            "  \"created_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+            "  \"updated_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP",
+            ");",
+            "INSERT INTO \"test_has_one\" (\"name\") VALUES ('test1');",
+            "",
+            "CREATE TABLE \"test_has_none\" (",
+            "  \"id\" bigserial PRIMARY KEY,",
+            "  \"name\" text NOT NULL,",
+            "  \"created_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+            "  \"updated_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP",
+            ");",
+            "",
+            "CREATE TABLE \"test_has_many\" (",
+            "  \"id\" bigserial PRIMARY KEY,",
+            "  \"name\" text NOT NULL,",
+            "  \"created_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,",
+            "  \"updated_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP",
+            ");",
+            "",
+            "INSERT INTO \"test_has_many\" (\"name\") VALUES ('test1'), ('test2');",
+            "",
+            "-- DOWN",
+            "",
+            "DROP TABLE \"test_has_one\";",
+            "DROP TABLE \"test_has_none\";",
+            "DROP TABLE \"test_has_many\";"
+          ]
+  files <-
+    newIORef $
+      Map.fromList
+        [ ( "test/DatabaseSpec",
+            Map.fromList [("2022-05-02_10-34-18_-_create_and_seed_database.sql", migration1)]
+          )
+        ]
   pool <-
     createConnectionPool
       (DatabaseConnections 1)
@@ -43,14 +83,16 @@ createTestState = do
             connectDatabase = dbName & unDatabaseName & decodeUtf8Lenient & Text.unpack
           }
       )
-  migrations <- runRIO pool $ createMigrationTable Nothing "test/DatabaseSpec/migrations"
+  let state =
+        TestState
+          { _testStatePool = pool,
+            _testStateMasterPool = masterPool,
+            _testStateDatabaseName = dbName,
+            _testStateFiles = files
+          }
+  migrations <- runRIO state $ createMigrationTable Nothing "test/DatabaseSpec/migrations"
   runRIO pool $ runDB $ applyMigrations Nothing migrations
-  pure
-    TestState
-      { _testStatePool = pool,
-        _testStateMasterPool = masterPool,
-        _testStateDatabaseName = dbName
-      }
+  pure state
 
 destroyState :: TestState -> IO ()
 destroyState state = do
