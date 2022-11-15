@@ -1,47 +1,64 @@
 module MigrationSpec where
 
 import Control.Lens.Combinators (_head, _last)
+import Data.Monoid (getLast)
 import Data.Pool (destroyAllResources)
-import Data.UUID.V4 (nextRandom)
 import Database.PostgreSQL.Simple (ConnectInfo (..))
+import Database.PostgreSQL.Simple.Options (Options (..))
 import Database.PostgreSQL.Simple.Types (QualifiedIdentifier (..))
+import qualified Database.Postgres.Temp as TemporaryPostgres
 import MigrationSpec.Types
 import Qtility
 import Qtility.Database
 import Qtility.Database.Migration
 import Qtility.Database.Migration.Queries
-import Qtility.Database.Queries (createDatabase, doesTableExist, dropDatabase)
+import Qtility.Database.Queries (doesTableExist)
 import Qtility.Database.Types
-import qualified RIO.Text as Text
 import Test.Hspec
+
+newtype UnableToStartTemporaryPostgres = UnableToStartTemporaryPostgres String
+  deriving (Show, Eq)
+
+instance Exception UnableToStartTemporaryPostgres
 
 createTestState :: IO TestState
 createTestState = do
-  randomDBSuffix <- nextRandom
-  masterPool <-
-    createConnectionPool
-      (DatabaseConnections 1)
-      ( ConnectInfo
-          { connectHost = "localhost",
-            connectPort = 5432,
-            connectUser = "postgres",
-            connectPassword = "postgres",
-            connectDatabase = "postgres"
-          }
-      )
-  let dbName = DatabaseName $ "qtility-test-" <> (randomDBSuffix & show & fromString)
-  runRIO masterPool $ runMasterDB' $ createDatabase dbName (DatabaseOwner "postgres")
+  temporaryDatabase <- fromEitherM TemporaryPostgres.start
+  let databaseOptions = TemporaryPostgres.toConnectionOptions temporaryDatabase
+      connectUser = ""
+      connectPassword = "postgres"
+      connectDatabase = "postgres"
+  connectHost <-
+    databaseOptions & host & getLast & fromPureMaybeM (UnableToStartTemporaryPostgres "host")
+  connectPort <-
+    databaseOptions
+      & port
+      & getLast
+      & fromPureMaybeM (UnableToStartTemporaryPostgres "port")
+      & fmap fromIntegral
   pool <-
     createConnectionPool
       (DatabaseConnections 1)
       ( ConnectInfo
-          { connectHost = "localhost",
-            connectPort = 5432,
-            connectUser = "postgres",
-            connectPassword = "postgres",
-            connectDatabase = dbName & unDatabaseName & decodeUtf8Lenient & Text.unpack
+          { connectHost,
+            connectPort,
+            connectUser,
+            connectPassword,
+            connectDatabase
           }
       )
+  masterPool <-
+    createConnectionPool
+      (DatabaseConnections 1)
+      ( ConnectInfo
+          { connectHost,
+            connectPort,
+            connectUser,
+            connectPassword,
+            connectDatabase
+          }
+      )
+  -- runRIO masterPool $ runMasterDB' $ createDatabase dbName (DatabaseOwner "postgres")
   runRIO pool $ do
     runDB $ do
       createMigrationTableIfNotExists Nothing
@@ -50,15 +67,15 @@ createTestState = do
     TestState
       { _testStatePool = pool,
         _testStateMasterPool = masterPool,
-        _testStateDatabaseName = dbName
+        _testStateDatabaseName = connectDatabase & fromString & DatabaseName,
+        _testStateDatabase = temporaryDatabase
       }
 
 destroyState :: TestState -> IO ()
 destroyState state = do
   state ^. testStatePool & destroyAllResources
-  runRIO state $ do
-    runMasterDB' $ dropDatabase (state ^. testStateDatabaseName)
   state ^. testStateMasterPool & destroyAllResources
+  state ^. testStateDatabase & TemporaryPostgres.stop
 
 withScaffolding :: SpecWith TestState -> Spec
 withScaffolding = after destroyState >>> before createTestState

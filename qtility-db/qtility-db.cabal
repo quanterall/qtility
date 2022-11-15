@@ -68,6 +68,7 @@ library
       aeson
     , base >=4.9.1.0 && <5
     , lens
+    , postgres-options
     , postgresql-simple
     , qtility
     , resource-pool
@@ -136,6 +137,7 @@ test-suite qtility-db-test
     , base >=4.9.1.0 && <5
     , hspec >=2.0.0
     , lens
+    , postgres-options
     , postgresql-simple
     , qtility
     , qtility-db

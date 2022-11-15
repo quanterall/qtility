@@ -2,10 +2,12 @@
 
 module DatabaseSpec where
 
+import Data.Monoid (getLast)
 import Data.Pool (destroyAllResources)
-import Data.UUID.V4 (nextRandom)
 import Database.PostgreSQL.Simple (ConnectInfo (..), Only (..))
+import Database.PostgreSQL.Simple.Options (Options (..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
+import qualified Database.Postgres.Temp as TemporaryPostgres
 import DatabaseSpec.Types
 import Qtility
 import Qtility.Database
@@ -13,82 +15,56 @@ import Qtility.Database.Migration
 import Qtility.Database.Migration.Queries
 import Qtility.Database.Queries
 import Qtility.Database.Types
-import qualified RIO.Map as Map
-import qualified RIO.Text as Text
 import Test.Hspec
+
+newtype UnableToStartTemporaryPostgres = UnableToStartTemporaryPostgres String
+  deriving (Show, Eq)
+
+instance Exception UnableToStartTemporaryPostgres
 
 createTestState :: IO TestState
 createTestState = do
-  randomDBSuffix <- nextRandom
-  masterPool <-
-    createConnectionPool
-      (DatabaseConnections 1)
-      ( ConnectInfo
-          { connectHost = "localhost",
-            connectPort = 5432,
-            connectUser = "postgres",
-            connectPassword = "postgres",
-            connectDatabase = "postgres"
-          }
-      )
-  let dbName = DatabaseName $ "qtility-database-spec-" <> (randomDBSuffix & show & fromString)
-  runRIO masterPool $ runMasterDB' $ createDatabase dbName (DatabaseOwner "postgres")
-  let migration1 =
-        Text.unlines
-          [ "CREATE TABLE \"test_has_one\" (",
-            "  \"id\" bigserial PRIMARY KEY,",
-            "  \"name\" text NOT NULL,",
-            "  \"created_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,",
-            "  \"updated_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP",
-            ");",
-            "INSERT INTO \"test_has_one\" (\"name\") VALUES ('test1');",
-            "",
-            "CREATE TABLE \"test_has_none\" (",
-            "  \"id\" bigserial PRIMARY KEY,",
-            "  \"name\" text NOT NULL,",
-            "  \"created_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,",
-            "  \"updated_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP",
-            ");",
-            "",
-            "CREATE TABLE \"test_has_many\" (",
-            "  \"id\" bigserial PRIMARY KEY,",
-            "  \"name\" text NOT NULL,",
-            "  \"created_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,",
-            "  \"updated_at\" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP",
-            ");",
-            "",
-            "INSERT INTO \"test_has_many\" (\"name\") VALUES ('test1'), ('test2');",
-            "",
-            "-- DOWN",
-            "",
-            "DROP TABLE \"test_has_one\";",
-            "DROP TABLE \"test_has_none\";",
-            "DROP TABLE \"test_has_many\";"
-          ]
-  files <-
-    newIORef $
-      Map.fromList
-        [ ( "test/DatabaseSpec",
-            Map.fromList [("2022-05-02_10-34-18_-_create_and_seed_database.sql", migration1)]
-          )
-        ]
+  temporaryDatabase <- fromEitherM TemporaryPostgres.start
+  let databaseOptions = TemporaryPostgres.toConnectionOptions temporaryDatabase
+      connectUser = ""
+      connectPassword = "postgres"
+      connectDatabase = "postgres"
+  connectHost <-
+    databaseOptions & host & getLast & fromPureMaybeM (UnableToStartTemporaryPostgres "host")
+  connectPort <-
+    databaseOptions
+      & port
+      & getLast
+      & fromPureMaybeM (UnableToStartTemporaryPostgres "port")
+      & fmap fromIntegral
   pool <-
     createConnectionPool
       (DatabaseConnections 1)
       ( ConnectInfo
-          { connectHost = "localhost",
-            connectPort = 5432,
-            connectUser = "postgres",
-            connectPassword = "postgres",
-            connectDatabase = dbName & unDatabaseName & decodeUtf8Lenient & Text.unpack
+          { connectHost,
+            connectPort,
+            connectUser,
+            connectPassword,
+            connectDatabase
+          }
+      )
+  masterPool <-
+    createConnectionPool
+      (DatabaseConnections 1)
+      ( ConnectInfo
+          { connectHost,
+            connectPort,
+            connectUser,
+            connectPassword,
+            connectDatabase
           }
       )
   let state =
         TestState
           { _testStatePool = pool,
             _testStateMasterPool = masterPool,
-            _testStateDatabaseName = dbName,
-            _testStateFiles = files
+            _testStateDatabaseName = connectDatabase & fromString & DatabaseName,
+            _testStateDatabase = temporaryDatabase
           }
   migrations <- runRIO state $ createMigrationTable Nothing "test/DatabaseSpec/migrations"
   runRIO pool $ runDB $ applyMigrations Nothing migrations
@@ -97,9 +73,8 @@ createTestState = do
 destroyState :: TestState -> IO ()
 destroyState state = do
   state ^. testStatePool & destroyAllResources
-  runRIO state $ do
-    runMasterDB' $ dropDatabase (state ^. testStateDatabaseName)
   state ^. testStateMasterPool & destroyAllResources
+  TemporaryPostgres.stop $ state ^. testStateDatabase
 
 withScaffolding :: SpecWith TestState -> Spec
 withScaffolding = after destroyState >>> before createTestState
