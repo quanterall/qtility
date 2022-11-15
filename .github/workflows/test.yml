@@ -27,10 +27,12 @@ jobs:
           key: ${{ runner.os }}-stack-work-${{ hashFiles('stack.yaml') }}-${{ hashFiles('*/package.yaml') }}-${{ hashFiles('**/*.hs') }}
           restore-keys: |
             ${{ runner.os }}-stack-work-
-      - name: Install PostgreSQL client
+      - name: Install PostgreSQL
         run: |
-          apt-get update
-          apt-get install --yes postgresql-client
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get -y install "postgresql-15"
       - name: Run tests
         run: PATH="$PATH:/usr/lib/postgresql/15/bin" stack build --test qtility mortred qaws qaws-cloudwatch-logs qaws-dynamodb qaws-s3 qaws-secretsmanager qaws-sns qaws-sqs qaws-sts qtility-brick qtility-code qtility-metrics qtility-testing-web qtility-db
       - name: Build untested
