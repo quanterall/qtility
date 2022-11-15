@@ -27,6 +27,10 @@ jobs:
           key: ${{ runner.os }}-stack-work-${{ hashFiles('stack.yaml') }}-${{ hashFiles('*/package.yaml') }}-${{ hashFiles('**/*.hs') }}
           restore-keys: |
             ${{ runner.os }}-stack-work-
+      - name: Install PostgreSQL client
+        run: |
+          apt-get update
+          apt-get install --yes postgresql-client
       - name: Run tests
         run: PATH="$PATH:/usr/lib/postgresql/15/bin" stack build --test qtility mortred qaws qaws-cloudwatch-logs qaws-dynamodb qaws-s3 qaws-secretsmanager qaws-sns qaws-sqs qaws-sts qtility-brick qtility-code qtility-metrics qtility-testing-web qtility-db
       - name: Build untested
