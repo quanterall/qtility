@@ -1,10 +1,7 @@
 module MigrationSpec where
 
 import Control.Lens.Combinators (_head, _last)
-import Data.Monoid (getLast)
 import Data.Pool (destroyAllResources)
-import Database.PostgreSQL.Simple (ConnectInfo (..))
-import Database.PostgreSQL.Simple.Options (Options (..))
 import Database.PostgreSQL.Simple.Types (QualifiedIdentifier (..))
 import qualified Database.Postgres.Temp as TemporaryPostgres
 import MigrationSpec.Types
@@ -13,6 +10,7 @@ import Qtility.Database
 import Qtility.Database.Migration
 import Qtility.Database.Migration.Queries
 import Qtility.Database.Queries (doesTableExist)
+import Qtility.Database.Testing (createTemporaryDatabaseConnectionPool)
 import Qtility.Database.Types
 import Test.Hspec
 
@@ -23,42 +21,7 @@ instance Exception UnableToStartTemporaryPostgres
 
 createTestState :: IO TestState
 createTestState = do
-  temporaryDatabase <- fromEitherM TemporaryPostgres.start
-  let databaseOptions = TemporaryPostgres.toConnectionOptions temporaryDatabase
-      connectUser = ""
-      connectPassword = "postgres"
-      connectDatabase = "postgres"
-  connectHost <-
-    databaseOptions & host & getLast & fromPureMaybeM (UnableToStartTemporaryPostgres "host")
-  connectPort <-
-    databaseOptions
-      & port
-      & getLast
-      & fromPureMaybeM (UnableToStartTemporaryPostgres "port")
-      & fmap fromIntegral
-  pool <-
-    createConnectionPool
-      (DatabaseConnections 1)
-      ( ConnectInfo
-          { connectHost,
-            connectPort,
-            connectUser,
-            connectPassword,
-            connectDatabase
-          }
-      )
-  masterPool <-
-    createConnectionPool
-      (DatabaseConnections 1)
-      ( ConnectInfo
-          { connectHost,
-            connectPort,
-            connectUser,
-            connectPassword,
-            connectDatabase
-          }
-      )
-  -- runRIO masterPool $ runMasterDB' $ createDatabase dbName (DatabaseOwner "postgres")
+  (temporaryDatabase, pool) <- createTemporaryDatabaseConnectionPool 5
   runRIO pool $ do
     runDB $ do
       createMigrationTableIfNotExists Nothing
@@ -66,8 +29,8 @@ createTestState = do
   pure
     TestState
       { _testStatePool = pool,
-        _testStateMasterPool = masterPool,
-        _testStateDatabaseName = connectDatabase & fromString & DatabaseName,
+        _testStateMasterPool = pool,
+        _testStateDatabaseName = DatabaseName "postgres",
         _testStateDatabase = temporaryDatabase
       }
 

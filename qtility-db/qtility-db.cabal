@@ -14,6 +14,8 @@ library
       Qtility.Database.Migration
       Qtility.Database.Migration.Queries
       Qtility.Database.Queries
+      Qtility.Database.Testing
+      Qtility.Database.Testing.Types
       Qtility.Database.Types
   other-modules:
       Paths_qtility_db
