@@ -2,10 +2,8 @@
 
 module DatabaseSpec where
 
-import Data.Monoid (getLast)
 import Data.Pool (destroyAllResources)
-import Database.PostgreSQL.Simple (ConnectInfo (..), Only (..))
-import Database.PostgreSQL.Simple.Options (Options (..))
+import Database.PostgreSQL.Simple (Only (..))
 import Database.PostgreSQL.Simple.SqlQQ (sql)
 import qualified Database.Postgres.Temp as TemporaryPostgres
 import DatabaseSpec.Types
@@ -14,6 +12,7 @@ import Qtility.Database
 import Qtility.Database.Migration
 import Qtility.Database.Migration.Queries
 import Qtility.Database.Queries
+import Qtility.Database.Testing (createTemporaryDatabaseConnectionPool)
 import Qtility.Database.Types
 import Test.Hspec
 
@@ -24,46 +23,12 @@ instance Exception UnableToStartTemporaryPostgres
 
 createTestState :: IO TestState
 createTestState = do
-  temporaryDatabase <- fromEitherM TemporaryPostgres.start
-  let databaseOptions = TemporaryPostgres.toConnectionOptions temporaryDatabase
-      connectUser = ""
-      connectPassword = "postgres"
-      connectDatabase = "postgres"
-  connectHost <-
-    databaseOptions & host & getLast & fromPureMaybeM (UnableToStartTemporaryPostgres "host")
-  connectPort <-
-    databaseOptions
-      & port
-      & getLast
-      & fromPureMaybeM (UnableToStartTemporaryPostgres "port")
-      & fmap fromIntegral
-  pool <-
-    createConnectionPool
-      (DatabaseConnections 1)
-      ( ConnectInfo
-          { connectHost,
-            connectPort,
-            connectUser,
-            connectPassword,
-            connectDatabase
-          }
-      )
-  masterPool <-
-    createConnectionPool
-      (DatabaseConnections 1)
-      ( ConnectInfo
-          { connectHost,
-            connectPort,
-            connectUser,
-            connectPassword,
-            connectDatabase
-          }
-      )
+  (temporaryDatabase, pool) <- createTemporaryDatabaseConnectionPool 5
   let state =
         TestState
           { _testStatePool = pool,
-            _testStateMasterPool = masterPool,
-            _testStateDatabaseName = connectDatabase & fromString & DatabaseName,
+            _testStateMasterPool = pool,
+            _testStateDatabaseName = DatabaseName "postgres",
             _testStateDatabase = temporaryDatabase
           }
   migrations <- runRIO state $ createMigrationTable Nothing "test/DatabaseSpec/migrations"

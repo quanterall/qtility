@@ -1,9 +1,13 @@
-module Qtility.Database.Testing (createTemporaryDatabaseConnectionPool) where
+module Qtility.Database.Testing
+  ( createTemporaryDatabaseConnectionPool,
+  )
+where
 
 import Data.Monoid (getLast)
 import Data.Pool (Pool)
 import Database.PostgreSQL.Simple (ConnectInfo (..), Connection)
 import Database.PostgreSQL.Simple.Options (host, port)
+import Database.Postgres.Temp (DB)
 import qualified Database.Postgres.Temp as TemporaryPostgres
 import Qtility
 import Qtility.Database (createConnectionPool)
@@ -13,7 +17,7 @@ import Qtility.Database.Types (DatabaseConnections)
 createTemporaryDatabaseConnectionPool ::
   (MonadIO m, MonadThrow m) =>
   DatabaseConnections ->
-  m (Pool Connection)
+  m (DB, Pool Connection)
 createTemporaryDatabaseConnectionPool connections = do
   temporaryDatabase <-
     TemporaryPostgres.defaultConfig
@@ -42,3 +46,4 @@ createTemporaryDatabaseConnectionPool connections = do
     }
     & createConnectionPool connections
     & liftIO
+    & fmap (temporaryDatabase,)
