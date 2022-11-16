@@ -9,14 +9,14 @@ postTo :: (ToJSON a) => ByteString -> a -> WaiSession st SResponse
 postTo path value =
   request methodPost path [("Content-Type", "application/json")] (encode value)
 
+putTo :: (ToJSON a) => ByteString -> a -> WaiSession st SResponse
+putTo path value =
+  request methodPut path [("Content-Type", "application/json")] (encode value)
+
 decodedResponse :: (FromJSON a) => SResponse -> a
 decodedResponse response = case eitherDecode $ simpleBody response of
   Left err -> error err
   Right val -> val
-
-putTo :: (ToJSON a) => ByteString -> a -> WaiSession st SResponse
-putTo path value =
-  request methodPut path [("Content-Type", "application/json")] (encode value)
 
 equalDecoded :: (FromJSON a, Eq a, Show a) => ResponseMatcher -> a -> ResponseMatcher
 equalDecoded matcher a = matcher {matchBody = MatchBody $ matchDecodedValue a}
