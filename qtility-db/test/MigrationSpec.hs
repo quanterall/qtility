@@ -12,6 +12,7 @@ import Qtility.Database.Migration.Queries
 import Qtility.Database.Queries (doesTableExist)
 import Qtility.Database.Testing (createTemporaryDatabaseConnectionPool)
 import Qtility.Database.Types
+import qualified RIO.List as List
 import Test.Hspec
 
 newtype UnableToStartTemporaryPostgres = UnableToStartTemporaryPostgres String
@@ -81,7 +82,8 @@ spec = do
           )
           `shouldReturn` (True, False)
 
-        _ <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations2"
+        migrations2 <- runTestMonad state $ createMigrationTable Nothing "test/test-data/migrations2"
+        migrations2 `shouldBe` List.sortBy (comparing (^. migrationFilename)) migrations2
         newMigrations <- runTestMonad state $ runDB $ getMigrations Nothing
         newMigrations `shouldNotBe` migrations
         length migrations `shouldBe` 1
