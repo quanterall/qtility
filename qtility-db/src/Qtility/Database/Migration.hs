@@ -6,6 +6,7 @@ import Qtility.Database.Migration.Queries
 import Qtility.Database.Types
 import Qtility.FileSystem (ReadFileSystem (..))
 import RIO.FilePath (takeBaseName, takeExtension, (</>))
+import qualified RIO.List as List
 import qualified RIO.List.Partial as PartialList
 import qualified RIO.Text as Text
 import qualified RIO.Text.Partial as PartialText
@@ -28,7 +29,8 @@ createMigrationTable maybeSchema migrationsPath = do
 
 migrationsInDirectory :: (ReadFileSystem m, MonadThrow m) => FilePath -> m [Migration]
 migrationsInDirectory path = do
-  migrationFilenames <- filter (takeExtension >>> (== ".sql")) <$> listDirectoryM path
+  migrationFilenames <-
+    (filter (takeExtension >>> (== ".sql")) >>> List.sort) <$> listDirectoryM path
   forM migrationFilenames $ \filename -> do
     timestamp <- parseMigrationTimestamp filename
     migrationText <- readFileM $ path </> filename
